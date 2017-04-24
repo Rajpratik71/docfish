@@ -34,6 +34,17 @@ Annotation means a specific labeling, either an entire image or a subset of it, 
  - segmented annotation annotation of text: means ascribing a label to a subset of words in a text body.
 
 
+# Deployment
+This application is intended to work with Google APIs, and so it should be deployed on Google Cloud. I used compute engine to run a docker compose application, with default credentials from the instance. 
+
+
+## Secrets
+You should make a file called `secrets.py` in the [docfish](docfish) folder, under which you should first define the Google Storage Bucket that has the images and text associated with the application.
+
+```
+GOOGLE_BUCKET_NAME="mybucket"
+```
+
 # Infrastructure Details
 
 ## Database 
