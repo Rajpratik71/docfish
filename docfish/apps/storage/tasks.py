@@ -27,6 +27,8 @@ from som.wordfish.structures import (
 
 from docfish.apps.users.utils import get_user
 from docfish.apps.main.utils import get_collection
+from docfish.apps.storage.google import pull_articles
+
 from docfish.apps.storage.utils import (
     extract_tmp,
     import_structures
@@ -117,3 +119,28 @@ def validate_memory_upload(memory_file,collection):
         shutil.rmtree(tmpdir)
 
     return data
+
+
+
+@shared_task
+def add_storage_articles(pmids,cid=None):
+    '''add storage articles will retrieve a list of pubmed articles from storage,
+    and if specified, add them to a collection. If the article is already represented
+    in the database, it is added to the collection instead.
+    '''
+    if cid is not None:
+        collection = get_collection(cid)
+
+    # First generate a list of entities
+    request_ids = []
+
+     # TODO: quick way determine if entity not in list...
+    entities = Entity.objects.filter(uid__in=pmids)
+
+    present_ids = [x.uid for x in entities]
+    keys = [x for x in pmids if x not in entities]    
+
+    articles = pull_articles(pmids)
+
+
+    # Use client to get response of all missing

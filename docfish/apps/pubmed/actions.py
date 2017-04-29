@@ -25,6 +25,7 @@ SOFTWARE.
 from django.contrib.auth.models import User
 from docfish.apps.main.models import Collection
 from docfish.apps.main.utils import get_collection
+from docfish.apps.storage.tasks import add_storage_articles
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.decorators import login_required
@@ -57,19 +58,20 @@ def add_papers(request,cid):
             except:
                 return JsonResponse({"error": "error parsing array!"})
 
-        # Update the annotations
-        #for pmid in pmids:
+        current_pmids = [e.uid for e in collection.entity_set.all()]
 
-        #    new_pmids = [x for x in coll]
-        #    if new_annotation['value'] == "on":
-        #        aname,alabel = new_annotation['name'].split('||')
-        #        annotation_object = Annotation.objects.get(name=aname,
-        #                                                   label=alabel)
-        #        annot = update_annotation(user=request.user,
-        #                                  allowed_annotation=annotation_object,
-        #                                  instance=instance)
-            response_data = {'result':pmids}
-            pickle.dump(pmids,open('pmids.pkl','wb'))
+        for pmid in pmids:
+
+            new_pmids = []
+            if pmid not in current_pmids:
+                new_pmids.append(pmid)
+
+            # Add to collection (NOTE this will eventually be a task
+            add_storage_articles(pmids=new_pmids,
+                                 cid=collection.id)
+            #add_storage_articles.apply_async(kwargs={'pmids':new_pmids,'cid':collection.id})
+
+            response_data = {'result':new_pmids}
             return JsonResponse(response_data)
 
     return JsonResponse({"hakuna": "matata"})
