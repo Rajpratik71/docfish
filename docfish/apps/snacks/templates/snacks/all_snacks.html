@@ -1,0 +1,259 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+{% load humanize %}
+
+{% block css %}
+<link href="{% static "unite/css/unite-gallery.css" %}" rel='stylesheet' type='text/css' />
+<style>
+.ug-thumb-overlay {
+    cursor:pointer; 
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'messages/message.html' %}
+<div class="row">
+    <div class="col-md-3">
+       <form id="searchform" method="post" action="{% url 'snack_search' %}">
+           <input id="q" name="q" type="text"/>
+           <input id="searchSubmit" class="btn btn-primary btn-sm" type="submit" value="Search"/>
+           <br/>
+           {% csrf_token %}
+           <div class="margin">
+           <span id="spinner"><img src="{% static 'img/docfish/docfish.gif' %}" style="display:none"/></span>   
+           </div>     
+       </form>
+    </div>
+    <div class="col-md-9">
+       {% if secret %}
+       <a href="{% url 'all_snacks' %}"><button style="margin-left:100px" class="btn btn-primary btn-sm">Active Snacks</button></a>
+       <span style='margin-left:50px'>shhhh... secret snacks! <i class="fa fa-question-circle" data-toggle="tooltip" title="You can enable snacks to add to your favorites, but they can be disabled by others at any time."></i></span>
+       {% else %}
+       <a href="{% url 'secret_snacks' %}" style="color:white">Hidden Snacks</a>
+       {% endif %}
+       <nav aria-label="snack navigation"  style='float:right'>
+           <ul class="pagination">
+           {% if page == 1 %}
+           {% else %}
+              {% if secret %}
+              <li class="page-item"><a class="page-link" href="{% url 'secret_snacks' %}/{{ page|add:"-1"}}">Previous</a></li>
+              {% else %}
+              <li class="page-item"><a class="page-link" href="{% url 'all_snacks' %}/{{ page|add:"-1"}}">Previous</a></li>
+              {% endif %}
+           {% endif %}
+           {% if page == last_page %}
+           {% else %}
+               {% if secret %}
+               <li class="page-item"><a class="page-link" href="{% url 'secret_snacks' %}/{{ page|add:1 }}">Next</a></li>
+               {% else %}
+               <li class="page-item"><a class="page-link" href="{% url 'all_snacks' %}/{{ page|add:1 }}">Next</a></li>
+               {% endif %}
+           {% endif %}
+           </ul>
+       </nav>
+    </div>
+</div>
+<div class="row" style="padding-top:20px">
+    <div class="col-md-12">
+
+       <div id="snacks">
+            {% for snack in snacks %}
+             <a href="{{ snack.url }}" target="_blank">
+	     <img src="{{ snack.image.url }}"
+                  data-image="{{ snack.image.url }}"
+		  class="{{ snack.id }}"
+                  {% if snack.name != "nan" %}
+                  data-description="{{ snack.name }}"
+                  alt="{{ snack.name }}||{{ snack.id }}"
+                  {% else %}
+                  alt="Do you like this snack? ||{{ snack.id }}"
+                  {% endif %}>
+	     </a>
+             {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="snack-info" style='display:none'>
+    {% for snack in snacks %}
+    <span id="snackinfo-{{ snack.id }}" {% if snack.name != "nan" %}name="{{ snack.name }}"{% else %}name="Do you like this snack?"{% endif %} 
+          thumbnail="{{ snack.image.url }}" link="{{ snack.url }}" image="{{ snack.image.url }}" snackid="{{ snack.id }}"></span>
+    {% endfor %}
+</div>
+
+
+<!-- Snack Modal -->
+<div class="modal fade" id='snack-modal'>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="snack-name" class="modal-title">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <img width="100%" src="#" id='snack-image'>
+             {% if secret %}
+             <button id="enable-snack-button" type="button" class="btn btn-secondary">Yum! <i class="fa fa-plus"></i></button>
+             {% else %}
+             <button id="remove-snack-button" type="button" class="btn btn-secondary">Yuck. <i class="fa fa-remove"></i></button>
+             {% endif %}
+      </div>
+      <div class="modal-footer">
+        <a href="#" id="snack-link" target='_blank'>
+            <button style='margin-left:20px' type="button" class="btn btn-secondary">Learn More <i class="fa fa-link"></i></button>
+        </a>
+        <button status="{% if snack.id in usersnacks %}remove{% else %}add{% endif %}" id="update-snack-button" type="button" class="btn btn-secondary" {% if secret %}disabled{% endif %}>
+         {% if snack.id in usersnacks %}Remove from Snacks{% else %}Add to Snacks{% endif %}
+        <i class="fa fa-check"></i></button>       
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static "unite/js/unitegallery.min.js" %}" type='text/javascript'></script>
+<script src="{% static "unite/themes/tiles/ug-theme-tiles.js" %}" type='text/javascript'></script>
+<script src="{% static "js/cookie-token.js" %}"></script>
+{% include "notifications/toast_message.html" %}
+<script>
+var usersnacks = {{ usersnacks }}
+$(document).ready(function() {
+ 
+    // Search submit
+    $('#searchSubmit').click( function() {
+        $('#spinner').show();
+        q = $('#q').val();
+        $("#searchform").submit()        
+    });
+ 
+    var options = { gallery_theme: "tiles",
+                    tiles_type: "nested",	
+                    tile_show_link_icon: true,
+                    tile_enable_textpanel: true,
+                    tile_textpanel_appear_type: "appear" }
+
+    
+    $("#snacks").unitegallery(options);
+
+    function update_snacks(snack_id) {
+
+        console.log(snack_id)
+        console.log(usersnacks)
+        var snack = $("#snackinfo-" + snack_id)
+        $("#snack-message").text();
+        $('#snack-image').attr('src',$(snack).attr('image'));
+        $('#snack-name').text($(snack).attr('name'));        
+        $("#snack-link").attr('href',snack.attr('link'));
+        $("#update-snack-button").attr('snackid',snack_id)
+        if ($.inArray(parseInt(snack_id), usersnacks)!=-1) {
+            console.log('IN ARRAY')
+            $("#update-snack-button").attr("class","btn btn-danger")
+            $("#update-snack-button").attr('status','remove')
+            $("#update-snack-button").text("Remove from Snacks")
+        } else {
+            console.log('NOT IN ARRAY')
+            $("#update-snack-button").attr("class","btn btn-primary")
+            $("#update-snack").attr('status','add')
+            $("#update-snack-button").text("Add to Snacks")
+        }
+
+    }
+
+    // Functions to add and remove snacks
+    function addSnack() {
+        var snack_id = $("#update-snack-button").attr('snackid')
+        $.ajax({
+            url : "/snacks/add/" + snack_id,
+            type : "POST",
+            success : function(json) {
+                 console.log(json);
+                 var snack_id = $("#update-snack-button").attr('snackid')
+                 usersnacks.push(parseInt(snack_id))
+                 toast_message("Snack added to SnackBox.")
+                 $('#snack-modal').modal('hide');
+            }
+         });
+    }
+
+    // Functions to add and remove snacks
+    {% if secret %}
+    function enableSnack() {
+        var snack_id = $("#update-snack-button").attr('snackid')
+        $.ajax({
+            url : "/snacks/enable/" + snack_id,
+            type : "POST",
+            success : function(json) {
+                 console.log(json);
+                 toast_message("This snack will be available in active searches.")
+                 $('#snack-modal').modal('hide');
+            }
+         });
+    }
+    {% else %}
+    function disableSnack() {
+        var snack_id = $("#update-snack-button").attr('snackid')
+        $.ajax({
+            url : "/snacks/disable/" + snack_id,
+            type : "POST",
+            success : function(json) {
+                 console.log(json);
+                 toast_message("Snack disabled.")
+                 $('#snack-modal').modal('hide');
+            }
+         });
+    }
+    {% endif %}
+
+    function removeSnack() {
+        var snack_id = $("#update-snack-button").attr('snackid')
+        $.ajax({
+            url : "/snacks/remove/" + snack_id,
+            type : "POST",
+            success : function(json) {
+                console.log(json)
+                usersnacks.splice($.inArray(parseInt(snack_id),usersnacks),1);
+                toast_message("Snack removed from SnackBox.")
+                $('#snack-modal').modal('hide');
+            }
+         });
+    }
+
+    // On click, show user snack modal with options to save or not
+    $('.ug-thumb-overlay').click(function(){
+        var snack = $(this).next('img')[0];
+        var snack_id = parseInt($(snack).attr('alt').split('||')[1]);
+        update_snacks(snack_id)
+        $('#snack-modal').modal('show');
+    })
+
+    $('#update-snack-button').click(function(){
+        var status = $(this).attr('status');
+        if (status == "add"){
+           addSnack();
+        } else {
+           removeSnack();
+        }
+    })
+
+    {% if secret %}
+    $('#enable-snack-button').click(function(){
+           enableSnack();
+    })
+    {% else %}
+    $('#remove-snack-button').click(function(){
+           disableSnack();
+    })
+    {% endif %}
+
+    // Enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+});
+
+</script>
+{% endblock %}

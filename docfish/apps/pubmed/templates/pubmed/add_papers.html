@@ -1,0 +1,47 @@
+{% load staticfiles %}
+<div class="modal fade" id='collection_add_modal'>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content"  style="width:800px;">
+      <div class="modal-body">
+          {% if collections %}
+          <h4>Select a Collection to Add Papers to</h4>
+          <select id="collection_choice">
+              {% for collection in collections %}
+              <option value="{{ collection.id }}">{{ collection.name }}</option>
+              {% endfor %}
+          </select><br>
+          <div id="result_message"></div>
+          <button class="btn btn-primary btn-sm" id="save_papers">Save Papers</button>
+          {% else %}
+          <div class="col-md-12">
+             <div class="row" style="padding:150px">
+                  <p style="text-align:center">You don't seem to have any collections! Why don't you <a href="{% url 'new_collection' %}">create one</a> first. Your selected collections from this query will be saved.</p>          
+             </div>
+          </div>
+          {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function savePapers(pmids,collection_id) {
+
+    $.ajax({
+        url : "/pmc/collection/" + collection_id + "/add", // the endpoint
+        type : "POST", 
+        data : { pmids: JSON.stringify(pmids) }, // data sent with the post request
+
+        success : function(json) {
+            $("#result_message").text("");
+            $("#result_message").append('<p class="alert alert-success">Papers successfully added to collection.</p>')
+            $("#result_message").append('<a href="/collections/' + collection_id + '"><button class="btn btn-secondary btn-sm">View Collection<button/></a>')
+        },
+
+        error : function(xhr,errmsg,err) {
+            $("#result_message").text("");
+            $("#result_message").append('<p class="alert alert-danger">' + xhr.status + ": " + xhr.responseText + '</p>')
+        }
+    })
+}
+</script>

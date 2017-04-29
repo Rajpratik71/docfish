@@ -1,0 +1,112 @@
+{% extends "base/base.html" %}
+{% load staticfiles %}
+{% block head %}
+<style>
+#spinner { display: none; position: relative; }
+</style>
+{% endblock %}
+{% block css %}
+{% include "style/search.html" %}
+{% endblock %}
+{% block content %}
+{% include 'messages/message.html' %}
+
+        <div class="row">
+            <div class="col-md-12">
+  
+               <input id="q" type="text"/>
+               <input id="searchSubmit" type="submit" value="Search"/>
+               <br/>
+               <span class="hint">Type in a query string to search for snacks</span>
+               {% if tags %}
+               <button class="btn btn-primary btn-sm" id='browse-tags' style="float:right">Browse Tags</button>
+               {% endif %}
+               <div class="margin">
+               <span id="spinner"><img src="{% static 'img/docfish/docfish.gif' %}"/></span>
+            </div>
+        </div>
+
+        <!-- Search by tag -->
+       {% if tags %}
+        <div class="row" id="category-browse" style='display:none'>
+            <div class="col-md-12">
+            {% for tag in tags %}
+            <button style="margin:5x" id="category||{{ tag.id }}" class="btn btn-primary btn-sm category-button">{{ tag.name }}</button>
+            {% endfor %}
+            </div>
+        </div>
+       {% endif %}
+
+       <div class="row">
+           <div class="col-md-12">
+               <div id="results">
+
+               {% if results|length %}
+                   <table style="width:100%">
+                       <tr class="even">
+                           <td colspan="5" class="right">
+                               <strong>Found {{ results|length }} snacks</strong>
+                            </td>
+                        </tr>
+ 
+                        {% for snack in results %}
+                        <tr class="{% cycle 'odd' 'even' %}">
+                            <td><strong>{{ forloop.counter }}.</strong></td>
+                            <td><a href="{% url 'snack_details' snack.id %}">{{ snack.name }}</a><br/>
+                                <span class="hint">Tags {% for tag in snack.tags.all %}<a href="{% url 'snack_category' tag.id %}"><button class="btn btn-primary btn-sm">{{ tag.name }}</button></a>{% endfor %}</span>
+                            </td>
+                            <td><img height="50px" style="margin-right:300px;margin-left:200px" src="{{ snack.image.url }}"></td>
+                            <td>
+                                <a href="{% url 'snack_details' snack.id %}">
+                                <button style="margin-top:15px" class="btn btn-default btn-sm">
+                                    <i style="cursor:pointer" class="fa fa-2x fa-info"></i></button>
+                                 </a>
+                            </td>
+                            <td class="right">
+                                <span class="hint">
+                                Snack Box # {{ snack.user_snacks.count }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </table>
+                        {% else %}
+                        <div class="note">
+                          Your search yielded no results
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready( function() {
+    $("#browse-tags").click(function(){
+        $("#category-browse").toggle();
+    })
+
+    $("#category-button").click(function(){
+        var category_id = $(this).attr('id').split('||')[1]
+        {% if secret %}
+        document.location = "/snacks/category/" + category_id
+        {% else %}
+        document.location = "/snacks/secret/category/" + category_id
+        {% endif %}
+    })
+
+    $('#searchSubmit').click( function() {
+        q = $('#q').val();
+        $('#results').html('&nbsp;').load('{% url "snack_search" %}?q=' + q);
+    });
+});
+ 
+// Control spinner
+$(document).ajaxStart( function() {
+    $('#spinner').show();
+
+}).ajaxStop( function() {
+    $('#spinner').hide();
+});
+</script>
+{% endblock %}

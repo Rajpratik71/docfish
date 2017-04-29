@@ -1,0 +1,54 @@
+{% extends "base/base.html" %}
+{% load staticfiles %}
+{% block head %}
+<style>
+#spinner { display: none; position: relative; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'messages/message.html' %}
+        <div class="row">
+            <div class="col-md-12">
+  
+               <input id="q" type="text" placeholder="search Pubmed Central"/>
+               <input id="searchSubmit" type="submit" value="Search"/>
+               <br/>
+               <div class="margin">
+               <span id="spinner"><img src="{% static 'img/docfish/docfish.gif' %}"/></span>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+               <div id="results"></div>
+            </div>
+        </div>
+
+{% include 'pubmed/add_papers.html' %}
+{% endblock %}
+{% block scripts %}
+<script src="{% static "js/cookie-token.js" %}"></script>
+<script src="{% static 'js/localforage.min.js' %}"></script>
+<script>
+   
+$(document).ready( function() {
+
+    // Spinner
+    $(document).ajaxStart( function() {
+        $('#spinner').show(); 
+    }).ajaxStop( function() {
+        $('#spinner').hide();
+    });
+
+    $('#searchSubmit').click( function() {
+        q = $('#q').val();
+        $('#results').html('&nbsp;').load('{% url "searching_pubmed" %}?q=' + q + '&uid={{ request.user.id }}' );
+    });
+
+});
+
+</script>
+{% endblock %}
+

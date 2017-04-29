@@ -1,0 +1,176 @@
+{% extends "base/base.html" %}
+{% load dictionary_extras %}
+{% load staticfiles %}
+{% load humanize %}
+{% block css %}
+<link rel="stylesheet" href="{% static "css/flickity.min.css" %}" media="screen">
+<link rel="stylesheet" href="{% static "css/calendar-heatmap.css" %}" media="screen">
+{% endblock %}
+{% block content %}
+{% include 'messages/message.html' %}
+
+<!-- User annotation progress
+https://victoriamineva.github.io/D3-progress-bars/index.html
+-->
+<div class="row" style='padding-top:20px;padding-bottom:20px'>
+    <div class="col-md-12">
+        <h2>{{ snackbox.user.username }}</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+
+    <ul class="nav nav-pills" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#stats" role="pill">Stats</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#gils" role="pill">Gils</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#snackbox" role="pill">Snacks</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="stats" style="padding-top:30px" role="tabpanel">
+            <div class='statsmap'></div>
+        </div>
+        <div class="tab-pane" id="gils" role="tabpanel" style='padding-top:20px'>
+
+            <div class="row" style='padding-top:20px'>
+            <div class="col-md-3">
+                <h4>Gils Earned</h4>
+                <p class="alert alert-success">{{ snackbox.gils_earned }}</p>
+            </div>
+            <div class="col-md-3">
+               <h4>Gils Spent</h4>
+                   <p class="alert alert-danger">{{ snackbox.gils_spent }}</p>    
+            </div>
+            <div class="col-md-3">
+                <h4>Price per Snack</h4>
+                <p class="alert alert-info">{{ snack_price }}</p>
+            </div>
+            <div class="col-md-3">
+            {% if snackbox.earned_snack %}
+                <a href="{% url 'redeem_snacks' %}"><button class="remove-button btn btn-sm btn-primary" >Redeem Snack</button>
+            {% endif %}
+            </div>
+        </div>
+        </div>
+        <div class="tab-pane" id="snackbox" role="tabpanel" style='padding-top:30px'>
+
+        <!-- Snack Details -->
+        <div class="row" style='padding-top:20px'>
+            <div class="col-md-12">
+
+                <h3>Snacks</h3>
+                <div style='padding-top:10px' id="snack-1">
+                    {% for snack in snackbox.snacks.all %}
+                     <div class="carousel-cell" id="carousel-{{ snack.id }}">
+                       <img src="{{ snack.image.url }}" style="max-width:300px;max-height:300px;padding-right:20px"><br>
+                        {% if request.user.is_authenticated %}
+                        {% if user.id == request.user.id %}
+                        <button class="remove-button btn btn-sm btn-primary" id="snack-{{ snack.id }}">Remove</button>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="row" style='padding-top:20px'>
+            <div class="col-md-12">
+                <p class="well">You have {{ snackbox.snacks.count }} snacks in your SnackBox!</p>
+            </div>
+        </div>
+
+        {% if not snackbox.snacks %}
+        <p class="alert alert-info">Ohno! You don't have any snacks. Why don't you do a <a href="{% url 'search' %}">search</a> and choose some that you like?</p> 
+        {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{% static "js/flickity.pkgd.min.js" %}"></script>
+<script src="{% static "js/calendar-heatmap.js" %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<!--<script src="{% static "js/d3.v3.min.js" %}"></script>-->
+<script src="{% static "js/cookie-token.js" %}"></script>
+<script>
+var dates = []
+var lookup = new Object();
+
+$(document).ready(function() {
+ 
+
+    var get_type = function(obj) {
+      return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+    }
+
+    // For heatmap chart
+    {% for d,count in dates.items %}
+    var newdate = new Date('{{ d|date:"M d, Y" }}').toString()
+    dates.push(newdate)
+    lookup[newdate] = {{ count }}
+    {% endfor %}
+
+    var now = moment().endOf('day').toDate();
+    var yearAgo = moment().startOf('day').subtract(1, 'year').toDate();
+    var chartData = d3.time.days(yearAgo, now).map(function (dateElement) {
+
+       if ($.inArray(dateElement.toString(),dates)!= -1) {
+           return {date: dateElement,
+                   count: lookup[dateElement.toString()]}
+       } else {
+            return {date: dateElement,
+                    count: 0}
+       }
+    });
+    var heatmap = calendarHeatmap()
+                      .data(chartData)
+                      .selector('.statsmap')
+                      .tooltipEnabled(true)
+                      .colorRange(['#f4f7f7', '#0275d8'])
+                      .onClick(function (data) {
+                        console.log('data', data);
+                      });
+      heatmap();  // render the chart
+
+    
+    $('#snack-1').flickity({
+        cellAlign: 'left',
+        contain: true
+    });
+ 
+    function removeSnack(snack_id) {
+        $.ajax({
+            url : "/snacks/remove/" + snack_id,
+            type : "POST",
+            success : function(json) {
+                console.log(json)
+            }
+         });
+    }
+
+
+    $('.remove-button').click(function(){
+        var snack_id = $(this).attr('id').replace('snack-','')
+        removeSnack(snack_id);
+        $("#carousel-" + snack_id).remove();
+    })
+
+    // Enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+});
+
+</script>
+{% endblock %}

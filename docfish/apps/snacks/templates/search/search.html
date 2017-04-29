@@ -1,0 +1,84 @@
+{% extends "base/base.html" %}
+{% load staticfiles %}
+{% block head %}
+<style>
+#spinner { display: none; position: relative; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'messages/message.html' %}
+
+        <div class="row">
+            <div class="col-md-12">
+  
+               <input id="q" type="text"/>
+               <input id="searchSubmit" type="submit" value="Search"/>
+               <br/>
+               <span class="hint">Type in a query string to search for snacks</span>
+               {% if tags %}
+               <button class="btn btn-primary btn-sm" style="float:right" id='browse-tags'>Browse Tags</button>
+               {% endif %}
+               <div class="margin">
+               <span id="spinner"><img src="{% static 'img/docfish/docfish.gif' %}"/></span>
+
+            </div>
+        </div>
+
+        <div class="row" style="padding-top:20px">
+            <div class="col-md-12">
+
+             <!-- Search by tag -->
+             {% if tags %}
+             <div class="row" id="category-browse" style='display:none'>
+                <div class="col-md-12">
+                {% for tag in tags %}
+                <button id="category||{{ tag.id }}" style="margin:5px" class="btn btn-primary btn-sm category-button">{{ tag.name }}</button>
+                {% endfor %}
+                </div>
+            </div>
+           {% endif %}
+           </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+               <div id="results"></div>
+            </div>
+        </div>
+
+
+
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready( function() {
+
+    $("#browse-tags").click(function(){
+        $("#category-browse").toggle();
+    })
+
+    $(".category-button").click(function(){
+        var category_id = $(this).attr('id').split('||')[1]
+        {% if secret %}
+        document.location = "/snacks/secret/category/" + category_id
+        {% else %}
+        document.location = "/snacks/category/" + category_id
+        {% endif %}
+    })
+
+    $('#searchSubmit').click( function() {
+        q = $('#q').val();
+        $('#results').html('&nbsp;').load('{% url "snack_search" %}?q=' + q);
+    });
+});
+ 
+// Control spinner
+$(document).ajaxStart( function() {
+    $('#spinner').show();
+
+}).ajaxStop( function() {
+    $('#spinner').hide();
+});
+</script>
+{% endblock %}

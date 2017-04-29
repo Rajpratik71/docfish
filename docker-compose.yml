@@ -34,7 +34,7 @@ redis:
 
 worker:
   image: vanessa/docfish
-  command: celery worker -A wordfish.celery -Q default -l debug -n default@%h
+  command: celery worker -A docfish.celery -Q default -l debug -n default@%h
   volumes:
     - .:/code
   volumes_from:

@@ -1,0 +1,16 @@
+<div class="col-md-3" id="sidebar-div">
+    <div class="widget-wrapper">
+        <div class="list-group">
+            <a class="list-group-item" href="{% url 'search_pubmed' %}">Search</a>
+            <a class="list-group-item" href="{% url 'collections' %}">Collections</a>
+            <a class="list-group-item" href="{% url 'snacks' %}">Snacks</a>
+        </div>
+    </div>
+
+   <div id="modal-progress" style="display:none">
+       <h4 class="modal-title">Uploading...</h4>
+       <div class="progress">
+           <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+       </div>
+   </div>
+</div>

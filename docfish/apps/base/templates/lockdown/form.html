@@ -1,0 +1,67 @@
+{% extends "main/base.html" %}
+{% load staticfiles %}
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<body>
+ <main>
+
+        <!--Main layout-->
+        <div class="container">
+            <div class="row">
+
+                <!--Sidebar-->
+                {% if sidebar %}
+                    {% include "main/sidebar.html" %}
+                <!--Main column-->
+                <div class="col-md-8" style="margin-top:100px">
+                {% else %}
+                <div class="col-md-12" style="margin-top:100px">
+                {% endif %}
+
+		<div class="row">
+		    <div class="col-md-2" style="padding-top:50px">
+			<h2>What is it?</h2>
+		    </div>
+		    <div class="col-md-10">
+			        <p>In a sea of things that need annotation, you would be lucky to find a Docfish. Docfish is exactly that: an annotation tool for experts to label things. It is an effort toward collaborative annotation to produce publicly available datasets for research. Docfish will (eventually) allow for a combination of human- and algorithm- derived annotations of text and images. This work is being done by  <a href="http://srcc.stanford.edu" target="_blank">Research Computing</a> at Stanford University.</p>
+		    </div>
+		</div>
+		<hr>
+                <div class="row">
+                     <div class="col-md-offset-5 col-md-2" style="margin-top:20px">
+                         <img src="{% static 'img/docfish/docfish.png' %}"/>
+                     </div>
+                     <div class="col-md-offset-5 col-md-2" style="float:right">
+			<div id="lockdown" style='margin-top:100px'>
+			      {% if form %}
+			      <form action="" method="post">{% csrf_token %}
+				  {{ form.as_p }}
+				  <button class="btn btn-default btn-lg" type="submit" value="Preview">Enter</button>
+			      </form>
+			      {% endif %}
+			</div>
+                   </div>
+                </div>
+                </div>
+                <!--/.Main column-->
+
+            </div>
+        </div>
+        <!--/.Main layout-->
+
+    </main>
+
+    <!-- JQuery -->
+    <script type="text/javascript" src="{% static "js/jquery-2.2.3.min.js"%}"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="{% static "js/tether.min.js"%}"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="{% static "js/bootstrap.min.js"%}"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="{% static "js/mdb.js"%}"></script>
+    {% block scripts %}{% endblock %}
+
+</body>
+{% endblock %}

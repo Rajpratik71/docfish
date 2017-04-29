@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+{% load staticfiles %}
+
+{% block css %}
+<style>
+.btn-primary {
+  cursor:pointer;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12" style="line-height:1.5em">
+        <h2>DocFish Snacks</h2>
+        <p>Fish like good snacks. DocFish isn't any different. Thus, the currency of DocFish is the fish gil. Every time you make an annotation or a markup, you earn one gil, and you can use these gils for good snacks. Why not get started, and <a href="{% url 'all_snacks' %}">view snacks to choose some that you like</a>.
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6" style="padding:50px;line-height:1.5em">
+        <a href="{% url 'search' %}"><button class="btn btn-primary btn-xs" type="button">Search Snacks</button></a>
+        {% if snacks %}
+        <a href="{% url 'all_snacks' %}"><button class="btn btn-primary btn-xs" type="button">All Snacks</button></a>
+        <a href="{% url 'my_snacks' %}"><button class="btn btn-primary btn-xs" type="button">My Snacks</button></a>
+        {% else %}
+        <a href="{% url 'all_snacks' %}"><button class="btn btn-primary btn-xs" type="button">View Snacks</button></a>
+        {% endif %}
+    </div>
+    <div class="col-md-6" style="padding:50px;line-height:1.5em">
+        <img style="float:right;margin-right:50px" src="{% static 'img/docfish/docfish.png' %}"/>
+    </div>
+</div>
+
+<hr>
+{% endblock %}
+{% block footer %}
+{% include 'main/footer.html' %}
+{% endblock %}

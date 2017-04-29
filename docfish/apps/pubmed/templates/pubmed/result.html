@@ -1,0 +1,103 @@
+{% load staticfiles %}
+{% include "style/search.html" %}
+
+                   {% if results|length %}
+                   <input id="select_all_button" type="checkbox"/> Select All
+                   <button class="btn btn-secondary btn-sm" style="float:right" id="add_collection_button" disabled>Add to Collection</button>
+                   <script>
+                   function update_button() {
+                       if ($( ".addtocollection:checked" ).length > 0){
+                           $("#add_collection_button").prop('disabled',false);
+                       } else {
+                           $("#add_collection_button").prop('disabled',true);
+                       }
+                   }
+
+                   $("#select_all_button").click(function () {
+                       $(".addtocollection").prop('checked', $(this).prop('checked'));
+                       update_button();
+                   });
+
+                   $("#save_papers").click(function(){
+                       localforage.getItem('pmids').then(function(pmids){
+                           collection_id = $("#collection_choice").val();
+                           savePapers(pmids,collection_id);
+                       })
+                   })
+
+                   $('#add_collection_button').click( function() {
+
+                       localforage.getItem('pmids').then(function(storage){
+                            
+                           if (storage == null) {
+                              localforage.setItem('pmids',[])                       
+                              var pmids = [];
+                           } else {
+                              var pmids = storage;
+                           }
+
+                           var checked = $('.addtocollection:checked');
+                           $.each(checked,function(e,i){
+                               var pmid = $(i).attr('id').replace('select_','');
+                               
+                               if (pmids.indexOf(pmid) >= 0) {
+                                   console.log(pmid + " already in list.");
+                               } else {
+                                   pmids.push(pmid);
+                               }
+                           })
+                           return pmids
+                        }).then(function(pmids){
+                           localforage.setItem('pmids',pmids)
+                           $("#collection_add_modal").modal('show');
+                        })
+                   })
+                   </script>
+
+                        <table style="width:100%">
+                            <tr class="even">
+                                <td></td>
+                                <td><strong>Add</strong></td>
+                                <td></td>
+                                <td><strong>Showing {{ results|length }} papers (page {{ page }})</strong></td>
+                                <td></td>
+                            </tr>
+ 
+                            {% for pmid,paper in results.items %}
+                            <tr class="{% cycle 'odd' 'even' %}">
+                                <td></td>
+                                <td>
+                                    <input class="addtocollection" type="checkbox" id="select_{{ pmid }}" name="{{ pmid }}" onclick="update_button()"/>
+                                </td>
+                                <td><a href="#">{{ pmid }}</a><br/>
+                                </td>
+                                <td>{{ paper.title }}<span id="abstract_{{ pmid }}" style="display:none;"><h6 style="padding-top:20px">{{ paper.journal }}</h6>
+                                 <p>{{ paper.abstract }}</p></span>
+                                </td>
+                                <td><button onclick="$('#abstract_{{ pmid }}').toggle()" class="btn btn-sm btn-default"><i class="fa fa-info fa-2x"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </table><br>
+
+                          {% if previous_page %}
+                          <button style="float:left" id="prevSubmit" class="btn btn-primary">Previous</button>
+                          {% endif %}
+
+                          <button style="float:right" id="nextSubmit" class="btn btn-primary">Next</button>
+                          <script>
+                          $("#nextSubmit").click(function(){
+                              $('#results').html('&nbsp;').load('{% url "searching_pubmed" next_page %}?q={{ query }}&uid={{ request.user.id }}' );
+                          }) 
+                          {% if previous_page %}
+                           $("#prevSubmit").click(function(){
+                              $('#results').html('&nbsp;').load('{% url "searching_pubmed" previous_page %}?q={{ query }}&uid={{ request.user.id }}' );
+                          }) 
+                          {% endif %}
+                          </script>
+
+                          {% else %}
+                          <div class="note">
+                              Your search yielded no results
+                          </div>
+                          {% endif %}

@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+{% load dictionary_extras %}
+{% load staticfiles %}
+{% load humanize %}
+{% block content %}
+{% include 'messages/message.html' %}
+
+<div class="row" style='padding-top:20px'>
+    <div class="col-md-12">
+       
+        
+{% if worthy %}
+<p class="alert alert-info">Ohno! It looks like you've run out of points to request a snack. Why not browse <a href="{% url 'collections' %}">collections</a> and do some more annotation and markups?</p>
+{% else %}
+           <h2>It's time for a snack!</h2>
+           <img width="150px" src="{% static 'img/docfish/docfish.gif' %}" style="float:right;padding-left:10px;padding-bottom:20px">
+           <p>We will choose snacks based on <a href="{% url 'my_snacks' %}" target="_blank">your specifications</a>.
+           If you want us to deliver the snack, please put a postal address, or for delivery from the DocFish, 
+           a Stanford campus address and any additional instructions. We will also delivery to your friends, or
+           you can request a funny or fiendish snack to delivery to an unfriend. You can use the box below to 
+           specify details for your snack, and any other important information.</p>
+           <form method="post" action="{% url 'redeem_snacks' %}">
+               {% csrf_token %}
+               <textarea class="form-control" rows="15" id="message" name="message"></textarea>
+               <button type="submit" value="Submit" style="margin-top:20px" class="btn btn-primary btn-sm">Request Snack</button>
+           </form>
+{% endif %}
+
+    </div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script src="{% static "js/cookie-token.js" %}"></script>
+<script>
+$(document).ready(function() {
+  
+    // Enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load staticfiles %}
+{% include "style/search.html" %}
+
+                        {% if results|length %}
+                        <table style="width:100%">
+                            <tr class="even">
+                                <td colspan="5" class="right">
+                                    <strong>Found {{ results|length }} snacks</strong>
+                                </td>
+                            </tr>
+ 
+                            {% for snack in results %}
+                            <tr class="{% cycle 'odd' 'even' %}">
+                                <td><strong>{{ forloop.counter }}.</strong></td>
+                                <td><a href="{% url 'snack_details' snack.id %}">{{ snack.name }}</a><br/>
+                                    <span class="hint">Tags {% for tag in snack.tags.all %}<a href="{% url 'snack_category' tag.id %}"><button class="btn btn-primary btn-sm">{{ tag.name }}</button></a>{% endfor %}</span>
+                                </td>
+                                <td><img height="50px" style="margin-right:300px;margin-left:200px" src="{{ snack.image.url }}"></td>
+                                <td>
+                                  <a href="{% url 'snack_details' snack.id %}">
+                                      <button style="margin-top:15px" class="btn btn-default btn-sm"><i style='cursor:pointer' class="fa fa-2x fa-info"></i></button>
+                                  </a>
+                                </td>
+                                <td class="right">
+                                    <span class="hint">
+                                    Snack Box # {{ snack.user_snacks.count }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </table>
+                          {% else %}
+                          <div class="note">
+                              Your search yielded no results
+                          </div>
+                          {% endif %}
