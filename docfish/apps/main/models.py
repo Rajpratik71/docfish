@@ -29,6 +29,8 @@ from taggit.managers import TaggableManager
 from docfish.settings import MEDIA_ROOT
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.dispatch import receiver
@@ -41,6 +43,7 @@ from django.db.models import Q, DO_NOTHING
 from django.db import models
 
 import errno
+import requests
 import collections
 import operator
 import os
@@ -129,6 +132,35 @@ class Annotation(models.Model):
 # Collections and Entities ############################################################################
 #######################################################################################################
 
+class Entity(models.Model):
+    '''An entity is a person, place, whatever, that has one or more associated text and image things. 
+       This is how we group text and images together under some common identifier.
+    '''
+    uid = models.CharField(max_length=200, null=False, verbose_name="unique id of entity")
+    active = models.BooleanField(choices=ACTIVE_CHOICES, 
+                                 default=True,
+                                 verbose_name="Entity active for annotation and markup")
+    metadata = JSONField(default={})
+
+
+    def get_absolute_url(self):
+        return_cid = self.id
+        return reverse('entity_details', args=[str(return_cid)])
+
+    def __str__(self):
+        return self.uid
+
+    def __unicode__(self):
+        return self.uid
+
+    def get_label(self):
+        return "image"
+
+    class Meta:
+        app_label = 'main'
+        unique_together =  (("uid", "collection"),)
+
+
 
 class Collection(models.Model):
     '''A collection is a grouping of entities, mainly used for organizing sets of 
@@ -139,6 +171,10 @@ class Collection(models.Model):
     add_date = models.DateTimeField('date published', auto_now_add=True)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     metadata = JSONField(default={})
+    entity_set = models.ManyToManyField(Entity,
+                                        related_name="collection",
+                                        related_query_name="collection", 
+                                        blank=True)
     allowed_annotations = models.ManyToManyField(Annotation,
                    related_name="collection_allowed_annotations",
                    related_query_name="contributor", 
@@ -220,40 +256,12 @@ class Collection(models.Model):
 
 
 
-class Entity(models.Model):
-    '''An entity is a person, place, whatever, that has one or more associated text and image things. 
-       This is how we group text and images together under some common identifier.
-    '''
-    uid = models.CharField(max_length=200, null=False, verbose_name="unique id of entity")
-    collection = models.ForeignKey(Collection)
-    active = models.BooleanField(choices=ACTIVE_CHOICES, 
-                                  default=True,
-                                  verbose_name="Entity active for annotation and markup")
-    metadata = JSONField(default={})
-
-
-    def get_absolute_url(self):
-        return_cid = self.id
-        return reverse('entity_details', args=[str(return_cid)])
-
-    def __str__(self):
-        return self.uid
-
-    def __unicode__(self):
-        return self.uid
-
-    def get_label(self):
-        return "image"
-
-    class Meta:
-        app_label = 'main'
-        unique_together =  (("uid", "collection"),)
-
 
 
 #######################################################################################################
 # Images ##############################################################################################
 #######################################################################################################
+
 
 class Image(models.Model):
     '''An "image" is broadly a parent class that holds an original (raw) 
@@ -275,6 +283,9 @@ class Image(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('upload-new', )
+
+    def get_url(self):
+        return self.original.url
 
     def get_folder_name(self):
         return self.uid.split('/')[0]
@@ -298,6 +309,33 @@ class Image(models.Model):
         app_label = 'main'
  
 
+class LinkedImage(models.Model):
+    '''A linked image holds a link to an external image
+    '''
+    uid = models.CharField(max_length=250, null=False, blank=False)
+    entity = models.ForeignKey(Entity,related_name="image_entity",related_query_name="image_entity")
+    original = models.TextField(null=False, blank=False)
+    slug = models.SlugField(max_length=500, blank=True, null=True)
+    metadata = JSONField(default={})
+    tags = TaggableManager()
+    
+    def __str__(self):
+        return self.uid
+
+    def __unicode__(self):
+        return self.uid
+ 
+    def get_url(self):
+        return self.original
+
+    def get_file_name(self):
+        return self.original.split('/')[-1]
+
+    def get_label(self):
+        return "image"
+
+    class Meta:
+        app_label = 'main'
 
 
 #######################################################################################################
@@ -313,7 +351,11 @@ class ImageMarkup(models.Model):
        support an x,y,z layer, or more broadly, some transformation matrix for converting the 
        2D or 3D image to the 2D one.
     '''
-    image = models.ForeignKey(Image,related_name="marked_image",related_query_name="marked_image", 
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # Image or LinkedImage
+    object_id = models.PositiveIntegerField()
+    image = GenericForeignKey('content_type', 'object_id',
+                              related_name="marked_image",
+                              related_query_name="marked_image", 
                               blank=False,
                               help_text="the original image",verbose_name="image marked up")
     modify_date = models.DateTimeField('date modified', auto_now=True)
@@ -334,9 +376,13 @@ class ImageMarkup(models.Model):
 class ImageDescription(models.Model):
     '''An image description is an open text field to describe an image.
     '''
-    image = models.ForeignKey(Image,related_name="described_image",related_query_name="described_image", 
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # Image or LinkedImage
+    object_id = models.PositiveIntegerField()
+    image = GenericForeignKey('content_type', 'object_id',
+                              related_name="described_image",
+                              related_query_name="described_image", 
                               blank=False,
-                              help_text="the original image",verbose_name="image described")
+                              help_text="described image",verbose_name="image described")
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_image_description",
                                 related_query_name="creator_of_image_description", blank=False,
@@ -358,26 +404,64 @@ def delete_markup(sender, instance, **kwargs):
 
 
 class ImageAnnotation(models.Model):
-      '''equivalent to an image markup (pointing to a matched image) but it has the additional allowed annotation. 
-         If the overlay is empty for the ImageMarkup, it is assumed to describe the whole image.
-      '''
-      image = models.ForeignKey(Image,related_name="annotated_image",related_query_name="annotated_image", 
-                                blank=False,
-                                help_text="the original image",verbose_name="image marked up")
-      modify_date = models.DateTimeField('date modified', auto_now=True)
-      creator = models.ForeignKey(User,related_name="creator_of_image_annotation",
-                                related_query_name="creator_of_image_annotation", blank=False,
-                                help_text="user that created the annotation.",verbose_name="Creator")
-      annotation = models.ForeignKey(Annotation,related_name="annotation_of_image",related_query_name="annotation_of_image")
-      coordinates = JSONField(default={})
+    '''equivalent to an image markup (pointing to a matched image) but it has the additional allowed annotation. 
+       If the overlay is empty for the ImageMarkup, it is assumed to describe the whole image.
+    '''
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # Image or LinkedImage
+    object_id = models.PositiveIntegerField()
+    image = GenericForeignKey('content_type', 'object_id',
+                              related_name="annotated_image",
+                              related_query_name="annotated_image", 
+                              blank=False,
+                              help_text="the annotated image",verbose_name="image annotated")
+    modify_date = models.DateTimeField('date modified', auto_now=True)
+    creator = models.ForeignKey(User,related_name="creator_of_image_annotation",
+                              related_query_name="creator_of_image_annotation", blank=False,
+                              help_text="user that created the annotation.",verbose_name="Creator")
+    annotation = models.ForeignKey(Annotation,related_name="annotation_of_image",related_query_name="annotation_of_image")
+    coordinates = JSONField(default={})
 
-      class Meta:
-          unique_together =  (("image", "creator","annotation"),)
+    class Meta:
+        unique_together =  (("image", "creator","annotation"),)
 
 
 #######################################################################################################
 # Texts ###############################################################################################
 #######################################################################################################
+
+class LinkedText(models.Model):
+    '''A linked "text" object is a shared text object from Google datastore
+    '''
+    uid = models.CharField(max_length=250, null=False, blank=False)
+    entity = models.ForeignKey(Entity,related_name="text_entity",related_query_name="text_entity")
+    original = models.TextField(null=False, blank=False)
+    metadata = JSONField(default={})
+    tags = TaggableManager()
+    
+    def get_file_name(self):
+        return self.original.split('/')[-1]
+
+    def get_text(self):
+        response = requests.get(self.original)
+        return response.text
+
+
+    def __str__(self):
+        return "%s" %(self.uid)
+
+    def __unicode__(self):
+        return "%s" %(self.uid)
+ 
+    def get_label(self):
+        return "text"
+
+    class Meta:
+        app_label = 'main'
+ 
+    # Get the url for a report collection
+    def get_absolute_url(self):
+        return_cid = self.id
+        return reverse('text_details', args=[str(return_cid)])
 
 
 class Text(models.Model):
@@ -392,6 +476,9 @@ class Text(models.Model):
     
     def get_folder_name(self):
         return self.uid.split('/')[0]
+
+    def get_text(self):
+        return self.original
 
     def get_file_name(self):
         return self.uid.split('/')[-1]
@@ -417,9 +504,12 @@ class Text(models.Model):
 class TextDescription(models.Model):
     '''A text description is an open text field to describe a text.
     '''
-    text = models.ForeignKey(Text,related_name="described_text",related_query_name="described_text", 
-                             blank=False,
-                             help_text="the original text",verbose_name="text described")
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # Image or LinkedImage
+    object_id = models.PositiveIntegerField()
+    text = GenericForeignKey('content_type', 'object_id',
+                             related_name="described_text",
+                             related_query_name="described_text", 
+                             blank=False)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_text_description",
                                 related_query_name="creator_of_text_description", blank=False,
@@ -436,9 +526,12 @@ class TextMarkup(models.Model):
        stored with a Text object (see Text.text_markup). The markup is just a list of start and 
        stop locations, based on some delimiter in the text (default is a space)
     '''
-    text = models.ForeignKey(Text,related_name="markup_described_text",related_query_name="markup_described_text", 
-                             blank=False,
-                             help_text="the original text",verbose_name="text described")
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # Image or LinkedImage
+    object_id = models.PositiveIntegerField()
+    text = GenericForeignKey('content_type', 'object_id',
+                             related_name="marked_text",
+                             related_query_name="marked_text", 
+                             blank=False)
     creator = models.ForeignKey(User,related_name="creator_text",related_query_name="creator_text", blank=False,
                                 help_text="user that created the markup.",verbose_name="Creator")
     modify_date = models.DateTimeField('date modified', auto_now=True)
@@ -449,13 +542,11 @@ class TextMarkup(models.Model):
 
 
 class TextAnnotation(TextMarkup):
-      '''A text annotation is equivalent to a text markup (pointing to a matched Text) but it has the 
-         additional allowed annotation. If the locations list is empty, it is assumed to 
-         describe the whole body of text.
-      '''
-      annotation = models.ForeignKey(Annotation,related_name="annotation_of_text",related_query_name="annotation_of_text")
-
-
+    '''A text annotation is equivalent to a text markup (pointing to a matched Text) but it has the 
+       additional allowed annotation. If the locations list is empty, it is assumed to 
+       describe the whole body of text.
+    '''
+    annotation = models.ForeignKey(Annotation,related_name="annotation_of_text",related_query_name="annotation_of_text")
 
 
 def contributors_changed(sender, instance, action, **kwargs):

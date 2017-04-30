@@ -93,8 +93,14 @@ def extract_articles(papers,get_abstract=True):
                     result['abstract'] = parse_abstract(article)
                 except:
                     result['abstract'] = "We weren't able to parse this abstract."
-            pmcid = parse_id(article)
-            results[pmcid] = result
+            try:
+                uid = parse_id(article,id_name="pmc")
+                uid = "PMC%s" %(uid)
+            except:
+                uid = parse_id(article,id_name="pmid")
+                uid = "PMID:%s" %(uid)
+            if uid is not None:
+                results[uid] = result
     return results
 
 
@@ -118,7 +124,7 @@ def parse_title(article):
 def parse_id(article,id_name=None):
     if id_name is None:
         id_name = 'pmc'
-    return  [x['#text'] for x in article['front']['article-meta']['article-id'] if x['@pub-id-type']==id_name][0]
+    return [x['#text'] for x in article['front']['article-meta']['article-id'] if x['@pub-id-type']==id_name][0]
 
 
 def parse_abstract(article):

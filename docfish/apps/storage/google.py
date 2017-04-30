@@ -27,6 +27,7 @@ SOFTWARE.
 
 from som.api.google.storage.general import Client
 from docfish.settings import GOOGLE_BUCKET_NAME
+from google.cloud import datastore
 
 def get_client():
     return Client(bucket_name=GOOGLE_BUCKET_NAME)
@@ -41,20 +42,39 @@ def pull_articles(pmids,client=None,limit=None):
     if client is None:
         client = get_cleint()
 
-    pmid_keys = ['PMID:%s' %k for k in keys]
-    pmc_keys = ["PMC%s" %k for k in keys]
+    if not isinstance(pmids,list):
+        pmids = [pmids]
+
+    pmid_keys = ['PMID:%s' %k for k in pmids]
+    pmc_keys = ["PMC%s" %k for k in pmids]
 
     articles = []
-    pmc_articles = client.batch.get(kind="Entity",
-                                    keys=pmc_keys,
-                                    field="pmcid")
+    pmc_articles = client.get_entities(uids=pmc_keys,field="pmcid")
+    pmid_articles = client.get_entities(uids=pmid_keys,field="uid")
 
-    pmid_articles = client.batch.get(kind="Entity",
-                                     keys=pmid_keys,
-                                     field="uid")
     if pmc_articles is not None:
         articles = articles + pmc_articles
     if pmid_articles is not None:
         articles = articles + pmid_articles
 
     return articles
+
+
+
+def pull_images(entity):
+    if not isinstance(entity,datastore.Entity):
+        try:
+            entity = pull_articles(entity)[0]
+        except:
+            return None
+    return client.get_images(entity)
+
+
+   
+def pull_text():
+    if not isinstance(entity,datastore.Entity):
+        try:
+            entity = pull_articles(entity)[0]
+        except:
+            return None
+    return client.get_text(entity)
