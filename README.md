@@ -50,7 +50,7 @@ GOOGLE_BUCKET_NAME="mybucket"
 ## Database 
 
 ### Uploading Data
-Upoading datasets is supposed by the wordfish-standard, which is implemented in [som-tools](https://www.github.com/vsoch/som-tools). While this functionality is not currently turned on, it is implemented and working given some future use case when Stanford researchers want to upload their own images and texts.
+Upoading datasets is supposed by the wordfish-standard, which is implemented in [Stanford Open Modules](https://www.github.com/vsoch/som) for Python. While this functionality is not currently turned on, it is implemented and working given some future use case when Stanford researchers want to upload their own images and texts.
 
 
 ### Table Models
