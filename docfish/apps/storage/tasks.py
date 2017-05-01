@@ -9,14 +9,7 @@ from django.utils import timezone
 
 from notifications.signals import notify
 from docfish.settings import DOMAIN_NAME
-from docfish.apps.main.models import (
-    Collection,
-    Entity,
-    Image,
-    LinkedImage,
-    Text,
-    LinkedText
-)
+from docfish.apps.main.models import *
 
 from som.wordfish.validators import (
     validate_folder,
@@ -162,7 +155,7 @@ def add_storage_articles(pmids,cid=None):
         # Add images and text to entity
         for ds_image in images:
             metadata = dict(ds_image)
-            image,created = LinkedImage.objects.get_or_create(uid=ds_image['uid'],
+            image,created = ImageLink.objects.get_or_create(uid=ds_image['uid'],
                                                               entity=entity,
                                                               defaults={'metadata':metadata,
                                                                         'original':ds_image['url']})
@@ -175,7 +168,7 @@ def add_storage_articles(pmids,cid=None):
         print("Added %s images for article %s" %(len(images),article['pmcid']))
         for ds_text in texts:
             metadata = dict(ds_text)
-            text,created = LinkedText.objects.get_or_create(uid=ds_text['uid'],
+            text,created = TextLink.objects.get_or_create(uid=ds_text['uid'],
                                                             entity=entity,
                                                             defaults={'metadata':metadata,
                                                                       'original':ds_text['url']})

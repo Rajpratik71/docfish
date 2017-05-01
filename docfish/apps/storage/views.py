@@ -19,10 +19,7 @@ from django.http import (
     Http404
 )
 
-from docfish.apps.main.models import (
-    Collection,
-    Image
-)
+from docfish.apps.main.models import *
 
 from docfish.apps.main.utils import (
     get_collection

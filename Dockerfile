@@ -48,9 +48,11 @@ RUN pip install django-gravatar2
 RUN pip install pygments
 RUN pip install xmltodict
 RUN pip install django-notifications-hq
+RUN pip instll grpcio
 RUN pip install som
 RUN pip install sendgrid
 RUN pip install python3-saml
+RUN pip install biopython
 
 RUN mkdir /code
 RUN mkdir -p /var/www/images

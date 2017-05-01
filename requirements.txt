@@ -36,6 +36,8 @@ pygments
 numpy
 social-auth-app-django
 django-notifications-hq
+grpcio
+biopython
 som
 sendgrid
 python3-saml

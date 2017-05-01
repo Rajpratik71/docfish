@@ -9,23 +9,22 @@
 <div class="row">
     <div class="col-md-12">
         <h1 style='padding-bottom:30px'>User Guide</h1>
-        <h4>DocFish is a platform for markup and annotation of text and images.</h4>
+        <h4>DocFish is a platform for markup and annotation.</h4>
 
-        <p>The standard flow of machine learning research usually looks something like this:</p><br>
-             <a href="#images-and-text"><button class="btn btn-lg btn-warning" style="margin-right:10px;margin-left:10px">Images and Text</button></a>
+             <a href="#images-and-text"><button class="btn btn-lg btn-warning" style="margin-right:10px;margin-left:10px;padding-bottom:30px">Data</button></a>
                  <i class="fa fa-arrow-right fa-2x"></i>
-             <a href="#labels-and-markup"><button class="btn btn-lg btn-success" style="margin-right:10px;margin-left:10px">Labels and Markup</button></a>
+             <a href="#labels-and-markup"><button class="btn btn-lg btn-success" style="margin-right:10px;margin-left:10px;padding-bottom:30px">Annotation</button></a>
                  <i class="fa fa-arrow-right fa-2x"></i>
-             <a href="#machine-learning"><button class="btn btn-lg btn-info" style="margin-right:10px;margin-left:10px">Machine Learning</button></a>
+             <a href="#machine-learning"><button class="btn btn-lg btn-info" style="margin-right:10px;margin-left:10px;padding-bottom:30px">Machine Learning</button></a>
                  <i class="fa fa-arrow-right fa-2x"></i>
-             <a href="#discovery"><button class="btn btn-lg btn-primary" style="margin-left:10px">Discovery</button></a>
-        </p><br><p>We unfortunately run into bottlenecks. Let's talk about each of the steps, and how DocFish is going to help us.</p>
+             <a href="#discovery"><button class="btn btn-lg btn-primary" style="margin-left:10px;padding-bottom:30px">Discovery</button></a>
+        </p><br><p>The standard flow of research usually looks something like this. There are a lot of text and images available, and we usually have some task that we want to do with them. Whether it's predicting a label from an image, or learning how people feel from Reddit posts, the average research lab doesn't have the resources required to develop and host a robust annotation tool. And so we run into bottlenecks, and are slow to move forward to our goal. Let's talk about each of the steps, and how DocFish is going to help us.</p>
 
 	<div style="margin-top:50px">
             <div class="card">
 		<div class="card-block" id="image-and-text">
 		<h4 class="card-title btn btn-warning">Step 1: Organize your data</h4>
-		<p class="card-text">Getting the data, and moving it around is usually hard. Using the <a href="https://www.github.com/radinformatics/DocFish-standard" target="_blank">DocFish standard</a>, you can zip up your data, and upload it to a <a href="{% url 'new_collection' %}">new collection</a>, and you are ready to go. What does the standard look like? It's just a <a href="http://langlotzlab.stanford.edu/DocFish-standard/examples/" target="_blank">simple organization</a> of images and text files in folders on your computer. If you need help validating a dataset, we provide <a href="https://asciinema.org/a/101745?speed=2">a tool</a> to do that, along with <a href="https://github.com/radinformatics/som-tools/tree/master/examples/data-browser/cookies" target="_blank">sample datasets</a>.</p>
+		<p class="card-text">Getting the data, and moving it around is usually hard. This is why we have linked DocFish to the over 1.5 million articles (images and text) in <a href="https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/" target="_blank">Pubmed Central Open Access Subset</a>. Using the <a href="https://www.github.com/vsoch/wordfish-standard" target="_blank">WocFish standard</a>, you can zip up your data, and upload it to a <a href="{% url 'new_collection' %}">new collection</a>, and you are ready to go. What does the standard look like? It's just a <a href="http://vsoch.github.io/wordfish-standard/examples/demo2" target="_blank">simple organization</a> of images and text files in folders on your computer. If you need help validating a dataset, we provide <a href="https://asciinema.org/a/101745?speed=2">a tool</a> to do that, driven by the <a href="https://github.com/vsoch/som" target="_blank">Stanford Open Modules</a> for Python.</p>
 	    </div>
 	</div>
 
@@ -66,7 +65,7 @@
 	</div>
 
         <br><br>
-        <a href="{% url 'collections' %}" style="cursor:pointer"><button class="btn btn-primary btn-lg">Find Collections!</button>
+        <a href="{% url 'collections' %}" style="cursor:pointer"><button class="btn btn-primary btn-lg" style="padding-bottom:30px">Find Collections!</button>
 
     </div>           
 </div>

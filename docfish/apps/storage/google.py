@@ -25,6 +25,20 @@ SOFTWARE.
 
 '''
 
+
+'''
+from som.api.google.storage.general import Client
+from docfish.settings import GOOGLE_BUCKET_NAME
+from google.cloud import datastore
+client = Client(bucket_name=GOOGLE_BUCKET_NAME)
+import pickle
+pmids = pickle.load(open('pmids.pkl','rb'))
+pmid_keys = ['PMID:%s' %k for k in pmids]
+pmc_keys = ["PMC%s" %k for k in pmids]
+pmc_articles = client.get_entities(uids=pmc_keys,field="pmcid")
+pmid_articles = client.get_entities(uids=pmid_keys,field="uid")
+'''
+
 from som.api.google.storage.general import Client
 from docfish.settings import GOOGLE_BUCKET_NAME
 from google.cloud import datastore
@@ -48,10 +62,11 @@ def pull_articles(pmids,client=None,limit=None):
     pmid_keys = ['PMID:%s' %k for k in pmids]
     pmc_keys = ["PMC%s" %k for k in pmids]
 
-    articles = []
+    #TODO stopped here -this list is empty (try with known to exist)
     pmc_articles = client.get_entities(uids=pmc_keys,field="pmcid")
     pmid_articles = client.get_entities(uids=pmid_keys,field="uid")
 
+    articles = []
     if pmc_articles is not None:
         articles = articles + pmc_articles
     if pmid_articles is not None:
