@@ -22,18 +22,7 @@ SOFTWARE.
 
 '''
 
-from docfish.apps.main.models import (
-    Collection,
-    Image,
-    Entity,
-    ImageAnnotation,
-    ImageMarkup,
-    ImageDescription,
-    TextDescription,
-    TextMarkup,
-    TextAnnotation
-)
-
+from docfish.apps.main.models import *
 from itertools import chain
 from random import choice
 

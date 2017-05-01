@@ -239,7 +239,8 @@ CELERY_QUEUES = (
     Queue('default', Exchange('default'), routing_key='default'),
 )
 CELERY_IMPORTS = ('docfish.apps.storage.tasks',
-                  'docfish.apps.users.tasks', )
+                  'docfish.apps.users.tasks',
+                  'docfish.apps.pubmed.tasks' )
 
 CELERY_RESULT_BACKEND = 'redis://%s:%d/%d' %(REDIS_HOST,REDIS_PORT,REDIS_DB)
 

@@ -266,7 +266,7 @@ class Image(models.Model):
     '''An "imagebase" is broadly a parent class that holds an original (raw) 
        file, and then markups of it.
     '''
-    uid = models.CharField(max_length=250, null=False, blank=False)
+    uid = models.CharField(max_length=250, null=False, blank=False, unique=True)
     entity = models.ForeignKey(Entity,related_name="image_entity",related_query_name="image_entity")
     slug = models.SlugField(max_length=500, blank=True, null=True)
     metadata = JSONField(default={})
@@ -285,6 +285,7 @@ class Image(models.Model):
         return self.uid
 
 
+
 class ImageFile(Image):
     '''An "imagebase" is broadly a parent class that holds an original (raw) 
        file, and then markups of it.
@@ -297,6 +298,9 @@ class ImageFile(Image):
 
     def get_url(self):
         return self.original.url
+
+    def get_path(self):
+        return self.original.path
 
     def get_folder_name(self):
         return self.uid.split('/')[0]
@@ -323,6 +327,9 @@ class ImageLink(Image):
 
     def get_file_name(self):
         return self.original.split('/')[-1]
+
+    def get_path(self):
+        return self.url
 
 
 #######################################################################################################
@@ -402,7 +409,7 @@ class Text(models.Model):
     '''A "text" object is broadly a parent class that holds a chunk of text, 
        namely the original (raw) text content, and then markups of it.
     '''
-    uid = models.CharField(max_length=250, null=False, blank=False)
+    uid = models.CharField(max_length=250, null=False, blank=False, unique=True)
     entity = models.ForeignKey(Entity,related_name="text_entity",related_query_name="text_entity")
     metadata = JSONField(default={})
     tags = TaggableManager()
@@ -440,7 +447,7 @@ class TextFile(Text):
 
 
 
-class TextLink(models.Model):
+class TextLink(Text):
     '''A linked "text" object is a shared text object from Google datastore
     '''
     original = models.TextField(null=False, blank=False)

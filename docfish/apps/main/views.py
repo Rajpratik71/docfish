@@ -36,20 +36,7 @@ from docfish.apps.main.stats import (
 )
 
 
-from docfish.apps.main.utils import (
-    filter_collection_start,
-    get_annotations,
-    get_collection,
-    get_entity,
-    get_image_base,
-    get_image_basepath,
-    get_user_description,
-    get_user_markup,
-    has_image_base,
-    save_markup,
-    sniff_template_extension
-)
-
+from docfish.apps.main.utils import *
 from docfish.apps.main.navigation import (
     get_next_to_markup,
     get_next_to_describe,
@@ -578,7 +565,7 @@ def collection_markup_image(request,cid):
                    "missing_base":missing_base,
                    "nosidebar":"harrypottah"}
 
-        template_type = sniff_template_extension(next_image.original.path)
+        template_type = sniff_template_extension(next_image.get_path())
         return render(request, "annotate/images_markup_%s.html" %(template_type), context)
 
     messages.info(request,"This collection does not have any images to markup.")
@@ -974,8 +961,16 @@ def collection_activate(request,cid,fieldtype=None):
     if request.user == collection.owner:
 
         # A fieldtype indicates we are turning a specific entry on or off
-        if fieldtype != None:
+        if fieldtype is not None:
             if fieldtype in collection.status:
+
+                # For fieldtype "image_annotation" and "text_annotation" the user needs labels
+                if fieldtype in ['image_annotation','text_annotation']:
+                    if collection.status[fieldtype]['active'] is False and collection.allowed_annotations.count() == 0:
+                        message.info(request,"You must create labels before using annotation.")
+                        return view_label(request,collection.id)
+
+                # Otherwise, let them freely change it
                 collection.status[fieldtype]['active'] = not collection.status[fieldtype]['active']
                 collection.save()
                 if collection.status[fieldtype]['active'] == True:

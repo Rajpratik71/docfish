@@ -61,6 +61,8 @@ def get(query,user,retstart=0,retmax=100,get_abstract=True):
     list of results. The user email is sniffed or
     a faux doc.fish alias returned
     '''
+    # We only can provide pmc open access content
+    query = "open access[filter] %s" %(query)
     email = user.email
     if len(email) == 0 or email is None:
         email = "%s@doc.fish" %(user.username)
@@ -76,6 +78,28 @@ def get(query,user,retstart=0,retmax=100,get_abstract=True):
 
     papers = extract_articles(papers,get_abstract=get_abstract)
     return papers
+
+
+def format_pmids(pmids,return_groups=False):
+    '''format_pmids will take a list of identifiers, and
+    for those that begin with PMC, classify as a pubmed central
+    id. Those without PMC are parsed and returned as both PMC
+    and PMID (since we use for searching)
+    '''
+    pmc_keys = []
+    pmid_keys = []
+    while len(pmids) > 0:
+        key = pmids.pop()
+        if key.startswith('PMC'):
+            pmc_keys.append(key)
+        else:
+            pmc_keys.append("PMC%s" %key)
+            pmid_keys.append("PMID:%s" %key)
+    if return_groups:
+        return {'pmc':pmc_keys,
+                'pmid':pmid_keys}
+    ids = pmc_keys + pmid_keys
+    return ids
 
 
 def extract_articles(papers,get_abstract=True):

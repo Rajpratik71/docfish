@@ -196,10 +196,12 @@ def has_image_base(image):
     '''has_base_image returns a boolean value for get_image_basepath to determine
     if the base image has been saved
     '''
-    if get_image_basepath(image) != None:
-        return True
-    return False
-
+    #TODO: need to think about if we should save base for web ready images... no?
+    if isinstance(image,ImageFile):
+        if get_image_basepath(image) is not None:
+            return True
+        return False
+    return True
 
 
 def get_image_base(image):

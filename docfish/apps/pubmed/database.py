@@ -1,6 +1,6 @@
 '''
 
-google.py basic functions for using som (stanford open modules) to query Google
+database.py basic functions for using som (stanford open modules) to query Google
 Datastore and storage
 
 Copyright (c) 2017 Vanessa Sochat
@@ -40,6 +40,7 @@ pmid_articles = client.get_entities(uids=pmid_keys,field="uid")
 '''
 
 from som.api.google.storage.general import Client
+from docfish.apps.pubmed.utils import format_pmids
 from docfish.settings import GOOGLE_BUCKET_NAME
 from google.cloud import datastore
 
@@ -54,17 +55,14 @@ def pull_articles(pmids,client=None,limit=None):
     not returned'''
 
     if client is None:
-        client = get_cleint()
+        client = get_client()
 
     if not isinstance(pmids,list):
         pmids = [pmids]
 
-    pmid_keys = ['PMID:%s' %k for k in pmids]
-    pmc_keys = ["PMC%s" %k for k in pmids]
-
-    #TODO stopped here -this list is empty (try with known to exist)
-    pmc_articles = client.get_entities(uids=pmc_keys,field="pmcid")
-    pmid_articles = client.get_entities(uids=pmid_keys,field="uid")
+    ids = format_pmids(pmids,return_groups=True)
+    pmc_articles = client.get_entities(uids=ids['pmc'],field="pmcid")
+    pmid_articles = client.get_entities(uids=ids['pmid'],field="uid")
 
     articles = []
     if pmc_articles is not None:
@@ -76,7 +74,9 @@ def pull_articles(pmids,client=None,limit=None):
 
 
 
-def pull_images(entity):
+def pull_images(entity,client=None):
+    if client is None:
+        client = get_client()
     if not isinstance(entity,datastore.Entity):
         try:
             entity = pull_articles(entity)[0]
@@ -86,7 +86,9 @@ def pull_images(entity):
 
 
    
-def pull_text():
+def pull_text(entity,client=None):
+    if client is None:
+        client = get_client()
     if not isinstance(entity,datastore.Entity):
         try:
             entity = pull_articles(entity)[0]

@@ -25,7 +25,7 @@ SOFTWARE.
 from django.contrib.auth.models import User
 from docfish.apps.main.models import Collection
 from docfish.apps.main.utils import get_collection
-from docfish.apps.storage.tasks import add_storage_articles
+from docfish.apps.pubmed.tasks import add_storage_articles
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.decorators import login_required
