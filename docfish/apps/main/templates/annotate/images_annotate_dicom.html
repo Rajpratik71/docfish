@@ -23,7 +23,7 @@ var params = {
                 "allowScroll": false,
                 "showImageButtons": false, 
                 "showOrientation": false,
-                "images": ["{{ image.original.url }}"]
+                "images": ["{{ image.get_url }}"]
              }
 </script>
 <script type="text/javascript" src="{% static "js/papaya.js" %}"></script>
@@ -86,7 +86,7 @@ var params = {
     <div class="col-md-6">
 
         <!-- Form to send updates to server-->
-        <form action="{% url 'update_image_annotation' image.id %}" method="POST" id="update_image_annotation">
+        <form action="{% url 'update_image_annotation' collection.id image.id %}" method="POST" id="update_image_annotation">
 
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
@@ -173,7 +173,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_image_annotations' image.id %}", // the endpoint
+            url : "{% url 'clear_image_annotations' collection.id image.id %}", // the endpoint
             type : "POST", // http method
 
             // handle a successful response

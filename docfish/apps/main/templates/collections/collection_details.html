@@ -4,7 +4,6 @@
 {% load humanize %}
 
 {% block css %}
-{% include "style/sliders.html" %}
 <style>
 .pagination {
   padding-top:30px !important;
@@ -107,7 +106,7 @@
      <table style='margin-top:10px' id="entities_table" class="mdl-data-table" style="width:100%;margin:0px;padding:0px" cellspacing="0" width="100%">
          <thead>
              <tr>
-                 <th>Active</th>
+                 <th>Action</th>
                  <th>Name</th>
                  <th>Images</th>
                  <th>Text</th>
@@ -118,23 +117,12 @@
              <tr>
                  <td>
                     {% if request.user == collection.owner %}
-                    <label class="switch">
-                        {% if entity.active == True %}
-                        <input class="entity-change-status" type="checkbox" data-id="{{ entity.id }}" checked>
-                        {% else %}
-                        <input class="entity-change-status" type="checkbox" data-id="{{ entity.id }}">
-                        {% endif %}
-                        <div class="slider round"></div>
-                    </label><br>
+                    <a href="{% url 'remove_entity' collection.id entity.id %}"><button type="button" class="btn btn-secondary btn-sm">Remove</button></a>
                     {% else %}
-                        {% if entity.active %}
-                        <button class="btn btn-success btn-sm">Active</button>
-                        {% else %}
-                        <button class="btn btn-secondary btn-sm">Inactive</button>
-                        {% endif %}
+                    <button type="button" class="btn btn-danger" disabled>Remove</button>
                     {% endif %}
                  </td>
-                 <td><a href="#">{{ entity.uid }}</a></td>
+                 <td><a href="{% url 'entity_details' collection.id entity.id %}">{{ entity.uid }}</a></td>
                  <td>{{ entity.image_entity.count }}</td>
                  <td>{{ entity.text_entity.count }}</td>
              </tr>

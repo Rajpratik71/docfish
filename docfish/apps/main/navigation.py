@@ -40,9 +40,9 @@ def get_contenders(collection,active=True,get_images=True):
     contenders = []
     for entity in active:
         if get_images == True:
-            contenders = list(chain(contenders,entity.image_entity.all()))    
+            contenders = list(chain(contenders,entity.image_entity.exclude(tags__name="pdf")))    
         else:
-            contenders = list(chain(contenders,entity.text_entity.all()))
+            contenders = list(chain(contenders,entity.text_entity.exclude(tags__name="pdf")))
     return contenders
 
 

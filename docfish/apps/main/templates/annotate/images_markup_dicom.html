@@ -22,7 +22,7 @@ var params = {
                 "allowScroll": false,
                 "showImageButtons": false, 
                 "showOrientation": false,
-                "images": ["{{ image.original.url }}"]
+                "images": ["{{ image.get_url }}"]
              }
 </script>
 <script type="text/javascript" src="{% static "js/papaya.js" %}"></script>

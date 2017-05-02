@@ -24,12 +24,12 @@
 
 <div class="row">
     <div class="col-md-6">
-        <img id="som_image" src="{{ image.original.url | safe }}">
+        <img id="som_image" src="{{ image.get_url | safe }}">
     </div>
     <div class="col-md-6">
 
         <!-- Form to send updates to server-->
-        <form action="{% url 'update_image_annotation' image.id %}" method="POST" id="update_image_annotation">
+        <form action="{% url 'update_image_annotation' collection.id image.id %}" method="POST" id="update_image_annotation">
         {% csrf_token %}
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
@@ -98,7 +98,7 @@ $(function() {
         }).then(function(annotations){
             console.log(annotations);
             $.ajax({
-                url : "{% url 'update_image_annotation' image.id %}", // the endpoint
+                url : "{% url 'update_image_annotation' collection.id image.id %}", // the endpoint
                 type : "POST", // http method
                 data : { annotations: annotations }, // data sent with the post request
 
@@ -123,7 +123,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_image_annotations' image.id %}", // the endpoint
+            url : "{% url 'clear_image_annotations' collection.id image.id %}", // the endpoint
             type : "POST", // http method
 
             // handle a successful response

@@ -25,10 +25,10 @@
 
 <div class="row">
     <div class="col-md-6">
-        <img class="som_image" src="{{ image.original.url | safe }}">
+        <img class="som_image" src="{{ image.get_url | safe }}">
     </div>
     <div class="col-md-6">
-        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' image.id %}">
+        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' collection.id image.id %}">
              <input type="hidden" name="image_id" id="{{ image.id }}" value="{{ image.id }}">  
              <div class="form-group">
                  <h3>What do you see?</h3>

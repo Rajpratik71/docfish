@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 from kombu import Exchange, Queue
+from corsheaders.defaults import default_headers
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -53,6 +54,7 @@ THIRD_PARTY_APPS = [
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'guardian',
+    'corsheaders',
     'django_gravatar',
     'taggit',
     'notifications',
@@ -64,6 +66,7 @@ INSTALLED_APPS += THIRD_PARTY_APPS
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
@@ -72,7 +75,22 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-]
+] 
+
+CORS_ORIGIN_WHITELIST = (
+    'https://storage.googleapis.com',
+    'http://storage.googleapis.com',
+)
+
+CORS_ALLOW_METHODS = (
+   'GET',
+   'OPTIONS',
+   'HEAD'
+)
+
+CORS_ALLOW_HEADERS = default_headers + (
+    'range',
+)
 
 ROOT_URLCONF = 'docfish.urls'
 

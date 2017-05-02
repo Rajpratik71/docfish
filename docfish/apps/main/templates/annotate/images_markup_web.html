@@ -72,7 +72,7 @@
 
     <div class="outside_wrapper">
         <div class="inside_wrapper">
-            <img class="som_image" src="{{ image.original.url | safe }}" style="height: 100%; width: 100%; margin: 0px; padding: 0px">
+            <img class="som_image" src="{{ image.get_url | safe }}" style="height: 100%; width: 100%; margin: 0px; padding: 0px">
             <canvas id='som_sketch' width="800" height="700" style="border: 0px solid transparent;"></canvas>
             <img id="previous_overlay" src="{{ markup.overlay.url | safe }}" style='display:none'>
         </div>

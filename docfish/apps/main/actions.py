@@ -69,34 +69,6 @@ media_dir = os.path.join(BASE_DIR,MEDIA_ROOT)
 
 
 ###############################################################################################
-# Entities ####################################################################################
-###############################################################################################
-
-@login_required
-def update_entity_status(request,eid):
-    '''update_entity_status will change the status of an entity, usually from active to inactive
-    or vice versa
-    :param eid: the unique id of the entity to change
-    '''
-    entity = get_entity(eid)
-
-    if request.user == entity.collection.owner:
-
-        if request.method == 'POST':
-            entity.active = not entity.active
-            entity.save()
-            response_data = {'result':'Entity changed successfully!',
-                             'status':entity.active }
-
-            return JsonResponse(response_data)
-        else:
-            return JsonResponse({"Unicorn poop cookies...": "I will never understand the allure."})
-
-    return JsonResponse({"message":"You are not authorized to annotate this collection."})
-
-
-
-###############################################################################################
 # Collections #################################################################################
 ###############################################################################################
     

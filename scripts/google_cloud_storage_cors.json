@@ -1,0 +1,17 @@
+[
+    {
+      "origin": ["http://127.0.0.1",
+                 "https://127.0.0.1",
+                 "http://www.doc.fish",
+                 "https://www.doc.fish",
+                 "http://doc.fish",
+                 "https://doc.fish"],
+      "responseHeader": ["Content-Type",
+                         "Accept-Ranges", 
+                         "Content-Encoding", 
+                         "Content-Length", 
+                         "Content-Range"],
+      "method": ["GET"],
+      "maxAgeSeconds": 5000
+    }
+]

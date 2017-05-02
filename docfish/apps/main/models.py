@@ -82,11 +82,9 @@ def get_upload_folder(instance,filename):
     return os.path.join(str(collection_path), filename)
 
 
-PRIVACY_CHOICES = ((False, 'Public (The collection will be accessible by anyone and all the data in it will be distributed under CC0 license)'),
-                   (True, 'Private (The collection will be not listed. It will be possible to share it with others at a private URL.)'))
+PRIVACY_CHOICES = ((False, 'Public (The collection will be accessible by anyone and public entities exposed.'),
+                   (True, 'Private (The collection will be not listed. It will be viewable only by owners and contributors'))
 
-ACTIVE_CHOICES = ((False, 'Inactive. The entity is not open for updates to annotations or markups'),
-                  (True, 'Active. The entity is available for markup and annotation of text and images.'))
 
 # Each collection owner has the ability to share an annotation portal page, with
 # custom instructions and links for each task. By default, all are active, with no
@@ -137,15 +135,10 @@ class Entity(models.Model):
        This is how we group text and images together under some common identifier.
     '''
     uid = models.CharField(max_length=200, null=False, verbose_name="unique id of entity", unique=True)
-    active = models.BooleanField(choices=ACTIVE_CHOICES, 
-                                 default=True,
-                                 verbose_name="Entity active for annotation and markup")
     metadata = JSONField(default={})
 
-
     def get_absolute_url(self):
-        return_cid = self.id
-        return reverse('entity_details', args=[str(return_cid)])
+        return reverse('entity_details', args=[str(self.id)])
 
     def __str__(self):
         return self.uid
@@ -278,6 +271,21 @@ class Image(models.Model):
     class Meta:
         app_label = 'main'
 
+
+    def get_url(self):
+        if hasattr(self,'imagelink'):
+            return self.imagelink.url
+        else:
+            return self.original.url
+
+
+    def get_path(self):
+        if hasattr(self,'imagelink'):
+            return self.imagelink.url
+        else:
+            return self.original.path
+
+
     def __str__(self):
         return self.uid
 
@@ -346,6 +354,7 @@ class ImageMarkup(models.Model):
        2D or 3D image to the 2D one.
     '''
     image = models.ForeignKey(Image,blank=False,related_query_name="image_markup")
+    collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_image",
                                 related_query_name="creator_of_image", blank=False,
@@ -365,6 +374,7 @@ class ImageDescription(models.Model):
     '''An image description is an open text field to describe an image.
     '''
     image = models.ForeignKey(Image,blank=False,related_query_name="image_description")
+    collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_image_description",
                                 related_query_name="creator_of_image_description", blank=False,
@@ -391,6 +401,7 @@ class ImageAnnotation(models.Model):
     '''
     image = models.ForeignKey(Image,blank=False,related_query_name="image_annotation")
     modify_date = models.DateTimeField('date modified', auto_now=True)
+    collection = models.ForeignKey(Collection)
     creator = models.ForeignKey(User,related_name="creator_of_image_annotation",
                               related_query_name="creator_of_image_annotation", blank=False,
                               help_text="user that created the annotation.",verbose_name="Creator")
@@ -464,6 +475,7 @@ class TextDescription(models.Model):
     '''A text description is an open text field to describe a text.
     '''
     text = models.ForeignKey(Text,related_query_name="text_description")
+    collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_text_description",
                                 related_query_name="creator_of_text_description", blank=False,
@@ -481,6 +493,7 @@ class TextMarkup(models.Model):
        stop locations, based on some delimiter in the text (default is a space)
     '''
     text = models.ForeignKey(Text,related_query_name="text_markup")
+    collection = models.ForeignKey(Collection)
     creator = models.ForeignKey(User,related_name="creator_text",related_query_name="creator_text", blank=False,
                                 help_text="user that created the markup.",verbose_name="Creator")
     modify_date = models.DateTimeField('date modified', auto_now=True)

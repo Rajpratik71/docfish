@@ -182,7 +182,7 @@ $(function() {
     function pushMarkup(serialized) {
   
         $.ajax({
-            url : "{% url 'update_text_markup' text.id %}", // the endpoint
+            url : "{% url 'update_text_markup' collection.id text.id %}", // the endpoint
             type : "POST", // http method
             data : { markup: serialized }, // data sent with the post request
 

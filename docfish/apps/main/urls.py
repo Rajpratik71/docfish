@@ -31,8 +31,8 @@ urlpatterns = [
 
     # Collections and entities
     url(r'^collections$', main_views.view_collections, name="collections"),
-    url(r'^entity/(?P<eid>.+?)/details$',main_views.view_entity,name='entity_details'),
-    url(r'^entity/(?P<eid>.+?)/update/status$',actions.update_entity_status,name='update_entity_status'),
+    url(r'^collections/(?P<cid>\d+)/entity/(?P<eid>.+?)/details$',main_views.view_entity,name='entity_details'),
+    url(r'^collections/(?P<cid>\d+)/entity/(?P<eid>.+?)/remove$',main_views.remove_entity,name='remove_entity'),
 
     # Collections
     url(r'^collections/(?P<cid>\d+)/$',main_views.view_collection,name='collection_details'),
@@ -72,21 +72,21 @@ urlpatterns = [
     url(r'^collections/(?P<cid>\d+)/images/markup$',main_views.collection_markup_image,name='collection_markup_image'),
     url(r'^collections/(?P<cid>\d+)/images/describe$',main_views.collection_describe_image,name='collection_describe_image'),
     url(r'^collections/(?P<cid>\d+)/images/(?P<uid>.+?)/markup$',main_views.markup_image,name='markup_image'),
-    url(r'^entity/(?P<uid>\d+)/images/describe$',main_views.describe_image,name='describe_image'),
+    url(r'^collections/(?P<cid>\d+)/images/(?P<uid>\d+)/describe$',main_views.describe_image,name='describe_image'),
     url(r'^collections/(?P<cid>\d+)/images/annotate$',main_views.collection_annotate_image,name='collection_annotate_image'),
 
     # Update Annotations and Markup
-    url(r'^entity/(?P<uid>\d+)/images/annotate/update$',main_views.update_image_annotation,name='update_image_annotation'),
-    url(r'^entity/(?P<uid>\d+)/images/annotate/clear$',main_views.clear_image_annotations,name='clear_image_annotations'),
-    url(r'^entity/(?P<uid>\d+)/text/annotate/update$',main_views.update_text_annotation,name='update_text_annotation'),
-    url(r'^entity/(?P<uid>\d+)/text/annotate/clear$',main_views.clear_text_annotations,name='clear_text_annotations'),
-    url(r'^entity/(?P<uid>\d+)/text/markup/update$',actions.update_text_markup,name='update_text_markup'),
+    url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/images/update$',main_views.update_image_annotation,name='update_image_annotation'),
+    url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/images/clear$',main_views.clear_image_annotations,name='clear_image_annotations'),
+    url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/update$',main_views.update_text_annotation,name='update_text_annotation'),
+    url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/clear$',main_views.clear_text_annotations,name='clear_text_annotations'),
+    url(r'^markup/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/update$',actions.update_text_markup,name='update_text_markup'),
     
     # Text markup and annotation
     url(r'^collections/(?P<cid>\d+)/text/markup$',main_views.collection_markup_text,name='collection_markup_text'),
     url(r'^collections/(?P<cid>\d+)/text/describe$',main_views.collection_describe_text,name='collection_describe_text'),
     url(r'^collections/(?P<cid>\d+)/text/annotate$',main_views.collection_annotate_text,name='collection_annotate_text'),
-    url(r'^entity/(?P<uid>\d+)/text/describe$',main_views.describe_text,name='describe_text'),
+    url(r'^collections/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/describe$',main_views.describe_text,name='describe_text'),
     url(r'^collections/(?P<cid>\d+)/text/(?P<uid>.+?)/markup$',main_views.markup_text,name='markup_text'),
 
 ]

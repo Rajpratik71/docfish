@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% load dictionary_extras %}
+{% load staticfiles %}
+{% load humanize %}
+{% block content %}
+{% include 'messages/message.html' %}
+<div class="row">
+    <h3 style='text-align:right;color:666'>{{ entity.uid }}</h3><br>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <p class="alert alert-info" id="entity-status">
+        This entity is included in {{ entity.collection.count }} collections.  
+        </p>
+        <table>
+           <thead>
+              <th>Collection</th>
+           </thead>
+           <tbody>
+               {% for collection in entity.collection.all %}
+               <tr>
+                    <td>
+                      {% if collection.private %}
+                      {{ collection.name }}
+                      {% else %}
+                      <a href="{{ collection.get_absolute_url }}">{{ collection.name }}</a>
+                      {% endif %}
+                   </td>
+               </tr>
+               {% endfor %}
+           </tbody>
+        </table>
+
+    </div>
+
+    <div class="col-md-5">
+        <div class="card card-block" >
+           <h5>Image and Text</h5>           
+           <p class="alert alert-info">Images: {{ entity.image_entity.count }}</p>  
+           <p class="alert alert-info">Texts: {{ entity.text_entity.count }}</p>  
+        </div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script src="{% static "js/cookie-token.js" %}"></script>
+<script>
+$(document).ready(function() {
+
+
+    // Enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+});
+
+</script>
+{% endblock %}

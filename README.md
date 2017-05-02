@@ -50,7 +50,7 @@ GOOGLE_BUCKET_NAME="mybucket"
 ## Database 
 
 ### Uploading Data
-Upoading datasets is supposed by the wordfish-standard, which is implemented in [Stanford Open Modules](https://www.github.com/vsoch/som) for Python. While this functionality is not currently turned on, it is implemented and working given some future use case when Stanford researchers want to upload their own images and texts.
+Upoading datasets is supposed by the [wordfish-standard](https://www.github.com/vsoch/wordfish-standard), which is implemented in [Stanford Open Modules](https://www.github.com/vsoch/som) for Python. While this functionality is not currently turned on, it is implemented and working given some future use case when Stanford researchers want to upload their own images and texts.
 
 
 ### Table Models
@@ -492,3 +492,10 @@ mv saml.key /etc/ssl/private
 ```
 
 and then generate the `metadata.xml` by going to `https://doc.fish/saml.xml`. Usually institutions have different portals for submitting metadata / getting information about SAML, for Stanford the information is via the [SAML SP Service Provider Database](https://spdb.stanford.edu/).
+
+### Google Storage CORS
+If you are creating your own bucket, you will need to use gsutil to set up CORS, with an example (for doc.fish domain) provided in [scripts/google_cloud_storage_cors.json](scripts/google_cloud_storage_cors.json). You would run as follows:
+
+```
+gsutil cors set scripts/google_cloud_storage_cors.json gs://pmc-stanford
+```

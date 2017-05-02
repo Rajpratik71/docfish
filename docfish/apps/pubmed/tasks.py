@@ -57,6 +57,8 @@ def add_storage_articles(pmids,cid=None):
     # Add new entities
     for article in articles:
         metadata = dict(article)
+        del metadata['updated']
+        del metadata['created']
         entity,created = Entity.objects.get_or_create(uid=article['pmcid'],
                                                       defaults={'metadata':metadata})
         entity.save()
@@ -66,27 +68,29 @@ def add_storage_articles(pmids,cid=None):
         # Add images and text to entity
         for ds_image in images:
             metadata = dict(ds_image)
+            del metadata['updated']
+            del metadata['created']
             image,created = ImageLink.objects.get_or_create(uid=ds_image['uid'],
-                                                              entity=entity,
-                                                              defaults={'metadata':metadata,
-                                                                        'original':ds_image['url']})
+                                                            entity=entity,
+                                                            defaults={'metadata':metadata,
+                                                                      'url':ds_image['url']})
             image.tags.add(ds_image['storage_contentType'])
             if ds_image['storage_contentType'].endswith('pdf'):
                 image.tags.add('pdf')
-            image.tags.save()
             image.save()            
 
         print("Added %s images for article %s" %(len(images),article['pmcid']))
         for ds_text in texts:
             metadata = dict(ds_text)
+            del metadata['updated']
+            del metadata['created']
             text,created = TextLink.objects.get_or_create(uid=ds_text['uid'],
-                                                            entity=entity,
-                                                            defaults={'metadata':metadata,
-                                                                      'original':ds_text['url']})
+                                                          entity=entity,
+                                                          defaults={'metadata':metadata,
+                                                                    'original':ds_text['url']})
             text.tags.add(ds_text['storage_contentType'])
             if ds_text['storage_contentType'].endswith('xml'):
                 text.tags.add('xml')
-            text.tags.save()
             text.save()            
 
         print("Added %s texts for article %s" %(len(texts),article['pmcid']))

@@ -161,10 +161,10 @@ def has_collection_annotate_permission(request,collection):
 ###############################################################################################
 
 @login_required
-def edit_contributors(request,did):
+def edit_contributors(request,cid):
     '''edit_contributors is the view to see, add, and delete contributors for a set.
     '''
-    collection = get_docs_collection(did)
+    collection = get_collection(cid)
     if request.user == collection.owner:
 
         # Who are current contributors?
@@ -179,19 +179,19 @@ def edit_contributors(request,did):
                    'collection':collection,
                    'contenders':contenders}
         
-        return render(request, 'docs/edit_collection_contributors.html', context)
+        return render(request, 'collections/edit_collection_contributors.html', context)
 
     # Does not have permission, return to collection
     messages.info(request, "You do not have permission to perform this action.")
-    return redirect('doc_collection_details',kwargs={'did':collection.id})
+    return redirect('collection_details',kwargs={'cid':collection.id})
 
 
 @login_required
-def add_contributor(request,did):
+def add_contributor(request,cid):
     '''add a new contributor to a collection
     :param did: the collection id
     '''
-    collection = get_collection(did)
+    collection = get_collection(cid)
     if request.user == collection.owner:
         if request.method == "POST":
             user_id = request.POST.get('user',None)
@@ -203,7 +203,6 @@ def add_contributor(request,did):
                 # Alert the user of the status change
                 message = """You have been added as a contributor to the %s.""" %(collection.name)
                 notify.send(collection.owner, recipient=user, verb=message)
-
                 messages.success(request, 'User %s added as contributor to collection.' %(user))
 
     return edit_contributors(request,did)
@@ -310,7 +309,7 @@ def collection_stats_detail(request,cid,fieldtype):
     image_count = Image.objects.filter(entity__collection=collection).count()
     text_count = Text.objects.filter(entity__collection=collection).count()
     counts = count_task_annotations(collection,fieldtype)
-    if counts != None:
+    if counts is not None:
         context = {"collection":collection,
                    "fieldtype":fieldtype,
                    "entity_count":entity_count,
@@ -325,11 +324,12 @@ def collection_stats_detail(request,cid,fieldtype):
 
 
 @login_required
-def view_entity(request,eid):
+def view_entity(request,cid,eid):
+    collection = get_collection(cid)
     entity = get_entity(eid)
 
     context = {"entity":entity,
-               "collection":entity.collection}
+               "collection":collection}
 
     # Get all permissions, context must have collection as key
     context = get_permissions(request,context)
@@ -352,7 +352,7 @@ def edit_collection(request, cid=None):
         collection = Collection(owner=request.user)
 
     # Only owners allowed to edit collections
-    if request.user != collection.owner:
+    if request.user is not collection.owner:
         messages.info(request, "You don't have permission to edit this collection.")
         return redirect("collections")
         
@@ -418,16 +418,39 @@ def collection_change_privacy(request,cid):
 
 @login_required
 def delete_collection_entities(request,cid):
-    '''delete_collection will delete a collection.
+    '''delete_collection_entities will remove entities from a collection,
+    and delete the collection.
     '''
     collection = get_collection(cid)
 
     if request.user == collection.owner:
-        [e.delete() for e in collection.entity_set.all()]
-        messages.info(request,"Collection entities successfully deleted.")
+        for entity in collection.entity_set.all():
+            if entity.collection.count() == 1:
+                entity.delete()
+            else:
+                collection.entity_set.remove(entity)
+        messages.info(request,"Collection entities successfully removed.")
     else:                
         messages.info(request, "You do not have permission to perform this action.")
     return HttpResponseRedirect(collection.get_absolute_url())
+
+
+
+@login_required
+def remove_entity(request,cid,eid):
+    collection = get_collection(cid)
+    entity = get_entity(eid)
+
+    if request.user == collection.owner:
+        if entity.collection.count() == 1:
+            entity.delete()
+        else:
+            collection.entity_set.remove(entity)
+        messages.info(request,"Entity successfully removed from collection.")
+    else:
+        messages.info(request, "You do not have permission to perform this action.")
+    return HttpResponseRedirect(collection.get_absolute_url())
+
 
 
 ######################################################################################
@@ -646,7 +669,7 @@ def collection_describe_image(request,cid):
                    "description": description,
                    "nosidebar":"pancakes"}
     
-        template_type = sniff_template_extension(next_image.original.path)
+        template_type = sniff_template_extension(next_image.get_path())
         return render(request, "annotate/images_description_%s.html" %(template_type), context)
 
     messages.info(request,"This collection does not have any images to describe.")
@@ -654,12 +677,12 @@ def collection_describe_image(request,cid):
 
 
 @login_required
-def describe_image(request,uid):
+def describe_image(request,cid,uid):
     '''describe_image will return a static view of an image to describe.
     :param eid: the entity id that the image belongs to.
     '''
     image = Image.objects.get(id=uid)
-    collection = image.entity.collection
+    collection = get_collection(cid)
 
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection):
@@ -714,7 +737,7 @@ def collection_annotate_image(request,cid):
                     "nosidebar":"pizzapizza",
                     "allowed_annotations": allowed_annotations }
 
-        template_type = sniff_template_extension(next_image.original.path)
+        template_type = sniff_template_extension(next_image.get_path())
         return render(request, "annotate/images_annotate_%s.html" %(template_type), context)
 
     messages.info(request,"This collection does not have any images to annotate.")
@@ -788,7 +811,7 @@ def markup_text(request,cid,uid):
     '''
 
     text = Text.objects.get(id=uid)
-    collection = text.entity.collection
+    collection = get_collection(cid)
 
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection):
@@ -864,11 +887,11 @@ def collection_describe_text(request,cid):
 
 
 @login_required
-def describe_text(request,uid):
+def describe_text(request,cid,uid):
     '''describe_text will return a static view of text to describe.
     '''
     text = Text.objects.get(id=uid)
-    collection = text.entity.collection
+    collection = get_collection(cid)
 
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection):

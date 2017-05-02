@@ -146,7 +146,7 @@ class CollectionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CollectionSerializer
 
 class EntityViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Entity.objects.filter(collection__private=False,active=True)
+    queryset = Entity.objects.filter(collection__private=False)
     serializer_class = EntitySerializer
 
 class AnnotationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -154,39 +154,33 @@ class AnnotationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AnnotationSerializer
 
 class ImageViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Image.objects.filter(entity__collection__private=False,entity__active=True)
+    queryset = Image.objects.filter(entity__collection__private=False)
     serializer_class = ImageSerializer
 
 class TextViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Text.objects.filter(entity__collection__private=False,entity__active=True)
+    queryset = Text.objects.filter(entity__collection__private=False)
     serializer_class = TextSerializer
 
 class TextAnnotationViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = TextAnnotation.objects.filter(text__entity__collection__private=False,
-                                             text__entity__active=True)
+    queryset = TextAnnotation.objects.filter(text__entity__collection__private=False)
     serializer_class = TextAnnotationSerializer
 
 class ImageAnnotationViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ImageAnnotation.objects.filter(image__entity__collection__private=False,
-                                              image__entity__active=True)
+    queryset = ImageAnnotation.objects.filter(image__entity__collection__private=False)
     serializer_class = ImageAnnotationSerializer
 
 class ImageMarkupViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ImageMarkup.objects.filter(image__entity__collection__private=False,
-                                          image__entity__active=True)
+    queryset = ImageMarkup.objects.filter(image__entity__collection__private=False)
     serializer_class = ImageMarkupSerializer
 
 class TextMarkupViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = TextMarkup.objects.filter(text__entity__collection__private=False,
-                                         text__entity__active=True)
+    queryset = TextMarkup.objects.filter(text__entity__collection__private=False)
     serializer_class = TextMarkupSerializer
 
 class TextDescriptionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = TextDescription.objects.filter(text__entity__collection__private=False,
-                                              text__entity__active=True)
+    queryset = TextDescription.objects.filter(text__entity__collection__private=False)
     serializer_class = TextDescriptionSerializer
 
 class ImageDescriptionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ImageDescription.objects.filter(image__entity__collection__private=False,
-                                               image__entity__active=True)
+    queryset = ImageDescription.objects.filter(image__entity__collection__private=False)
     serializer_class = ImageDescriptionSerializer

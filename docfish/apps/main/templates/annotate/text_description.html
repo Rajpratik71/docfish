@@ -37,7 +37,7 @@ ref-list{
         {% endif %}
     </div>
     <div class="col-md-6">
-        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_text' text.id %}">
+        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_text' collection.id text.id %}">
              <input type="hidden" name="image_id" id="{{ image.id }}" value="{{ image.id }}">  
              <div class="form-group">
                  <textarea class="form-control" rows="25" id="description" name="description">{{ description.description }}</textarea>

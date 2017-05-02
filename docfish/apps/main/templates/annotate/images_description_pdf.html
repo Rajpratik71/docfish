@@ -3,59 +3,12 @@
 {% load staticfiles %}
 {% load humanize %}
 {% block head %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 {% endblock %}
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static "css/papaya.css" %}" />
-
-<script type="text/javascript">
-var params = {
-                "orthogonal": false, 
-             // "showRuler":true,
-             // see https://github.com/rii-mango/Papaya/issues/86#issuecomment-281167546
-             // we will want to re-enable this
-                "mainView": "axial",
-                "kioskMode": true, 
-                "worldSpace": true, 
-                "smoothDisplay": true, 
-                "showControls": false,
-                "fullScreen": false,
-                "allowScroll": true,                
-                "showImageButtons": false, 
-                "showOrientation": false,
-                "images": ["{{ image.get_url }}"]
-             }
-</script>
-<script type="text/javascript" src="{% static "js/papaya.js" %}"></script>
 <style>
-.outside_wrapper{ 
-    width:640px; height:550px; 
-    margin:20px 0px; 
-    border:0px solid transparent;
-    box-sizing: none !important;
-}
-.inside_wrapper{ 
-    width:100%; height:100%; 
-    position:relative;
-    box-sizing: none !important;
-}
-.som_image{ 
-    width:100%; height:100%; 
-    position:absolute; top:0px; left:0px;
-    box-sizing: none !important;
-}
-#previous_overlay{ 
-    width:100%; height:100%; 
-    position:absolute; top:0px; left:0px;
-    box-sizing: none !important;
-    background: rgba(76, 175, 80, 0.3);
-}
-#som_sketch{ 
-    width:100%; height:100%; 
-    position:absolute; top:0px; left:0px;
-    box-sizing: none !important;
+.som_image {
+  max-width:100%;
+  min-width:100%;
 }
 .button {
     cursor: pointer;
@@ -72,14 +25,8 @@ var params = {
 
 <div class="row">
     <div class="col-md-6">
-        <div class="outside_wrapper">
-            <div class="inside_wrapper">
-                <div class="papaya som_image" data-params="params" style="height: 100%; width: 100%; margin: 0px; padding: 0px"></div>
-            </div>
-        </div>
-        <div style="padding-left:60px">
-             <span style="color:#CCC">{{ image.uid }}</span>
-        </div>
+        <canvas id="pdf-canvas"></canvas>
+        <button id="prev"><<</button><button id="next"><<</button>
     </div>
     <div class="col-md-6">
         <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' collection.id image.id %}">
@@ -98,20 +45,96 @@ var params = {
  
     </div>
 </div>
+<div class="row">
+    <div class='col-md-12'>
+             <span style="color:#CCC">{{ image.uid }}</span>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static "js/pdfjs/pdf.js" %}"></script>
 <script type='text/javascript'>
 $(function() {
 
    $("#submit").click(function(){
        $("form").submit();
    });
+ 
+    PDFJS.workerSrc = '{% static "js/pdfjs/pdf.worker.js"%}';
 
-  // Remove the crosshairs
-  // setTimeout(function(){
-  //   papayaContainers[0].preferences.updatePreference("showCrosshairs","No")
-  // }, 500)
+    var pdfDoc = null,
+        pageNum = 1,
+        pageRendering = false,
+        pageNumPending = null,
+        scale = 0.8,
+        canvas = document.getElementById('pdf-canvas'),
+        ctx = canvas.getContext('2d');
+
+
+    function renderPage(num) {
+      pageRendering = true;
+
+      pdfDoc.getPage(num).then(function(page) {
+        var viewport = page.getViewport(scale);
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Render PDF page into canvas context
+        var renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        var renderTask = page.render(renderContext);
+
+        renderTask.promise.then(function() {
+          pageRendering = false;
+          if (pageNumPending !== null) {
+        renderPage(pageNumPending);
+        pageNumPending = null;
+          }
+        });
+      });
+
+      document.getElementById('page_num').textContent = pageNum;
+    }
+
+    function queueRenderPage(num) {
+      if (pageRendering) {
+        pageNumPending = num;
+      } else {
+        renderPage(num);
+      }
+    }
+
+    function onPrevPage() {
+      if (pageNum <= 1) {
+        return;
+      }
+      pageNum--;
+      queueRenderPage(pageNum);
+    }
+    document.getElementById('prev').addEventListener('click', onPrevPage);
+
+    function onNextPage() {
+      if (pageNum >= pdfDoc.numPages) {
+        return;
+      }
+      pageNum++;
+      queueRenderPage(pageNum);
+    }
+    document.getElementById('next').addEventListener('click', onNextPage);
+
+    console.log("{{ image.get_url }}")
+    console.log("{{ image.get_path }}")
+    console.log("{{ image.url }}")
+
+    PDFJS.getDocument("{{ image.get_url }}").then(function(pdfDoc_) {
+      pdfDoc = pdfDoc_;
+      document.getElementById('page_count').textContent = pdfDoc.numPages;
+
+      renderPage(pageNum);
+    });
 
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
@@ -137,10 +160,10 @@ $(function() {
            return false;
         }
     });
- 
-   $("#skip_button").click(function(){
+
+    $("#skip_button").click(function(){
        document.location = "{% url 'collection_describe_image' collection.id %}"
-   });
+    });
 })
 </script>
 {% endblock %}

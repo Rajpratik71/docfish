@@ -53,6 +53,7 @@ RUN pip install som
 RUN pip install sendgrid
 RUN pip install python3-saml
 RUN pip install biopython
+RUN pip install django-cors-headers
 
 RUN mkdir /code
 RUN mkdir -p /var/www/images
