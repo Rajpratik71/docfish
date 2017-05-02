@@ -62,7 +62,7 @@ def login(request):
     #context = {'request': request, 'user': request.user}
     #context = RequestContext(request,context)
     #return render_to_response('social/login.html', context_instance=context)
-    return render(request, 'social/login.html')
+    return redirect('collections')
 
 
 @login_required(login_url='/')
