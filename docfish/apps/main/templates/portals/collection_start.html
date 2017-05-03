@@ -91,7 +91,7 @@ background-color:#F7F7F7;
     
 <div class="row" style="padding-top:20px; padding-bottom:20px">
     <div class="col-md-3">
-        <div class="fish-step" id="{{ fieldtype }}" style="background-color:#999">
+        <div class="fish-step nofollow" id="{{ fieldtype }}" style="background-color:#999; cursor:default">
             <i class="fa {{ fieldvalues.symbol }}" style="font-size:100px;color:white"></i>
             <p class="fish-text">{{ fieldvalues.title }}</p><br>
         </div>
@@ -162,8 +162,12 @@ $(document).ready(function() {
 
     $(".fish-step").click(function(){
        var fish_button = "#" + $(this).attr('id') + "_link"
-       var url = $(fish_button).attr('href');
-       document.location = url;
+       if ($(this).hasClass("nofollow")){
+           console.log("Teehee, that tickles!")
+       } else {
+           var url = $(fish_button).attr('href');
+           document.location = url;
+       }
     })
 
     // Enable tooltips

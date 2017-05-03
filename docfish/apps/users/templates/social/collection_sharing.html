@@ -8,7 +8,7 @@
         <a class="dropdown-item"  href="http://www.reddit.com/submit?url=/collections/{{ collection.id }}/{{ url }}&title={{ collection.name }}  Image Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Reddit"><i class="fa fa-reddit"></i> Reddit</a>
         </div>
 </div>
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/collections/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-primary">Annotate!</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain_name }}/collections/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Annotate!</button></a>
 {% endwith %}
 {% endif %}
 {% if fieldtype == "image_markup" %}
