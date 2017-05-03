@@ -60,6 +60,7 @@ def get_user(uid):
     else:
         return user
 
+
 def get_team(tid):
     '''get a single team, or return 404'''
     keyargs = {'id':tid}
@@ -70,6 +71,27 @@ def get_team(tid):
     else:
         return team
 
+
+def get_invite(team,code):
+    keyargs = {'team':code,
+               'team':team}
+    try:
+        invite = MembershipInvite.objects.get(**keyargs)
+    except MembershipRequest.DoesNotExist:
+        return None
+    else:
+        return invite
+
+
+def get_request(team,user):
+    keyargs = {'user':user,
+               'team':team}
+    try:
+        req = MembershipRequest.objects.get(**keyargs)
+    except MembershipRequest.DoesNotExist:
+        return None
+    else:
+        return req
 
 
 ####################################################################################
@@ -178,29 +200,75 @@ def get_user_team(request):
     return None
 
 
-def remove_user_teams(remove_teams,user):
-    '''removes a user from one or more teams
-    :param remove_teams: the list of teams to remove the user from
-    :param user: the user to remove
-    :returns: previous team removed from (user only allowed one at a time)
+def is_invite_valid(team,code):
+    '''determine if a user can be added to a team meaning
+    he or she has an invite, and the invite corresponds to the
+    code generated for it. a status (True or False)
     '''
-    if remove_teams == None:
-        return remove_teams
+    invitation = get_invite(team,code)
+    if invitation is None:
+        return False
+    if invitation.code == code:
+        return True
+    return False
 
-    previous_team = None
-    if not isinstance(remove_teams,list):
-        remove_teams = [remove_teams]
-    for remove_team in remove_teams:
-        if user in remove_team.members.all():
-            previous_team = remove_team
-            remove_team.members.remove(user)
-            remove_team.save()
-    return previous_team
+
+def add_user(user,team,code=None):
+    '''add a user to a team. If a code is provided,
+    the invitation object is deleted.
+    '''
+    if code is not None:
+        invitation = get_invite(team,code)
+        if invitation is not None:
+            invitation.delete()
+
+        # Update the user request, if provided
+        user_request = get_request(team,user)
+        if user_request is not None:
+            user_request.status = "GRANTED"
+            user_request.save()
+
+    # Finally, add the user
+    team.members.add(user)
+    team.save()
+    return team
 
 
 def has_team_edit_permission(request,team):
     '''only the owner of a team can edit it.
     '''
-    if request.user in team.members.all():
+    if request.user == team.owner:
         return True
     return False
+
+
+def has_same_institution(owner,requester):
+    '''a general function to determine if two users belong to
+    the same institution, based on SAML. This only works if the user
+    account is logged in with SAML
+    '''
+
+    # Does the user have an institution login?
+    user_providers = [sa for sa in requester.social_auth.all() if sa.provider == 'saml']
+    if len(user_providers) == 0:
+        return False
+
+    # Limit to those in user's institution
+    user_institutions = [sa.uid.split(':')[0] for sa in user_providers]
+    owner_institutions = [sa.uid.split(':')[0] for sa in owner.social_auth.all()]
+    shared_institution = set(user_institutions).intersection(set(owner_institutions))
+
+    if len(shared_institution) > 0:
+        return True
+    return False
+
+
+
+def has_saml(user):
+    '''return true if the user has some account with SAML
+    '''
+    # Does the user have an institution login?
+    user_providers = [sa for sa in user.social_auth.all() if sa.provider == 'saml']
+    if len(user_providers) == 0:
+        return False
+    return True

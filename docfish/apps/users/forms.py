@@ -59,7 +59,7 @@ class TeamForm(ModelForm):
 
     class Meta:
         model = Team
-        fields = ("name","team_image",)
+        fields = ("name","team_image","permission",)
 
     def clean(self):
         cleaned_data = super(TeamForm, self).clean()

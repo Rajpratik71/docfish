@@ -4,6 +4,13 @@
 {% load humanize %}
 {% block content %}
 {% include 'messages/message.html' %}
+
+<div class="row" style="display:none" id="messages">
+    <div class="col-md-12">
+        <p id="message" class="alert alert-info"></p>
+    </div>
+</div>
+
 <div class="row">
 
     <!-- Team Details -->
@@ -12,10 +19,20 @@
             <ul class="alert alert-info">
                  <li style="margin-left:25px">Total Members: {{ team.members.count|intcomma }}</li>
                  <li style="margin-left:25px">Annotations: {{ annotation_counts.total|intcomma }}</li>
+                 <li style="margin-left:25px">Team Type: {{ team.permission }}</li>
             </ul>
 
             {% if request.user not in team.members.all %}
-             <a href="{% url 'join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Join Team</button></a>
+                {% if team.permission == "institution" %}
+                <a href="{% url 'join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Join Team</button></a>
+                <p class="alert alert-info">You can join the team if you are a member of the owner's institution.</p>
+                {% endif %}
+                {% if team.permission == "open" %}
+                <a href="{% url 'join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Join Team</button></a>
+                {% endif %}
+                {% if team.permission == "invite" %}
+                <a id="request_button" href="{% url 'request_join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Request to Join </button></a>
+                {% endif %}
             {% else %}
                 <p class="alert alert-info">You are a member of this team.</p>
             {% endif %}
@@ -70,6 +87,7 @@
 
 {% endblock %}
 {% block scripts %}
+<script src="{% static "js/cookie-token.js" %}"></script>
 {% include "style/datatable.html" %}
 <style>
 .mdl-grid {
@@ -87,6 +105,34 @@ $(document).ready(function(){
             }
         ]
     } );
+
+
+   // Flag a small or bad image
+   function requestInvite() {
+
+        $.ajax({
+            url : "{% url 'request_membership' team.id %}", // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                $("#message").text(json['message'])
+                $("#messages").show();
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+   $("#request_button").click(function(){
+      setTimeout(function(){
+           requestInvite();
+      },500)
+   })
 
 
 

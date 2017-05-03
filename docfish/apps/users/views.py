@@ -33,25 +33,21 @@ from django.template.context import RequestContext
 import logging
 import os
 import pickle
+import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import (
-    HttpResponse, 
+    HttpResponse,
+    JsonResponse, 
     HttpResponseBadRequest, 
     HttpResponseRedirect
 )
 
 from docfish.apps.snacks.models import SnackBox
 from docfish.apps.users.forms import TeamForm
-from docfish.apps.users.models import Team
-from docfish.apps.users.utils import (
-    get_team,
-    get_user_team,
-    summarize_team_annotations,
-    has_team_edit_permission,
-    remove_user_teams
-)
+from docfish.apps.users.models import *
+from docfish.apps.users.utils import *
 
 
 ##################################################################################
@@ -65,6 +61,7 @@ def login(request):
     if request.user.is_authenticated():
         return redirect('collections')
     return render(request,'social/login.html')
+
 
 @login_required(login_url='/')
 def home(request):
@@ -92,7 +89,7 @@ def edit_team(request, tid=None):
         edit_permission = has_team_edit_permission(request,team)
         title = "Edit Team"
     else:
-        team = Team()
+        team = Team(owner=request.user)
         edit_permission = True
         title = "New Team"
 
@@ -104,6 +101,12 @@ def edit_team(request, tid=None):
             if form.is_valid():
                 team = form.save(commit=False)
                 team.save()
+                # The team can only be institution given that the user has SAML
+                if team.permission == "institution":
+                    if not has_saml(team.owner):
+                        team.permission = "invite"
+                        messages.info(request,'''Institution invitation requires you to login with SAML.
+                                                 Your team has been created with an "invite only" permission.''')
                 team.members.add(request.user)
                 team.save()
                 return HttpResponseRedirect(team.get_absolute_url())
@@ -118,7 +121,7 @@ def edit_team(request, tid=None):
         return render(request, "teams/edit_team.html", context)
 
     # If user makes it down here, does not have permission
-    messages.info(request, "You don't have permission to edit this team")
+    messages.info(request, "Only team owners can edit teams.")
     return redirect("teams")
 
 
@@ -155,7 +158,7 @@ def view_users(request):
 
 
 @login_required
-def view_team(request, tid):
+def view_team(request, tid, code=None):
     '''view the details about a team
     :parma tid: the team id to edit or create. If none, indicates a new team
     '''
@@ -169,35 +172,88 @@ def view_team(request, tid):
                "edit_permission":edit_permission,
                "annotation_counts":annotation_counts}
 
+    # If the user has generated an invitation code
+    if code is not None:
+        context['code'] = code
+
     return render(request, "teams/team_details.html", context)
 
 
 @login_required
-def join_team(request, tid):
+def join_team(request, tid, code=None):
     '''add a user to a new team, and remove from previous team
     :parma tid: the team id to edit or create. If none, indicates a new team
+    :param code: if the user is accessing an invite link, the code is checked
+    against the generated request.
     '''
     team = get_team(tid)
     user = request.user
+    add_user = True
 
-    # Get the user's current team, and remove
-    users_team = get_user_team(request)
-    removed_team = remove_user_teams(remove_teams=users_team,
-                                     user=user)
+    if team.permission == "institution":
+        if not has_same_institution(request.user,team.owner):
+            add_user = False
+            messages.info(request,'''This team is only open to users in the team owner's institution.
+                                   If you have an email associated with the institution, use the SAML institution
+                                   log in.''')
+            
+    elif team.permission == "invite":
+        if code is None:
+            messages.info(request,"This is not a valid invitation to join this team.")
+            add_user = False
+        else:    
+            add_user = is_invite_valid(team, code)
+            if add_user == False:
+                messages.info(request, "This code is invalid to join this team.")
 
-    # If the user was removed, tell him/her
-    if removed_team != None:
-        messages.info(request,"You have been removed from team %s" %(removed_team))
+    if add_user:   
+        if user not in team.members.all():
+            team = add_user(user,team,code)
+            messages.info(request,"You have been added to team %s" %(team.name))
+        else:
+            messages.info(request,"You are already a member of %s!" %(team.name))
 
-    # Add the user to the team
-    if user not in team.members.all():
-        team.members.add(user)
-        team.save()
-        messages.info(request,"%s has been successfully added to %s!" %(user.username,team.name))
+    return HttpResponseRedirect(team.get_absolute_url())
+
+
+# Actions (JSON responses)
+
+@login_required
+def request_membership(request,tid):
+    '''generate an invitation for a user, return to view
+    '''
+    team = get_team(tid)
+    if request.user not in team.members.all():
+        old_request = get_request(user=request.user,team=team)
+        if old_request is not None:
+            message = "You already have a request to join team %s with status %s" %(team.name,
+                                                                                    old_request.status)
+        else:
+            new_request = MembershipRequest.objects.create(team=team,
+                                                           user=request.user)
+            new_request.save()
+            message = "Your request to join %s has been submit." %(team.name)
+
     else:
-        messages.info(request,"You are already a member of %s!" %(team.name))
+        message = "You are already a member of this team."
+    return JsonResponse({"message":message})
 
-    return view_teams(request)
+
+
+@login_required
+def generate_team_invite(request,tid):
+    '''generate an invitation for a user, return to view
+    '''
+    team = get_team(tid)
+    if request.user == team.owner:
+        code = uuid.uuid4()
+        new_invite = MembershipInvite.objects.create(team=team,
+                                                     code=code)
+        new_invite.save()
+        return view_team(request, team.id, code=code)
+
+    messages.info(request,"You do not have permission to invite to this team.")
+    return HttpResponseRedirect(team.get_absolute_url())
 
 
 # Python social auth extensions

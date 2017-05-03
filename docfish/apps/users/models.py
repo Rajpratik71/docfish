@@ -64,6 +64,14 @@ def get_image_path(instance, filename):
     return os.path.join('teams', filename)
 
 
+TEAM_TYPES = (('invite', 'Invite only. The user must be invited by the team administrator.'),
+              ('institution', 'Institution only. Any user with the same institution as the creator can join'),
+              ('open','Open. Anyone can join the team without asking.'))
+
+REQUEST_OPTIONS = (("denied", 'Request has not been granted.'),
+                   ("pending", 'Request is pending.'),
+                   ("granted", 'Request has been granted'),)
+
 #######################################################################################################
 # Teams ###############################################################################################
 #######################################################################################################
@@ -74,6 +82,7 @@ class Team(models.Model):
     institutions, however each user is only allowed to join one team.
     '''
     name = models.CharField(max_length=250, null=False, blank=False,verbose_name="Team Name")
+    owner = models.ForeignKey(User, blank=False, verbose_name="Team owner and adminstrator.")
     created_at = models.DateTimeField('date of creation', auto_now_add=True)
     updated_at = models.DateTimeField('date of last update', auto_now=True)
     team_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)    
@@ -83,6 +92,10 @@ class Team(models.Model):
     annotation_count = models.IntegerField(blank=False,null=False,
                                            verbose_name="team annotation count, calculated once daily.",
                                            default=0)
+    permission = models.CharField(choices=TEAM_TYPES, 
+                                  default='open',
+                                  max_length=100,
+                                  verbose_name="Permission level for joining the team.")
     members = models.ManyToManyField(User, 
                                      related_name="team_members",
                                      related_query_name="team_members", blank=True, 
@@ -97,11 +110,55 @@ class Team(models.Model):
         return "<%s:%s>" %(self.id,self.name)
 
     def get_absolute_url(self):
-        return_cid = self.id
-        return reverse('team_details', args=[str(return_cid)])
+        return reverse('team_details', args=[str(self.id)])
 
     def get_label(self):
         return "users"
 
     class Meta:
         app_label = 'users'
+
+
+class MembershipInvite(models.Model):
+    '''An invitation to join a team.
+    '''
+    code = models.CharField(max_length=200, null=False, blank=False) 
+    team = models.ForeignKey(Team)
+
+    def __str__(self):
+        return "<%s:%s>" %(self.id,self.team.name)
+
+    def __unicode__(self):
+        return "<%s:%s>" %(self.id,self.team.name)
+
+    def get_label(self):
+        return "users"
+
+    class Meta:
+        app_label = 'users'
+        unique_together =  (("code", "team"),)
+
+
+class MembershipRequest(models.Model):
+    '''A request for membership is tied to a team. 
+    A user is granted access if the owner grants him/her permission.
+    '''
+    user = models.ForeignKey(User)
+    team = models.ForeignKey(Team)
+    created_at = models.DateTimeField('date of request', auto_now_add=True)
+    status = models.CharField(max_length=200, null=False, 
+                              verbose_name="Status of request", 
+                              default="pending",choices=REQUEST_CHOICES)
+    
+    def __str__(self):
+        return "<%s:%s>" %(self.user,self.team.name)
+
+    def __unicode__(self):
+        return "<%s:%s>" %(self.user,self.team.name)
+
+    def get_label(self):
+        return "users"
+
+    class Meta:
+        app_label = 'users'
+        unique_together =  (("user", "team"),)

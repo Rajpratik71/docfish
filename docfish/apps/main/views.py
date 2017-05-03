@@ -35,6 +35,9 @@ from docfish.apps.main.stats import (
     count_task_annotations
 )
 
+from docfish.apps.users.utils import (
+    has_same_institution
+)
 
 from docfish.apps.main.utils import *
 from docfish.apps.main.navigation import (
@@ -141,19 +144,8 @@ def has_collection_annotate_permission(request,collection):
     if request.user == collection.owner:
         return True
 
-    # Does the user have an institution login?
-    user_providers = [sa for sa in request.user.social_auth.all() if sa.provider == 'saml']
-    if len(user_providers) == 0:
-        return False
-
-    # Limit to those in user's institution
-    user_institutions = [sa.uid.split(':')[0] for sa in user_providers]
-    owner_institutions = [sa.uid.split(':')[0] for sa in owner.social_auth.all()]
-    shared_institution = set(user_institutions).intersection(set(owner_institutions))
-
-    if len(shared_institution) > 0:
-        return True
-    return False
+    return has_same_institution(owner=request.user,
+                                requester=collection.owner)
 
 
 ###############################################################################################
