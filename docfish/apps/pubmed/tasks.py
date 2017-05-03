@@ -19,6 +19,7 @@ from docfish.apps.pubmed.database import (
     pull_text
 )
 
+from docfish.apps.pubmed.utils import format_pmids
 from docfish.settings import MEDIA_ROOT
 from itertools import chain
 import os
@@ -98,4 +99,4 @@ def add_storage_articles(pmids,cid=None):
         collection.entity_set.add(entity)
 
     collection.save()
-    print("Added %s articles to collection %s" %(len(articles,collection.name)))
+    print("Added %s articles to collection %s" %(len(articles),collection.name))

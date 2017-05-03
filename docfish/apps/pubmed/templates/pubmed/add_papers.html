@@ -34,7 +34,8 @@ function savePapers(pmids,collection_id) {
 
         success : function(json) {
             $("#result_message").text("");
-            $("#result_message").append('<p class="alert alert-success">Papers successfully added to collection.</p>')
+            var message = json['message']
+            $("#result_message").append('<p class="alert alert-success">' + message + '</p>')
             $("#result_message").append('<a href="/collections/' + collection_id + '"><button class="btn btn-secondary btn-sm">View Collection<button/></a>')
         },
 

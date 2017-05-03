@@ -3,6 +3,25 @@
 {% load staticfiles %}
 {% load humanize %}
 {% block content %}
+
+{% block css %}
+<style>
+.image-box{
+  padding:20px;
+}
+.image-title{
+  color:#059;
+  cursor:pointer;
+  font-weight:800;
+  font-size:18px;
+}
+.section-title {
+  color:darkturquoise;
+  font-weight:800 !important;
+  cursor:pointer;
+}
+</style>
+{% endblock %}
 {% include 'messages/message.html' %}
 <div class="row">
     <h3 style='text-align:right;color:666'>{{ entity.uid }}</h3><br>
@@ -37,18 +56,94 @@
     <div class="col-md-5">
         <div class="card card-block" >
            <h5>Image and Text</h5>           
-           <p class="alert alert-info">Images: {{ entity.image_entity.count }}</p>  
-           <p class="alert alert-info">Texts: {{ entity.text_entity.count }}</p>  
+           <p class="alert alert-info"><a href="#images">Images</a>: {{ entity.image_entity.count }}</p>  
+           <p class="alert alert-info"><a href="#texts">Texts</a>: {{ entity.text_entity.count }}</p>  
+           {% for image in entity.image_entity.all %}
+               {% if image.is_pdf %}
+               <div class="row">
+                   <div class="col-md-12">
+                       <a href="{{ image.get_url }}" target="_blank"><i class="fa fa-file-pdf-o fa-2x"></i></a>
+                   </div>
+               </div>
+               {% endif %}
+           {% endfor %}
         </div>
+    </div>
 </div>
 
 
+<div class="row">
+    <div class="col-md-12">
+    <h5 id='images' class="showing section-title">Images</h5>
+    {% for image in entity.image_entity.all %}
+        {% if not image.is_pdf %}
+        <p class="well image-title image" id="title-{{ forloop.counter }}">{{ image.uid }}</p>
+        <div class="image-box image" id="image-{{ forloop.counter }}">
+            <a href="{{ image.get_url }}" target="_blank">
+                <img src="{{ image.get_url }}">
+            </a>
+        </div>
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+    <h5 id='texts' class="showing section-title">Texts</h5>
+    {% for text in entity.text_entity.all %}
+        <div class="image-box text" id="text-{{ forloop.counter }}">
+            <a href="{{ text.get_url }}" target="_blank">
+                {{ text.uid }}
+            </a>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+
 {% endblock %}
 {% block scripts %}
+{% include "style/scroll_top.html" %}
+
 <script src="{% static "js/cookie-token.js" %}"></script>
 <script>
 $(document).ready(function() {
 
+    $("#images").click(function(){
+        if ($(this).hasClass('hiding')){
+            $('.image').show();
+            $(this).addClass('showing');
+            $(this).removeClass('hiding');
+        } else {
+            $('.image').hide();
+            $(this).addClass('hiding');
+            $(this).removeClass('showing');
+        }
+    })
+
+    $("#texts").click(function(){
+        if ($(this).hasClass('hiding')){
+            $('.text').show();
+            $(this).addClass('showing');
+            $(this).removeClass('hiding');
+        } else {
+            $('.text').hide();
+            $(this).addClass('hiding');
+            $(this).removeClass('showing');
+        }
+    })
+
+    $('.text-title').click(function(){
+        var div = "#" + $(this).attr('id').replace('text-title','text')
+        console.log(div)
+        $(div).toggle();
+    })
+
+    $('.image-title').click(function(){
+        var div = "#" + $(this).attr('id').replace('title','image')
+        console.log(div)
+        $(div).toggle();
+    })
 
     // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();

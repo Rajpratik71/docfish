@@ -271,6 +271,15 @@ class Image(models.Model):
     class Meta:
         app_label = 'main'
 
+    def is_pdf(self):
+        if hasattr(self,'imagelink'):
+            if self.imagelink.url.endswith('pdf'):
+                return True
+        else:
+            if self.original.url.endswith('pdf'):
+                return True
+        return False
+
 
     def get_url(self):
         if hasattr(self,'imagelink'):
@@ -416,6 +425,7 @@ class ImageAnnotation(models.Model):
 # Texts ###############################################################################################
 #######################################################################################################
 
+
 class Text(models.Model):
     '''A "text" object is broadly a parent class that holds a chunk of text, 
        namely the original (raw) text content, and then markups of it.
@@ -428,6 +438,19 @@ class Text(models.Model):
     def get_absolute_url(self):
         return_cid = self.id
         return reverse('text_details', args=[str(return_cid)])
+
+    def get_url(self):
+        if hasattr(self,'textlink'):
+            return self.textlink.original
+        else:
+            return self.original
+
+    def get_text(self):
+        if hasattr(self,'textlink'):
+            response = requests.get(self.textlink.original)
+            return response.text
+        else:
+            return self.original
 
     def __str__(self):
         return "%s" %(self.uid)

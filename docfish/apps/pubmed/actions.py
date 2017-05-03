@@ -67,11 +67,11 @@ def add_papers(request,cid):
                 new_pmids.append(pmid)
 
             # Add to collection (NOTE this will eventually be a task
-            add_storage_articles(pmids=new_pmids,
-                                 cid=collection.id)
-            #add_storage_articles.apply_async(kwargs={'pmids':new_pmids,'cid':collection.id})
+            add_storage_articles.apply_async(kwargs={'pmids':new_pmids,'cid':collection.id})
 
-            response_data = {'result':new_pmids}
+            response_data = {'result':new_pmids,
+                             'message':'Your task has been added to the queue for processing.'}
+
             return JsonResponse(response_data)
 
     return JsonResponse({"hakuna": "matata"})

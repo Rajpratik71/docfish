@@ -52,10 +52,10 @@ input {
        
 
 <ul class="nav nav-pills" role="tablist" style="background-color:dodgerblue;border-radius:3px;padding:10px">
-  <li style="padding:5px"><button class="btn btn-primary btn-sm" data-toggle="pill" role="pill" style="color:white" href="#currentlabel">Active Labels</button></li>
-  <li style="padding:5px"><button class="btn btn-primary btn-sm" data-toggle="pill"  role="pill" href="#newlabel" style="color:white">Add New Label</button></li>
+  <li style="padding:5px"><button class="btn btn-default btn-sm" data-toggle="pill" role="pill" style="color:white" href="#currentlabel">Active Labels</button></li>
+  <li style="padding:5px"><button class="btn btn-default btn-sm" data-toggle="pill"  role="pill" href="#newlabel" style="color:white">Add New Label</button></li>
   {% if labels %}
-  <li style="padding:5px"><button class="btn btn-primary btn-sm" data-toggle="pill"  role="pill" href="#existinglabel" style="color:white">Select from Existing</button></li>
+  <li style="padding:5px"><button class="btn btn-default btn-sm" data-toggle="pill"  role="pill" href="#existinglabel" style="color:white">Select from Existing</button></li>
   {% endif %}
 </ul>
 
@@ -99,14 +99,14 @@ input {
             {% csrf_token %}
 
             <div class="md-form input-group" style="padding-top:40px; padding-bottom:20px">
-                <input type="text" class="form-control" name="annotation_name" style="width:300px" placeholder="DISEASE_PRESENT" aria-describedby="labelname">
+                <input type="text" class="form-control" name="annotation_name" style="width:300px" placeholder="LABEL_NAME" aria-describedby="labelname" required>
                 <span class="input-group-addon" id="labelname" style="float:left;width: 60px;">_label</span>
             </div>
 
             <h4 title="You can click the + to add more options, or x to remove">What are the options or choices for this label?</h4>
             <ul class="list-group lgroup" id="label_list">
                 <li class="list-group-item lgroup-item">
-                    <input type="text" class="form-control" name="annotation_label_1" placeholder="PRESENT">
+                    <input type="text" class="form-control" name="annotation_label_1" placeholder="LABEL_OPTION" required>
                     <button title="remove this option from the label" type='button' class="remove_label btn btn-danger btn-sm"><i class="fa fa-close"></i></button>
                 </li>
             </ul>
@@ -167,7 +167,7 @@ $(document).ready(function(){
    // Add a row for a new label when the user clicks
    $('#add_label').click(function(){
        var number = 1 + Math.floor(Math.random() * 10000);
-       var template = '<li class="list-group-item lgroup-item"><input type="text" class="form-control" name="annotation_label_' + number + '" placeholder="PRESENT"><button type="button" class="remove_label btn btn-danger btn-sm"><i class="fa fa-close"></i></button></li>'
+       var template = '<li class="list-group-item lgroup-item"><input type="text" class="form-control" name="annotation_label_' + number + '" placeholder="LABEL_OPTION" required><button type="button" class="remove_label btn btn-danger btn-sm"><i class="fa fa-close"></i></button></li>'
        $("#label_list").append(template)  
    })
 

@@ -62,8 +62,9 @@ def login(request):
     #context = {'request': request, 'user': request.user}
     #context = RequestContext(request,context)
     #return render_to_response('social/login.html', context_instance=context)
-    return redirect('collections')
-
+    if request.user.is_authenticated():
+        return redirect('collections')
+    return render(request,'social/login.html')
 
 @login_required(login_url='/')
 def home(request):

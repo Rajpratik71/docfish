@@ -1,10 +1,5 @@
 from django.core.files import File
-from docfish.apps.main.models import (
-    Collection,
-    Entity,
-    Image,
-    Text
-)
+from docfish.apps.main.models import *
 
 import tempfile
 import json
@@ -44,8 +39,7 @@ def import_structures(structures,collection):
                 for entity in entities:
                     if "entity" in entity:
                         entity_id = os.path.basename(entity['entity']['id'])
-                        new_entity,created = Entity.objects.get_or_create(uid=entity_id,
-                                                                          collection=collection)
+                        new_entity,created = Entity.objects.get_or_create(uid=entity_id)
                         
                         if "metadata" in entity['entity']:
                             metadata = json.loads(open(entity['entity']['metadata'],'r'))
@@ -63,6 +57,8 @@ def import_structures(structures,collection):
                         entity = update_entity(entity=new_entity,
                                                images=images,
                                                texts=texts)
+                        collection.entity_set.add(new_entity)
+    collection.save()
     return collection
 
 
@@ -84,8 +80,8 @@ def update_entity(entity,images=None,texts=None):
 
             # if it's an overlay, skip it.
             if not re.search('overlay',image_uid):
-                new_image,created = Image.objects.get_or_create(uid=image_uid,
-                                                                entity=entity)
+                new_image,created = ImageFile.objects.get_or_create(uid=image_uid,
+                                                                    entity=entity)
                 if created == True:
                      new_image.save()
                 with open(image_file,'rb') as filey:
@@ -105,9 +101,9 @@ def update_entity(entity,images=None,texts=None):
             text_id = os.path.basename(text_file)
             with open(text_file,'r') as filey:
                 content = filey.read()
-            new_text,created = Text.objects.get_or_create(uid=text_id,
-                                                          original=content,
-                                                          entity=entity)
+            new_text,created = TextFile.objects.get_or_create(uid=text_id,
+                                                              original=content,
+                                                              entity=entity)
             if "metadata" in text:
                 metadata = json.load(open(text['metadata'],'r'))
                 new_text.metadata = metadata

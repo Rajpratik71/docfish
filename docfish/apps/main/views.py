@@ -510,7 +510,7 @@ def create_label(request,cid,lid=None):
                 if name != None:
                     for key in request.POST.keys():
                         if re.search('annotation_label',key):
-                            new_label = request.POST.get(key)
+                            new_label = request.POST.get(key).upper()
                             allowed_annot,created = Annotation.objects.get_or_create(name=name,
                                                                                      label=new_label)                       
                             if created == True:
@@ -990,7 +990,7 @@ def collection_activate(request,cid,fieldtype=None):
                 # For fieldtype "image_annotation" and "text_annotation" the user needs labels
                 if fieldtype in ['image_annotation','text_annotation']:
                     if collection.status[fieldtype]['active'] is False and collection.allowed_annotations.count() == 0:
-                        message.info(request,"You must create labels before using annotation.")
+                        messages.info(request,"You must create labels before using annotation.")
                         return view_label(request,collection.id)
 
                 # Otherwise, let them freely change it

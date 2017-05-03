@@ -140,15 +140,22 @@ def parse_journal(article):
 
 def parse_title(article):
     if 'article-title' in article['front']['article-meta']:
-        return article['front']['article-meta']['article-title']
+        title = article['front']['article-meta']['article-title']
     else:
-        return article['front']['article-meta']['title-group']['article-title']
+        title = article['front']['article-meta']['title-group']['article-title']
+    if isinstance(title,dict):
+        if "#text" in title:
+            title = title['#text']
+    return title
 
 
 def parse_id(article,id_name=None):
     if id_name is None:
         id_name = 'pmc'
-    return [x['#text'] for x in article['front']['article-meta']['article-id'] if x['@pub-id-type']==id_name][0]
+    meta = article['front']['article-meta']['article-id']
+    if isinstance(meta,dict):
+        meta = [meta]
+    return [x['#text'] for x in meta if x['@pub-id-type']==id_name][0]
 
 
 def parse_abstract(article):
