@@ -8,12 +8,18 @@
 <style>
 .som_text {
   text-rendering: optimizeLegibility;
-  cursor: e-resize;
   border-radius:5px;
   margin-top:5px;
   padding:0px 20px 0px 20px;
   font-size:16px;
   line-height:1.5;
+}
+pre {
+    white-space: -moz-pre-wrap; /* Mozilla, supported since 1999 */
+    white-space: -pre-wrap; /* Opera */
+    white-space: -o-pre-wrap; /* Opera */
+    white-space: pre-wrap; /* CSS3 - Text module (Candidate Recommendation) http://www.w3.org/TR/css3-text/#white-space */
+    word-wrap: break-word; /* IE 5.5+ */
 }
 article-meta {
   display:none;
@@ -79,10 +85,10 @@ ref-list {
 <div class="row">
     <div class="col-md-12">
 
-        {% if text.entity.metadata.TYPE == "article" %}
-        <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight" style="cursor:e-resize">{{ text.original | safe  }}</pre></p>
+        {% if text.is_xml %}
+        <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ text.get_text | safe  }}</pre></p>
         {% else %}
-        <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.original }}</p>
+        <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text }}</p>
         {% endif %}
     </div>
 </div>

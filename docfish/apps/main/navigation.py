@@ -30,13 +30,13 @@ from random import choice
 # Collection Level Selection (Images)
 #############################################################################################
 
-def get_contenders(collection,active=True,get_images=True):
+def get_contenders(collection,get_images=True):
     '''get contenders will return contender (images or text) across a set of entities.
     :param collection: the collection to get entities from
     :param active: return active or inactive (default active)
     :param get_images: if true, return images. Else, return text
     '''
-    active = collection.entity_set.filter(active=active)
+    active = collection.entity_set.all()
     contenders = []
     for entity in active:
         if get_images == True:
@@ -54,7 +54,7 @@ def get_next_to_markup(user,collection,get_images=True):
     :param collection: the collection to use
     :param get_images: when True, filter to ImageMarkup. Otherwise will return text.
     '''
-    contenders = get_contenders(collection,active=True,get_images=get_images)
+    contenders = get_contenders(collection,get_images=get_images)
 
     # Do we want image or text markups?
     if get_images == True:
@@ -93,7 +93,7 @@ def get_next_to_annotate(user,collection,get_images=True):
     '''get next to annotate will first return images for entities that a user has not seen,
     and then a random selection
     '''
-    contenders = get_contenders(collection,active=True,get_images=get_images)
+    contenders = get_contenders(collection,get_images=get_images)
 
     # Do we want image or text markups?
     if get_images == True:

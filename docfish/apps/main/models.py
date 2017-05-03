@@ -434,6 +434,15 @@ class Text(models.Model):
     entity = models.ForeignKey(Entity,related_name="text_entity",related_query_name="text_entity")
     metadata = JSONField(default={})
     tags = TaggableManager()
+
+    def is_xml(self):
+        if self.get_url().endswith('xml'):
+            return True
+        for tag in self.tags:
+            if tag.name == "xml":
+                return True
+        return False
+
  
     def get_absolute_url(self):
         return_cid = self.id
