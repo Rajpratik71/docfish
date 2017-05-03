@@ -89,4 +89,7 @@ urlpatterns = [
     url(r'^collections/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/describe$',main_views.describe_text,name='describe_text'),
     url(r'^collections/(?P<cid>\d+)/text/(?P<uid>.+?)/markup$',main_views.markup_text,name='markup_text'),
 
+    # Flag Images and Text
+    url(r'^actions/images/(?P<uid>.+?)/flag$',actions.flag_image,name='flag_image'),
+
 ]

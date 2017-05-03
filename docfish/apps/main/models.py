@@ -86,6 +86,9 @@ PRIVACY_CHOICES = ((False, 'Public (The collection will be accessible by anyone 
                    (True, 'Private (The collection will be not listed. It will be viewable only by owners and contributors'))
 
 
+ACTIVE_CHOICES = ((False, 'Inactive. The object is not shown to the user in standard views.'),
+                  (True, 'Active. The object is shown to the user.'))
+
 # Each collection owner has the ability to share an annotation portal page, with
 # custom instructions and links for each task. By default, all are active, with no
 # instruction.
@@ -263,6 +266,9 @@ class Image(models.Model):
     entity = models.ForeignKey(Entity,related_name="image_entity",related_query_name="image_entity")
     slug = models.SlugField(max_length=500, blank=True, null=True)
     metadata = JSONField(default={})
+    active = models.BooleanField(choices=ACTIVE_CHOICES, 
+                                  default=True,
+                                  verbose_name="active for annotation and markup")
     tags = TaggableManager()
 
     def get_label(self):

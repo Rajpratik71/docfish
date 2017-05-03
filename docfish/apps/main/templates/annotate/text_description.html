@@ -30,25 +30,25 @@ ref-list{
 
 <div class="row">
     <div class="col-md-6">
-        {% if text.entity.metadata.TYPE == "article" %}
-        <p class="som_text">{{ text.original | safe  }}</p>
+        {% if text.is_xml %}
+        <p class="som_text">{{ text.get_text | safe  }}</p>
         {% else %}
-        <p class="som_text">{{ text.original }}</p>
+        <p class="som_text">{{ text.get_text }}</p>
         {% endif %}
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6" style="padding-top:40px">
+        <div id="description_box">
         <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_text' collection.id text.id %}">
-             <input type="hidden" name="image_id" id="{{ image.id }}" value="{{ image.id }}">  
              <div class="form-group">
-                 <textarea class="form-control" rows="25" id="description" name="description">{{ description.description }}</textarea>
+                 <textarea class="form-control" rows="100" id="description" name="description">{{ description.description }}</textarea>
              </div>
             {% csrf_token %}
         </form>
-
         <div>
             <button class="btn btn-primary" id="submit" style="margin-left:0px">Submit</button>
             <button id="skip_button" class="btn btn-primary">Skip</button>
         </div> 
+        </div>
     </div>
 </div>
 <div class="row">
@@ -56,9 +56,12 @@ ref-list{
          <span style="color:#CCC">{{ text.uid }}</span>
     </div>
 </div>
+
+{% include "collections/return_to_collection.html" %}
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static "js/jquery.sticky.js" %}"></script>
 <script type='text/javascript'>
 $(function() {
 
@@ -66,6 +69,8 @@ $(function() {
        $("form").submit();
    });
  
+    $("#description_box").sticky({topSpacing:20});
+
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
 

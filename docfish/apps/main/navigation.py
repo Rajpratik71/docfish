@@ -74,7 +74,7 @@ def get_next_to_describe(user,collection,get_images=True):
     '''get next to describe will first return images for entities that a user has not seen,
     and then a random selection
     '''
-    contenders = get_contenders(collection,active=True,get_images=get_images)
+    contenders = get_contenders(collection,get_images=get_images)
 
     # Do we want image or text markups?
     if get_images == True:

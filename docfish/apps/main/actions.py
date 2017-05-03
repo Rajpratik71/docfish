@@ -67,6 +67,28 @@ import re
 
 media_dir = os.path.join(BASE_DIR,MEDIA_ROOT)
 
+###############################################################################################
+# Collections #################################################################################
+###############################################################################################
+
+
+@login_required
+def flag_image(request,uid):
+    '''update_entity_status will change the status of an entity, usually from active to inactive
+    or vice versa
+    :param eid: the unique id of the entity to change
+    '''
+    image = get_image(uid)
+
+    if request.method == 'POST':
+        image.active = not image.active
+        image.save()
+        response_data = {'result':'Image flag change status successfully!',
+                         'status':image.active }
+
+        return JsonResponse(response_data)
+    return JsonResponse({"Unicorn poop cookies...": "I will never understand the allure."})
+
 
 ###############################################################################################
 # Collections #################################################################################

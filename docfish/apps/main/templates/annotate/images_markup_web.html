@@ -57,8 +57,9 @@
      <span id="tools"></span>
      <span style="padding-left:320px;margin-top:20px">
          <button id="clear_button" class="btn btn-xs btn-warning">Clear</button>
-         <button id="save_button" class="btn btn btn-xs btn-primary">Save</button>
-         <button id="skip_button" class="btn btn btn-xs btn-primary">Skip</button>
+         <button id="save_button" class="btn btn btn-xs btn-info">Save</button>
+         <button id="skip_button" class="btn btn btn-xs btn-info">Skip</button>
+         <button id="flag_button" class="btn btn btn-xs btn-danger">Mark as Bad</button>
     </span>
 </div>
 
@@ -78,8 +79,8 @@
         </div>
     </div>
      <div style="padding-left:60px">
-         <span style="color:#CCC;padding-right:200px">{{ image.uid }}</span>
-         <button id="preview_button" class="btn btn-xs btn-warning">Preview</button>
+         <span style="color:#CCC;padding-right:180px">{{ image.uid }}</span>
+         <button id="preview_button" class="btn btn-xs btn-warning">Preview Markup</button>
     </div>
 
     <!-- Hidden form to send image markup to server -->
@@ -94,9 +95,11 @@
     </form>
 
 </div>
+{% include "collections/return_to_collection.html" %}
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static "js/cookie-token.js" %}"></script>
 <script src="{% static "js/sketch.js" %}"></script>
 <script type='text/javascript'>
 $(function() {
@@ -120,8 +123,6 @@ $(function() {
    function fillColor() {
        var imageData = context.getImageData(0,0,800,700).data;
    }
-   // Lets make a f
-   
  
    //    var canvas = handle.sketch().canvas[0]
    //    imageObj.onload = context.drawImage(imageObj,0,0)
@@ -163,6 +164,34 @@ $(function() {
    $("#skip_button").click(function(){
        document.location = "{% url 'collection_markup_image' collection.id %}"
    });
+
+   // Flag a small or bad image
+   function flagImage() {
+
+        $.ajax({
+            url : "{% url 'flag_image' image.id %}", // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+
+   $("#flag_button").click(function(){
+      setTimeout(function(){
+           flagImage();
+      },500)
+   })
+
 
 </script>
 {% endblock %}

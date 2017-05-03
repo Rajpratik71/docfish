@@ -82,6 +82,11 @@
             <a href="{{ image.get_url }}" target="_blank">
                 <img src="{{ image.get_url }}">
             </a>
+            {% if image.active %}
+            <button id="flag-{{ image.id }}" class=".flag_button btn btn-sm btn-warning">Flag as Bad</button>
+            {% else %}
+            <button id="flag-{{ image.id }}" class=".flag-button btn btn-sm btn-success">Flag as Good</button>
+            {% endif %}
         </div>
         {% endif %}
     {% endfor %}
@@ -100,7 +105,7 @@
     {% endfor %}
     </div>
 </div>
-
+{% include "collections/return_to_collection.html" %}
 {% endblock %}
 {% block scripts %}
 {% include "style/scroll_top.html" %}
@@ -144,6 +149,45 @@ $(document).ready(function() {
         console.log(div)
         $(div).toggle();
     })
+
+   // Flag a small or bad image
+   function flagImage(image_id) {
+
+        $.ajax({
+            url : "/actions/images/" + image_id + "/flag",
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                var button = $("#flag-" + image_id);
+                if button.hasClass("btn-success")){
+                    button.removeClass('btn-success')
+                    button.addClass('btn-danger')
+                    button.text("Flag as Bad")
+                } else {
+                    button.addClass('btn-success')
+                    button.removeClass('btn-danger')
+                    button.text("Flag as Good")
+                }
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+
+   $(".flag_button").click(function(){
+      var image_id = $(this).attr("id").replace("flag-","")
+      setTimeout(function(){
+           flagImage(image_id);
+      },500)
+   })
+
 
     // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();
