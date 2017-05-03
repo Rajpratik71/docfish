@@ -91,5 +91,6 @@ urlpatterns = [
 
     # Flag Images and Text
     url(r'^actions/images/(?P<uid>.+?)/flag$',actions.flag_image,name='flag_image'),
+    url(r'^actions/text/(?P<uid>.+?)/flag$',actions.flag_text,name='flag_text'),
 
 ]

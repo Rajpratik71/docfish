@@ -30,19 +30,20 @@ from random import choice
 # Collection Level Selection (Images)
 #############################################################################################
 
-def get_contenders(collection,get_images=True):
+def get_contenders(collection,active=True,get_images=True):
     '''get contenders will return contender (images or text) across a set of entities.
     :param collection: the collection to get entities from
     :param active: return active or inactive (default active)
     :param get_images: if true, return images. Else, return text
     '''
-    active = collection.entity_set.all()
     contenders = []
-    for entity in active:
+    for entity in collection.entity_set.all():
         if get_images == True:
-            contenders = list(chain(contenders,entity.image_entity.exclude(tags__name="pdf")))    
+            image_set = entity.image_entity.exclude(tags__name="pdf")
+            contenders = list(chain(contenders,image_set.filter(active=active)))    
         else:
-            contenders = list(chain(contenders,entity.text_entity.exclude(tags__name="pdf")))
+            text_set = entity.text_entity.exclude(tags__name="pdf")
+            contenders = list(chain(contenders,text_set.filter(active=active)))
     return contenders
 
 

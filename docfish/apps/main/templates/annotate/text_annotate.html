@@ -12,6 +12,29 @@
   background-color:#0275d8 !important;
   border: none !important;
 }
+.som_text {
+  text-rendering: optimizeLegibility;
+  border-radius:5px;
+  padding:5px;
+  font-size:16px;
+  line-height:1.5;
+}
+pre {
+  white-space: -moz-pre-wrap; /* Mozilla, supported since 1999 */
+  white-space: -pre-wrap; /* Opera */
+  white-space: -o-pre-wrap; /* Opera */
+  white-space: pre-wrap; /* CSS3 - Text module (Candidate Recommendation) http://www.w3.org/TR/css3-text/#white-space */
+  word-wrap: break-word; /* IE 5.5+ */
+}
+article-meta {
+  display:none;
+}
+journal-meta {
+  display:none;
+}
+ref-list {
+ display:none;
+}
 </style>
 {% endblock %}
 
@@ -21,10 +44,15 @@
 
 <div class="row">
     <div class="col-md-6">
-        <p id="som_image">{{ text.original }}</p>
+        {% if text.is_xml %}
+        <p id="som_image"><pre>{{ text.get_text | safe }}</pre></p>
+        {% else %}
+        <p id="som_image">{{ text.get_text }}</p>
+        {% endif %}
     </div>
     <div class="col-md-6">
 
+        <div id="annotate_box">
         <!-- Form to send updates to server-->
         <form action="{% url 'update_text_annotation' collection.id text.id %}" method="POST" id="update_text_annotation">
         {% csrf_token %}
@@ -47,9 +75,10 @@
         </form>
 
         <div class="button-group">
-            <button id="skip_button" class="btn btn-primary"> >> </button>
+            <button id="flag_button" class="btn btn-danger">Mark As Bad</button>
+            <button id="skip_button" class="btn btn-info"> >> </button>
         </div>
-
+        </div>
         
         </div> 
     </div>
@@ -61,12 +90,19 @@
         </div>
     </div>
 </div>
+
+{% include "collections/return_to_collection.html" %}
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static "js/cookie-token.js" %}"></script>
+<script src="{% static "js/jquery.sticky.js" %}"></script>
+
 <script type='text/javascript'>
 $(function() {
+
+
+    $("#annotate_box").sticky({topSpacing:20});
 
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
@@ -163,6 +199,35 @@ $(function() {
    $("#skip_button").click(function(){
        document.location = "{% url 'collection_annotate_text' collection.id %}"
    });
+
+   // Flag a small or bad image
+   function flagText() {
+
+        $.ajax({
+            url : "{% url 'flag_text' text.id %}", // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+                document.location = "{% url 'collection_annotate_text' collection.id %}"
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+   $("#flag_button").click(function(){
+      setTimeout(function(){
+           flagText();
+      },500)
+   })
+
+
 })
 </script>
 {% endblock %}

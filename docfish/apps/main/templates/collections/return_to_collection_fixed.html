@@ -1,0 +1,28 @@
+<style>
+#returnCollection {
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: darkturquoise;
+  color: white;
+  cursor: pointer;
+  margin:15px;
+  border-radius: 10px;
+}
+
+#returnCollection:hover {
+  background-color: #555;
+}
+</style>
+
+<button onclick="returnCollection()" id="returnCollection" title="Return to Collection">Collection Portal</button>
+
+<script>
+// When the user clicks on the button, scroll to the top of the document
+function returnCollection() {
+    document.location = "{% url 'collection_start' collection.id %}"
+}
+</script>

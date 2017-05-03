@@ -439,6 +439,9 @@ class Text(models.Model):
     uid = models.CharField(max_length=250, null=False, blank=False, unique=True)
     entity = models.ForeignKey(Entity,related_name="text_entity",related_query_name="text_entity")
     metadata = JSONField(default={})
+    active = models.BooleanField(choices=ACTIVE_CHOICES, 
+                                  default=True,
+                                  verbose_name="active for annotation and markup")
     tags = TaggableManager()
 
     def is_xml(self):
