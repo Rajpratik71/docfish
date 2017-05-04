@@ -1,0 +1,40 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+{% load humanize %}
+
+{% block content %}
+{% include 'messages/message.html' %}
+{% include 'base/loader.html' %}
+<div class="row">
+    <div class="col-md-12">
+        <h3 class="title">{{ title }}</h3>
+            <main>
+                <div>
+                     {% if request.user == team.owner %}
+                     <form  class="form-horizontal" method="post" action="{% url 'add_team_collections' team.id %}" >
+                     <select multiple="multiple" name="collection_ids">
+                     {% for collection in team.contender_collections %}
+                     <option value="{{ collection.id }}">{{ collection.name }}</option>
+                     {% endfor %}
+                     </select>                     
+                     {% csrf_token %}
+                     </form>
+
+                     {% else %}
+                     <p class="alert alert-danger">How did you get here? You aren't allowed to do this.</p>                   
+                     {% endif %}
+            </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static "js/select2.min.js" %}"></script>
+<script>
+$(document).ready(function(){
+    $("#collections").select2();
+})
+</script>
+
+{% endblock %}

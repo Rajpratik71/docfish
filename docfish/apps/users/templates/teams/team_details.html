@@ -6,14 +6,19 @@
 {% include 'messages/message.html' %}
 
 <div class="row" style="display:none" id="messages">
+    {% if edit_permission %}{% if code %}
+    <div class="col-md-12">
+        <p id="message" class="alert alert-info">You have generated an invite code! Copy this in a safe place, it will only be available once.
+        
+        </p>
+    </div>
+    {% endif %}{% endif %}
     <div class="col-md-12">
         <p id="message" class="alert alert-info"></p>
     </div>
 </div>
 
 <div class="row">
-
-    <!-- Team Details -->
     <div class="col-md-8">
         <div class="card card-block"  style='padding:20px'>
             <ul class="alert alert-info">
@@ -22,6 +27,8 @@
                  <li style="margin-left:25px">Team Type: {{ team.permission }}</li>
             </ul>
 
+            <div class="row">
+            <div class="col-md-12">
             {% if request.user not in team.members.all %}
                 {% if team.permission == "institution" %}
                 <a href="{% url 'join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Join Team</button></a>
@@ -31,15 +38,18 @@
                 <a href="{% url 'join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Join Team</button></a>
                 {% endif %}
                 {% if team.permission == "invite" %}
-                <a id="request_button" href="{% url 'request_join_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Request to Join </button></a>
+                <button id="request_button" type="button" class="btn btn-default waves-effect waves-light">Request to Join</button>
                 {% endif %}
             {% else %}
                 <p class="alert alert-info">You are a member of this team.</p>
+                <a href="{% url 'leave_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Leave Team</button></a>
             {% endif %}
 
             {% if edit_permission %}
                 <a href="{% url 'edit_team' team.id %}"><button type="button" class="btn btn-default waves-effect waves-light">Edit Team</button></a>
             {% endif %}
+            </div>
+            </div>
 
      </div>
   </div>
@@ -51,11 +61,50 @@
                    {% else %}
                    <img width="250px" src="{% static 'img/docfish/docfish.png' %}" style="position:relative;top:-5px;border-radius:35px; padding-right:20px;margin-right:15px"/>
                    {% endif %}
-         <br><h4 style='text-align:right;color:666'>{{ team.name }}</h4>
+         <br><h4 style='text-align:center;color:666'>{{ team.name }}</h4>
         </div>
     </div>
 </div>
 
+<div class="row">
+    <div class="col-md-12">
+        <h4 style="padding-top:30px">Collections</h4>
+
+        {% if team.has_collections %}
+        <table id="collections" class="mdl-data-table" cellspacing="0" width="100%" style="padding-top:20px"> 
+           <thead>
+               <tr>
+                   <th>Name</th>
+                   <th>Images</th>
+                   <th>Texts</th>
+                   {% if edit_permission %}
+                   <th></th>
+                   {% endif %}
+               </tr>
+           </thead>
+           <tbody>
+           {% for collection in team.collections.all %}
+               <tr id="collection_row_{{ collection.id }}">
+                   <td>{{ collection.name }}</td>
+                   <td>{{ collection.image_set.count }}</td>
+                   <td>{{ collection.text_set.count }}</td>
+                   {% if edit_permission %}
+                   <td><button class="btn btn-danger remove_collection" id="collection_{{ collection.id }}">Remove</button></td>
+                   {% endif %}
+               </tr>
+            {% endfor %}
+           </tbody>
+       </table>
+       {% else %}
+           {% if edit_permission %}
+           <p>There are no collections in this team! Why don't you <a href="{% url 'add_team_collections' team.id %}">add some</a>?</p>
+           {% else %}
+           <p>There are no collections in this team! The owner must add them.</p>
+           {% endif %}
+       {% endif %}
+
+    </div>
+</div>
 
 <div class="row">
     <div class="col-md-12">
@@ -68,13 +117,19 @@
                <tr>
                    <th>Name</th>
                    <th>Annotations</th>
+                   {% if edit_permission %}
+                   <th></th>
+                   {% endif %}
                </tr>
            </thead>
            <tbody>
-           {% for member in team.members.all %}
-               <tr>
+            {% for member in team.members.all %}
+               <tr id="member_row_{{ member.id }}">
                    <td>{{ member.username }}</td>
                    <td>{{ annotation_counts|access:member.username }}</td>
+                   {% if edit_permission %}
+                   <td><button class="btn btn-danger remove_member" id="userid_{{ member.id }}">Remove</button></td>
+                   {% endif %}
                </tr>
             {% endfor %}
            </tbody>
@@ -106,6 +161,53 @@ $(document).ready(function(){
         ]
     } );
 
+   {% if edit_permission %}
+
+   // Flag a small or bad image
+   function removeMember(user_id) {
+
+        $.ajax({
+            url : "/teams/{{ team.id}}/remove/" + user_id, // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                $("#message").text(json['message'])
+                $("#messages").show();
+                $("#member_row_" + user_id).remove();
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+   // Flag a small or bad image
+   function removeCollection(collection_id) {
+
+        $.ajax({
+
+            url : "/teams/{{ team.id }}/collections/remove/" + collection_id, // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                $("#message").text(json['message'])
+                $("#messages").show();
+                $("#collection_row_" + collection_id).remove();
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+   {% endif %}
 
    // Flag a small or bad image
    function requestInvite() {
@@ -134,6 +236,22 @@ $(document).ready(function(){
       },500)
    })
 
+   {% if edit_permission %}
+
+   $(".remove_member").click(function(){
+      var user_id = $(this).attr("id").replace("userid_","")
+      setTimeout(function(){
+           removeMember(user_id);
+      },500)
+   })
+
+   $(".remove_collection").click(function(){
+      var collection_id = $(this).attr("id").replace("collectionid_","")
+      setTimeout(function(){
+           removeCollection(user_id);
+      },500)
+   })
+   {% endif %}
 
 
 })

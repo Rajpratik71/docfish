@@ -179,6 +179,11 @@ def view_team(request, tid, code=None):
     return render(request, "teams/team_details.html", context)
 
 
+##################################################################################
+# TEAM REQUESTS ##################################################################
+##################################################################################
+
+
 @login_required
 def join_team(request, tid, code=None):
     '''add a user to a new team, and remove from previous team
@@ -193,9 +198,15 @@ def join_team(request, tid, code=None):
     if team.permission == "institution":
         if not has_same_institution(request.user,team.owner):
             add_user = False
-            messages.info(request,'''This team is only open to users in the team owner's institution.
-                                   If you have an email associated with the institution, use the SAML institution
-                                   log in.''')
+            # A user can be invited from a different institution
+            if code is not None:
+                add_user = is_invite_valid(team, code)
+                if add_user == False:
+                    messages.info(request, "You are not from the same institution, and this code is invalid to join.")
+            else:
+                messages.info(request,'''This team is only open to users in the team owner's institution.
+                                         If you have an email associated with the institution, use the SAML institution
+                                         log in.''')
             
     elif team.permission == "invite":
         if code is None:
@@ -216,7 +227,31 @@ def join_team(request, tid, code=None):
     return HttpResponseRedirect(team.get_absolute_url())
 
 
-# Actions (JSON responses)
+def add_collections(request,tid):
+    team = get_team(tid)
+    if request.user == team.owner:
+        if request.method == "POST":
+            collection_ids = request.POST.get("collection_ids",None)
+            if collection_ids is not None:
+                pickle.dump(collection_ids,open('collection_ids.pkl','wb'))
+                # Add collections
+                #for collection_id in collection_ids:
+                #    team.add_collection(collection_id)
+                #team.save()
+                messages.info(request,"%s collections added to team!" %(len(collection_ids)))
+
+        context = {"team": team}
+        return render(request, "teams/add_team_collections.html", context)
+
+    messages.info(request, "Only team owners can edit teams.")
+    return HttpResponseRedirect(team.get_absolute_url())
+
+
+##################################################################################
+# TEAM ACTIONS ###################################################################
+##################################################################################
+
+# Membership
 
 @login_required
 def request_membership(request,tid):
@@ -239,6 +274,33 @@ def request_membership(request,tid):
     return JsonResponse({"message":message})
 
 
+@login_required
+def leave_team(request,tid):
+    team = get_team(tid)
+    if request.user in team.members.all():
+        team.members.remove(member)
+        team.save()        
+        message = "You has been removed from %s" %(team.name)
+    else:
+        message = "You are not a part of %s" %(team.name)
+    return redirect('teams')
+
+
+@login_required
+def remove_member(request,tid,uid):
+    team = get_team(tid)
+    member = get_user(uid)
+    if request.user == team.owner:
+        if member in team.members.all():
+            team.members.remove(member)
+            team.save()        
+            message = "%s has been removed from the team" %member.username
+        else:
+            message = "%s is not a part of this team." %member.username
+    else:
+        message = "You are not allowed to perform this action."
+    return JsonResponse({"message":message})
+
 
 @login_required
 def generate_team_invite(request,tid):
@@ -254,6 +316,19 @@ def generate_team_invite(request,tid):
 
     messages.info(request,"You do not have permission to invite to this team.")
     return HttpResponseRedirect(team.get_absolute_url())
+
+
+# Collections
+
+def remove_collection(request,tid,cid):
+    team = get_team(tid)
+    if request.user == team.owner:
+        team.remove_collection(cid)    
+        message = "Collection successfully removed."
+    else:
+        message = "You are not allowed to perform this action."
+    return JsonResponse({"message":message})
+
 
 
 # Python social auth extensions

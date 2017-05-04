@@ -42,8 +42,14 @@ urlpatterns = [
     url(r'^teams/(?P<tid>.+?)/view$', user_views.view_team, name="team_details"),
     url(r'^teams/(?P<tid>.+?)/edit$', user_views.edit_team, name="edit_team"),
     url(r'^teams/(?P<tid>.+?)/join$', user_views.join_team, name="join_team"),
-    url(r'^teams/(?P<tid>.+?)/request/join$', user_views.request_membership, name="request_join_team"),
-    url(r'^teams/new$',user_views.edit_team,name='new_team'),
+    url(r'^teams/(?P<tid>.+?)/(?P<code>.+?)/join$', user_views.join_team, name="join_team"),
+    url(r'^teams/(?P<tid>.+?)/remove/(?P<uid>.+?)$', user_views.remove_member, name="remove_member"),
+    url(r'^teams/(?P<tid>.+?)/request/join$', user_views.request_membership, name="request_membership"),
+    url(r'^teams/(?P<tid>.+?)/request/leave$', user_views.leave_team, name="leave_team"),
     url(r'^teams/new$',user_views.edit_team,name='new_team'),
 
+    # Add and remove collections
+    url(r'^teams/(?P<tid>.+?)/collections/remove/(?P<cid>.+?)$', user_views.remove_collection, name="remove_collection"),
+    url(r'^teams/(?P<tid>.+?)/collections/add$', user_views.add_collections, name="add_team_collections"),
+ 
 ]

@@ -68,7 +68,7 @@ TEAM_TYPES = (('invite', 'Invite only. The user must be invited by the team admi
               ('institution', 'Institution only. Any user with the same institution as the creator can join'),
               ('open','Open. Anyone can join the team without asking.'))
 
-REQUEST_OPTIONS = (("denied", 'Request has not been granted.'),
+REQUEST_CHOICES = (("denied", 'Request has not been granted.'),
                    ("pending", 'Request is pending.'),
                    ("granted", 'Request has been granted'),)
 
@@ -82,10 +82,11 @@ class Team(models.Model):
     institutions, however each user is only allowed to join one team.
     '''
     name = models.CharField(max_length=250, null=False, blank=False,verbose_name="Team Name")
-    owner = models.ForeignKey(User, blank=False, verbose_name="Team owner and adminstrator.")
+    owner = models.ForeignKey(User, blank=True, verbose_name="Team owner and adminstrator.")
     created_at = models.DateTimeField('date of creation', auto_now_add=True)
     updated_at = models.DateTimeField('date of last update', auto_now=True)
     team_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)    
+    collections = models.ManyToManyField(Collection,blank=True)
     metrics_updated_at = models.DateTimeField('date of last calculation of rank and annotations',blank=True,null=True)
     ranking = models.PositiveIntegerField(blank=True,null=True,
                                           verbose_name="team ranking based on total number of annotations, calculated once daily.")
@@ -111,6 +112,41 @@ class Team(models.Model):
 
     def get_absolute_url(self):
         return reverse('team_details', args=[str(self.id)])
+
+    def contender_collections(self):
+        owner_collections = Collection.objects.filter(owner=self.owner)
+        public_collections = Collection.objects.exclude(owner=self.owner,private=False)
+        return list(chain(owner_collections,public_collections))
+       
+    def add_collection(self,cid):
+        collection = None
+        try:
+            collection = Collection.objects.get(id=cid)
+            if collection not in self.collections.all():
+                self.collections.add(collection)
+                self.save()
+        except:
+            pass
+        return collection
+
+
+    def remove_collection(self,cid):
+        collection = None
+        try:
+            collection = Collection.objects.get(id=cid)
+            if collection in self.collections.all():
+                self.collections.remove(collection)
+                self.save()
+        except:
+            pass
+        return collection
+
+
+    def has_collections(self):
+        if self.collections.count() > 0:
+            return True
+        return False
+
 
     def get_label(self):
         return "users"
