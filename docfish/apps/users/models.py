@@ -39,6 +39,7 @@ from docfish.apps.main.models import (
 
 from docfish.settings import MEDIA_ROOT
 
+from itertools import chain
 import collections
 import operator
 import os

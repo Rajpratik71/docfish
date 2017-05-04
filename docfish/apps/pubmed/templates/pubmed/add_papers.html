@@ -36,7 +36,7 @@ function savePapers(pmids,collection_id) {
             $("#result_message").text("");
             var message = json['message']
             $("#result_message").append('<p class="alert alert-success">' + message + '</p>')
-            $("#result_message").append('<a href="/collections/' + collection_id + '"><button class="btn btn-secondary btn-sm">View Collection<button/></a>')
+            $("#result_message").append('<a href="/collections/' + collection_id + '"><button class="btn btn-secondary btn-sm">View Collection</button></a>')
         },
 
         error : function(xhr,errmsg,err) {

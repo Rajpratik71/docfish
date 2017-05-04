@@ -2,7 +2,9 @@
 {% load crispy_forms_tags %}
 {% load staticfiles %}
 {% load humanize %}
-
+{% block css %}
+<link href="{% static "css/select2.min.css" %}"/>
+{% endblock %}
 {% block content %}
 {% include 'messages/message.html' %}
 {% include 'base/loader.html' %}
@@ -12,6 +14,8 @@
             <main>
                 <div>
                      {% if request.user == team.owner %}
+
+                     {% if team.contender_collections %}
                      <form  class="form-horizontal" method="post" action="{% url 'add_team_collections' team.id %}" >
                      <select multiple="multiple" name="collection_ids">
                      {% for collection in team.contender_collections %}
@@ -20,7 +24,9 @@
                      </select>                     
                      {% csrf_token %}
                      </form>
-
+                     {% else %}
+                     <p>DocFish doesn't have any collections yet! Why don't you <a href="{% url 'new_collection' %}">make one?</a>
+                     {% endif %}
                      {% else %}
                      <p class="alert alert-danger">How did you get here? You aren't allowed to do this.</p>                   
                      {% endif %}
