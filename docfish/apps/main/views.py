@@ -1012,7 +1012,7 @@ def clear_text_annotations(request,uid,tid=None):
 
 @login_required
 def update_text_annotation(request,uid,tid=None):
-    '''update_image_annotation is the view to update an annotation when it changes. 
+    '''update_text_annotation is the view to update an annotation when it changes. 
     It should return a JSON response.
     '''
     text = Text.objects.get(id=uid)

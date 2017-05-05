@@ -77,7 +77,15 @@
     <script type="text/javascript" src="{% static "js/toastr.min.js"%}"></script>
     <script type="text/javascript" src="{% static "js/functions.js"%}"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
-
+    <script>
+    var TogetherJSConfig_siteName = "DocFish";
+    var TogetherJSConfig_toolName = "Collaborate";
+    var TogetherJSConfig_youtube = true;
+    var TogetherJSConfig_inviteFromRoom = true;
+    // var TogetherJSConfig_cloneClicks = ".tab"
+    // note - need to figure out way to sync movement through annotation?
+    </script>
+    <script src="{% static "js/togetherjs-min.js" %}"></script>
 <script>
 $(document).ready(function(){
    $('.dropdown-toggle').dropdown()
