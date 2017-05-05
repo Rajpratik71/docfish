@@ -85,9 +85,6 @@ var params = {
     </div>
     <div class="col-md-6">
 
-        <!-- Form to send updates to server-->
-        <form action="{% url 'update_image_annotation' collection.id image.id %}" method="POST" id="update_image_annotation">
-
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>
@@ -104,9 +101,6 @@ var params = {
                  </div>
              </fieldset>
         {% endfor %}
-
-        </form>
-
 
         <div>
             <button id="skip_button" class="btn btn-info"> >> </button>
@@ -134,7 +128,13 @@ $(function() {
          }
         
         if (e.which == 39) { 
+
+           {% if team %}
+           document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
+           {% else %}
            document.location = "{% url 'collection_annotate_image' collection.id %}"
+           {% endif %}
+
            e.preventDefault();
            return false;
         }
@@ -150,10 +150,21 @@ $(function() {
             
         }).then(function(annotations){
             console.log(annotations);
+
+            {% if team %}
+            var team_id = "{{ team.id }}"
+            {% endif %}
+
             $.ajax({
                 url : "{% url 'update_image_annotation' image.id %}", // the endpoint
                 type : "POST", // http method
-                data : { annotations: annotations }, // data sent with the post request
+
+                {% if team %}
+                data : { annotations: annotations,
+                         team_id: team_id },
+                {% else %}
+                data : { annotations: annotations },
+                {% endif %}
 
                 // handle a successful response
                 success : function(json) {
@@ -175,9 +186,17 @@ $(function() {
     // Function to clear annotations
     function clearAnnotations() {
 
+        {% if team %}
+        var team_id = "{{ team.id }}"
+        {% endif %}
+
         $.ajax({
             url : "{% url 'clear_image_annotations' collection.id image.id %}", // the endpoint
             type : "POST", // http method
+
+            {% if team %}
+            data: {team_id: team_id},
+            {% endif %}
 
             // handle a successful response
             success : function(json) {
@@ -217,9 +236,12 @@ $(function() {
 
 
    $("#skip_button").click(function(){
+       {% if team %}
+       document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
+       {% else %}
        document.location = "{% url 'collection_annotate_image' collection.id %}"
+       {% endif %}
    });
-
 
    // Flag a small or bad image
    function flagImage() {
@@ -232,7 +254,12 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                {% if team %}
+                document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
+                {% else %}
                 document.location = "{% url 'collection_annotate_image' collection.id %}"
+                {% endif %}
+ 
             },
 
             // handle a non-successful response

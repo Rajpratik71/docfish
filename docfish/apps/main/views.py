@@ -766,15 +766,16 @@ def collection_annotate_image(request,cid,tid=None):
 
 
 @login_required
-def clear_image_annotations(request,uid):
+def clear_image_annotations(request,uid,tid=None):
     '''clear all annotations for a specific image'''
 
     image = Image.objects.get(id=uid)
-    return clear_annotations(request,image)
+    team = get_team(tid,return_none=True)
+    return clear_annotations(request,instance=image,team=team)
 
 
 @login_required
-def update_image_annotation(request,uid):
+def update_image_annotation(request,uid,tid=None):
     '''update_image_annotation is the view to update an annotation when it changes. 
     It should return a JSON response.
     '''
@@ -845,6 +846,7 @@ def markup_text(request,cid,uid):
 
 
     # If it's a post, save the markup
+    #TODO: what are we saving?
     if request.method == "POST": 
 
         # Retrieve base64 encoded data
@@ -1000,20 +1002,22 @@ def collection_annotate_text(request,cid,tid=None):
 
 
 @login_required
-def clear_text_annotations(request,uid):
+def clear_text_annotations(request,uid,tid=None):
     '''clear all annotations for a specific image'''
 
     text = Text.objects.get(id=uid)
-    return clear_annotations(request,text)
+    team = get_team(tid,return_none=True)
+    return clear_annotations(request,instance=text,team=team)
 
 
 @login_required
-def update_text_annotation(request,uid):
+def update_text_annotation(request,uid,tid=None):
     '''update_image_annotation is the view to update an annotation when it changes. 
     It should return a JSON response.
     '''
     text = Text.objects.get(id=uid)
-    return update_annotations(request,instance=text)
+    team = get_team(tid,return_none=True)
+    return update_annotations(request,instance=text,team=team)
 
 
 ######################################################################################

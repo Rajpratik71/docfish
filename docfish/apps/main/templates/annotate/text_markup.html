@@ -105,15 +105,6 @@ ref-list {
     </div>
 </div>
 
-    <!-- Hidden form to send image markup to server -->
-    <form id="save_markup" class="form-horizontal" method="post" action="{% url 'markup_text' collection.id text.id %}" >
-        <input type="hidden" name="pngdata" id="hidden_image">  
-        {% if missing_base %}
-        <input type="hidden" name="pngdatabase" id="base_image">  
-        {% endif %}
-        {% csrf_token %}
-    </form>
-
 </div>
 {% include "collections/return_to_collection.html" %}
 {% endblock %}
@@ -135,7 +126,11 @@ $(function() {
          }
         
         if (e.which == 39) { 
+           {% if team %}
+           document.location = "{% url 'collection_markup_text' collection.id team.id %}"
+           {% else %}
            document.location = "{% url 'collection_markup_text' collection.id %}"
+           {% endif %}
            e.preventDefault();
            return false;
         }
@@ -188,11 +183,19 @@ $(function() {
    });
 
     function pushMarkup(serialized) {
-  
+        {% if team %}
+        var team_id = "{{ team.id }}" 
+        {% endif %}
+
         $.ajax({
             url : "{% url 'update_text_markup' collection.id text.id %}", // the endpoint
             type : "POST", // http method
+            {% if team %}
+            data : { markup: serialized,
+                     team_id:team_id },
+            {% else %}
             data : { markup: serialized }, // data sent with the post request
+            {% endif %}
 
             success : function(json) {
                 console.log(json); // log the returned json to the console
@@ -223,7 +226,11 @@ $(function() {
    })
 
    $("#skip_button").click(function(){
+       {% if team %}
+       document.location = "{% url 'collection_markup_text' collection.id team.id %}"
+       {% else %}
        document.location = "{% url 'collection_markup_text' collection.id %}"
+       {% endif %}
    });
 
    // Flag a small or bad image
@@ -237,7 +244,11 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                {% if team %}
+                document.location = "{% url 'collection_markup_text' collection.id team.id %}"
+                {% else %}
                 document.location = "{% url 'collection_markup_text' collection.id %}"
+                {% endif %}
             },
 
             // handle a non-successful response
