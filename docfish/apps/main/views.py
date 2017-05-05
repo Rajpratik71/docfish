@@ -57,7 +57,8 @@ from docfish.apps.main.actions import (
 )
 
 from docfish.apps.users.utils import (
-    get_user
+    get_user,
+    get_team
 )
 
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -141,6 +142,7 @@ def has_collection_edit_permission(request,collection):
 # Supporting function
 def has_collection_annotate_permission(request,collection):
     '''owner and annotators have annotate permission (not contributors)'''
+    from docfish.apps.users.models import Team
     if request.user == collection.owner:
         return True
 
@@ -548,9 +550,10 @@ def remove_label(request,cid,lid):
 # Markup
 
 @login_required 
-def collection_markup_image(request,cid):
+def collection_markup_image(request,cid,tid=None):
     '''collection_markup_image will return a new image to markup
     '''
+    team = get_team(tid,return_none=True)
     collection = get_collection(cid)
 
     if collection.private == True:
@@ -561,13 +564,15 @@ def collection_markup_image(request,cid):
 
 
     if collection.has_images():
-        next_image = get_next_to_markup(user=request.user,collection=collection)
+        next_image = get_next_to_markup(user=request.user,collection=collection,team=team)
         if next_image == None:
             messages.info(request,"You have finished marking up the images in this collection. Awesome!") 
             return HttpResponseRedirect(collection.get_absolute_url())
 
         # Has the user marked up the image previously?
-        markup = get_user_markup(next_image,request.user)
+        markup = get_markup(instance=next_image,
+                            user=request.user,
+                            team=team)
 
         # Has the image base been saved?
         missing_base = not has_image_base(next_image)
@@ -578,7 +583,8 @@ def collection_markup_image(request,cid):
                    "markup": markup,
                    "collection":collection,
                    "missing_base":missing_base,
-                   "nosidebar":"harrypottah"}
+                   "nosidebar":"harrypottah",
+                   "team":team}
 
         template_type = sniff_template_extension(next_image.get_path())
         return render(request, "annotate/images_markup_%s.html" %(template_type), context)
@@ -610,10 +616,14 @@ def markup_image(request,cid,uid):
         png_data = request.POST.get('pngdata',None)
         base_data = request.POST.get('pngdatabase',None)
         uid = request.POST.get('image_id',None)
-        #image = Image.objects.get(id=uid)
-
+        tid = request.POST.get('team_id',None)
+        
         if png_data:
-            markup,created = ImageMarkup.objects.get_or_create(creator=request.user,image=image)
+
+            if tid is not None: 
+                markup,created = ImageMarkup.objects.get_or_create(team__id=tid,image=image)
+            else:
+                markup,created = ImageMarkup.objects.get_or_create(creator=request.user,image=image)
 
             # The interface will send the base image if being annotated for first time
             if base_data not in [None,'']:
@@ -629,17 +639,18 @@ def markup_image(request,cid,uid):
         else:
             messages.info(request, "No markup detected. Did you annotate the image?")
 
-    return redirect("collection_markup_image", cid=cid)
+    return redirect("collection_markup_image", cid=cid, tid=tid)
 
 
 # Describe
 
 @login_required
-def collection_describe_image(request,cid):
+def collection_describe_image(request,cid,tid=None):
     '''collection_describe_image will return a new image to describe
     '''
+    team = get_team(tid,return_none=True)
     collection = get_collection(cid)
-
+    
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection):
             messages.info(request, '''This collection is private. You must be a contributor
@@ -647,19 +658,22 @@ def collection_describe_image(request,cid):
             return redirect("collections")
 
     if collection.has_images():
-        next_image = get_next_to_describe(user=request.user,collection=collection)
+        next_image = get_next_to_describe(user=request.user,collection=collection,team=team)
         if next_image == None:
             messages.info(request,"You have finished describing images in this collection. Great work!") 
             return HttpResponseRedirect(collection.get_absolute_url())
 
-        description = get_user_description(request.user,next_image)
+        description = get_description(user=request.user,
+                                      instance=next_image,
+                                      team=team)
     
         # Pass to view if we need to save a base for the image
         context = {"entity":next_image.entity,
                    "image": next_image,
                    "collection":collection,
                    "description": description,
-                   "nosidebar":"pancakes"}
+                   "nosidebar":"pancakes",
+                   "team":team}
     
         template_type = sniff_template_extension(next_image.get_path())
         return render(request, "annotate/images_description_%s.html" %(template_type), context)
@@ -687,22 +701,29 @@ def describe_image(request,cid,uid):
 
         # Retrieve base64 encoded data
         description_text = request.POST.get('description',None)
+        tid = request.POST.get('team_id',None)
 
         if description_text not in [None,'']:
-            description,created = ImageDescription.objects.get_or_create(creator=request.user,
-                                                                         image=image,
-                                                                         description=description_text)
+            if tid is not None:
+                description,created = ImageDescription.objects.get_or_create(team=team,
+                                                                             image=image,
+                                                                             description=description_text)
+            else:
+                description,created = ImageDescription.objects.get_or_create(creator=request.user,
+                                                                             image=image,
+                                                                             description=description_text)
             description.save()
 
-    return redirect("collection_describe_image", cid=collection.id)
+    return redirect("collection_describe_image", cid=collection.id,tid=tid)
 
 
 # Annotate
 
 @login_required
-def collection_annotate_image(request,cid):
+def collection_annotate_image(request,cid,tid=None):
     '''annotate_image is the view for an image annotation interface for a particular report id
     '''
+    team = get_team(tid,return_none=True)
     collection = get_collection(cid)
 
     if collection.private == True:
@@ -713,12 +734,17 @@ def collection_annotate_image(request,cid):
 
     if collection.has_images():
 
-        next_image = get_next_to_annotate(request.user,collection)
+        next_image = get_next_to_annotate(user=request.user,
+                                          collection=collection,
+                                          team=team)
         if next_image == None:
             messages.info(request,"You have finished annotating the images in this collection. Woot!") 
             return HttpResponseRedirect(collection.get_absolute_url())
 
-        annotations = get_annotations(request.user,next_image)
+        annotations = get_annotations(user=request.user,
+                                      instance=next_image,
+                                      team=team)
+
         allowed_annotations = collection.get_annotations()
 
         context = { "entity": next_image.entity,
@@ -727,7 +753,8 @@ def collection_annotate_image(request,cid):
                     "annotations": annotations['labels'],
                     "counts": annotations['counts'],
                     "nosidebar":"pizzapizza",
-                    "allowed_annotations": allowed_annotations }
+                    "allowed_annotations": allowed_annotations,
+                    "team":team }
 
         template_type = sniff_template_extension(next_image.get_path())
         return render(request, "annotate/images_annotate_%s.html" %(template_type), context)
@@ -760,10 +787,11 @@ def update_image_annotation(request,uid):
 ######################################################################################
 
 @login_required
-def collection_markup_text(request,cid):
+def collection_markup_text(request,cid,tid=None):
     '''collection_markup_text will return a new text to markup
     '''
     collection = get_collection(cid)
+    team = get_team(tid,return_none=True)
 
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection):
@@ -774,21 +802,25 @@ def collection_markup_text(request,cid):
     if collection.has_text():
         next_text = get_next_to_markup(user=request.user,
                                        collection=collection,
-                                       get_images=False)
+                                       get_images=False,
+                                       team=team)
  
         if next_text == None:
             messages.info(request,"You have finished marking up the text in this collection. Shaaawing!") 
             return redirect('collection_details',cid=cid)
 
         # Has the user marked up the image previously?
-        markup = get_user_markup(next_text,request.user)
+        markup = get_markup(instance=next_text,
+                            user=request.user,
+                            team=team)
 
         # Pass to view if we need to save a base for the image
         context = {"entity": next_text.entity,
                    "text": next_text,
                    "markup": markup,
                    "nosidebar":"ronweesley!",
-                   "collection":collection}
+                   "collection":collection,
+                   "team":team }
 
         return render(request, "annotate/text_markup.html", context)
 
@@ -816,11 +848,14 @@ def markup_text(request,cid,uid):
     if request.method == "POST": 
 
         # Retrieve base64 encoded data
-        #TODO: what are we saving here?
         uid = request.POST.get('image_id',None)
+        tid = request.POST.get('team_id',None)
 
         if uid:
-            markup,created = ImageMarkup.objects.get_or_create(creator=request.user,image=image)
+            if tid:
+                markup,created = ImageMarkup.objects.get_or_create(team=team,image=image)
+            else:
+                markup,created = ImageMarkup.objects.get_or_create(creator=request.user,image=image)
 
             # The interface will send the base image if being annotated for first time
             if base_data not in [None,'']:
@@ -836,15 +871,16 @@ def markup_text(request,cid,uid):
         else:
             messages.info(request, "No markup detected. Did you annotate the image?")
 
-    return redirect("collection_markup_image", cid=cid)
+    return redirect("collection_markup_image", cid=cid, tid=tid)
 
 
 # Describe
 
 @login_required
-def collection_describe_text(request,cid):
+def collection_describe_text(request,cid,tid=None):
     '''collection_describe_image will return a new image to describe
     '''
+    team = get_team(tid,return_none=True)
     collection = get_collection(cid)
     
     if collection.private == True:
@@ -856,20 +892,24 @@ def collection_describe_text(request,cid):
     if collection.has_text():
         next_text = get_next_to_describe(user=request.user,
                                          collection=collection,
-                                         get_images=False)
+                                         get_images=False,
+                                         team=team)
         if next_text == None:
             messages.info(request,"You have finished describing the text in this collection. Thanks!") 
             return redirect('collection_details',cid=cid)
 
 
-        description = get_user_description(request.user,next_text)
+        description = get_description(user=request.user,
+                                      instance=next_text,
+                                      team=team)
     
         # Pass to view if we need to save a base for the image
         context = {"entity":next_text.entity,
                    "text": next_text,
                    "collection":collection,
                    "description": description,
-                   "nosidebar":"pancakes"}
+                   "nosidebar":"pancakes",
+                   "team":team}
     
         return render(request, "annotate/text_description.html", context)
 
@@ -896,22 +936,29 @@ def describe_text(request,cid,uid):
 
         # Retrieve base64 encoded data
         description_text = request.POST.get('description',None)
+        tid = request.POST.get('team_id',None)
 
         if description_text not in [None,'']:
-            description,created = TextDescription.objects.get_or_create(creator=request.user,
-                                                                        text=text,
-                                                                        description=description_text)
+            if tid:
+                description,created = TextDescription.objects.get_or_create(team=team,
+                                                                            text=text,
+                                                                            description=description_text) 
+            else:
+                description,created = TextDescription.objects.get_or_create(creator=request.user,
+                                                                            text=text,
+                                                                            description=description_text)
             description.save()
 
-    return redirect("collection_describe_text", cid=collection.id)
+    return redirect("collection_describe_text", cid=collection.id,tid=tid)
 
 
 # Annotate
 
 @login_required
-def collection_annotate_text(request,cid):
+def collection_annotate_text(request,cid,tid=None):
     '''annotate_text is the view for a text annotation interface for a particular report id
     '''
+    team = get_team(tid,return_none=True)
     collection = get_collection(cid)
 
     if collection.private == True:
@@ -922,13 +969,19 @@ def collection_annotate_text(request,cid):
 
     if collection.has_text():
 
-        next_text = get_next_to_annotate(request.user,collection,get_images=False)
+        next_text = get_next_to_annotate(user=request.user,
+                                         collection=collection,
+                                         team=team,
+                                         get_images=False)
         if next_text == None:
             messages.info(request,"You have finished annotating the text in this collection. Eggcellent!") 
             return redirect('collection_details',cid=cid)
 
 
-        annotations = get_annotations(request.user,next_text)
+        annotations = get_annotations(user=request.user,
+                                      instance=next_text,
+                                      team=team)
+
         allowed_annotations = collection.get_annotations()
 
         context = { "entity": next_text.entity,
@@ -937,7 +990,8 @@ def collection_annotate_text(request,cid):
                     "annotations": annotations['labels'],
                     "counts": annotations['counts'],
                     "nosidebar":"pizzapizza",
-                    "allowed_annotations": allowed_annotations }
+                    "allowed_annotations": allowed_annotations,
+                    "team":team }
 
         return render(request, "annotate/text_annotate.html", context)
 

@@ -111,13 +111,28 @@ def get_collection_users(collection):
     return list(chain(contributors,[owner]))
 
 
-def get_annotations(user,instance,return_dict=True):
+def get_annotations(instance,user=None,team=None,return_dict=True):
     '''get_annotations will return the Annotation objects for a user and image.
     :param user: the user to return objects for
     :param image: the image to find annotations for
     :param return_dict: if True, convert Annotation objects to dictionary
     '''
     annotations = []
+    if user is None and team is None:
+        return annotations
+
+    if team is not None:
+        annotations = get_team_annotations(instance,team)
+    else:
+        annotations = get_user_annotations(instance,user)
+
+    if return_dict == True:
+        annotations = summarize_annotations(annotations)   
+    return annotations
+
+
+def get_user_annotations(instance,user):
+    '''perform a query to retrieve and count image or text annotations for a user'''
     if isinstance(instance,Image):
         counter = Count('annotation_of_image', distinct=True)
         annotations = Annotation.objects.filter(annotation_of_image__image_id=instance.id,
@@ -126,9 +141,21 @@ def get_annotations(user,instance,return_dict=True):
         counter = Count('annotation_of_text', distinct=True)
         annotations = Annotation.objects.filter(annotation_of_text__text_id=instance.id,
                                                 annotation_of_text__creator=user).annotate(counter)
-    if return_dict == True:
-        annotations = summarize_annotations(annotations)   
     return annotations
+
+
+def get_team_annotations(instance,team):
+    '''perform a query to retrieve and count image or text annotations for a team'''
+    if isinstance(instance,Image):
+        counter = Count('annotation_of_image', distinct=True)
+        annotations = Annotation.objects.filter(annotation_of_image__image_id=instance.id,
+                                                annotation_of_image__team=team).annotate(counter)
+    else:
+        counter = Count('annotation_of_text', distinct=True)
+        annotations = Annotation.objects.filter(annotation_of_text__text_id=instance.id,
+                                                annotation_of_text__team=team).annotate(counter)
+    return annotations
+
 
 
 def summarize_annotations(annotations):
@@ -241,22 +268,28 @@ def png2base64(data):
     return b64decode(data)
 
 
-def get_user_markup(instance,user):
-    '''get_user_markup will return a user's markup of an image, if it exists.
+def get_markup(instance,user,team=None):
+    '''get_markup will return a user's markup of an image, if it exists.
     otherwise, None is returned.
     :param image: the image object
     :param user: the user to get the markup for
     '''
     markup = None
     if isinstance(instance,Image):
-        markups = ImageMarkup.objects.filter(image=instance,creator=user).first()
+        if team is not None:
+            markups = ImageMarkup.objects.filter(image=instance,team=team).first()
+        else:
+            markups = ImageMarkup.objects.filter(image=instance,creator=user).first()
     elif isinstance(instance,Text):
-        markups = TextMarkup.objects.filter(text=instance,creator=user).first()
+        if team is not None:
+            markups = TextMarkup.objects.filter(text=instance,team=team).first()
+        else:
+            markups = TextMarkup.objects.filter(text=instance,creator=user).first()
     return markup
 
 
-def get_user_description(user,instance):
-    '''get_user_description will return a user's description of an 
+def get_description(user,instance,team=None):
+    '''get_description will return a user's description of an 
     image or text, if it exists.
     otherwise, None is returned.
     :param image: the image object
@@ -264,9 +297,15 @@ def get_user_description(user,instance):
     '''
     description = None
     if isinstance(instance,Image):
-        description = ImageDescription.objects.filter(image=instance,creator=user).first()
+        if team is not None:
+            description = ImageDescription.objects.filter(image=instance,team=team).first()
+        else:
+            description = ImageDescription.objects.filter(image=instance,creator=user).first()
     elif isinstance(instance,Text):
-        description = TextDescription.objects.filter(text=instance,creator=user).first()
+        if team is not None:
+            description = TextDescription.objects.filter(text=instance,team=team).first()
+        else:
+            description = TextDescription.objects.filter(text=instance,creator=user).first()
     return description
 
 

@@ -61,12 +61,14 @@ def get_user(uid):
         return user
 
 
-def get_team(tid):
+def get_team(tid,return_none=False):
     '''get a single team, or return 404'''
     keyargs = {'id':tid}
     try:
         team = Team.objects.get(**keyargs)
     except Team.DoesNotExist:
+        if return_none:
+            return None
         raise Http404
     else:
         return team

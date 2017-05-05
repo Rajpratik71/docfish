@@ -371,8 +371,9 @@ class ImageMarkup(models.Model):
     image = models.ForeignKey(Image,blank=False,related_query_name="image_markup")
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     creator = models.ForeignKey(User,related_name="creator_of_image",
-                                related_query_name="creator_of_image", blank=False,
+                                related_query_name="creator_of_image", blank=True,
                                 help_text="user that created the markup.",verbose_name="Creator")
     base = models.ImageField(upload_to=get_upload_folder,null=True,blank=True, 
                              help_text="saved base image as png")
@@ -382,13 +383,14 @@ class ImageMarkup(models.Model):
                      help_text = "a metadata field with the transformation applied to the original image to produce the overlay dimension")
 
     class Meta:
-        unique_together =  (("image", "creator"),)
+        unique_together =  (("image", "creator"),("image","team"),)
 
 
 class ImageDescription(models.Model):
     '''An image description is an open text field to describe an image.
     '''
     image = models.ForeignKey(Image,blank=False,related_query_name="image_description")
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_image_description",
@@ -398,7 +400,7 @@ class ImageDescription(models.Model):
 
     # A specific annotator can only give one label for some annotation label
     class Meta:
-        unique_together =  (("image", "creator"),)
+        unique_together =  (("image", "creator"),("image","team"),)
 
 
 @receiver(pre_delete)
@@ -516,6 +518,7 @@ class TextDescription(models.Model):
     '''A text description is an open text field to describe a text.
     '''
     text = models.ForeignKey(Text,related_query_name="text_description")
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_text_description",
@@ -525,7 +528,7 @@ class TextDescription(models.Model):
 
     # A specific annotator can only give one label for some annotation label
     class Meta:
-        unique_together =  (("text", "creator"),)
+        unique_together =  (("text", "creator"),("text","team"),)
 
 
 class TextMarkup(models.Model):
@@ -534,6 +537,7 @@ class TextMarkup(models.Model):
        stop locations, based on some delimiter in the text (default is a space)
     '''
     text = models.ForeignKey(Text,related_query_name="text_markup")
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     creator = models.ForeignKey(User,related_name="creator_text",related_query_name="creator_text", blank=False,
                                 help_text="user that created the markup.",verbose_name="Creator")
@@ -542,6 +546,8 @@ class TextMarkup(models.Model):
     locations = JSONField(default={}, 
                           help_text = "a list of start and stop locations for the markup (JSONfield)")
 
+    class Meta:
+        unique_together =  (("text", "creator"),("text","team"),)
 
 
 class TextAnnotation(TextMarkup):

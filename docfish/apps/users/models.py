@@ -33,10 +33,6 @@ from django.contrib.postgres.fields import JSONField
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from docfish.apps.main.models import (
-    Collection
-)
-
 from docfish.settings import MEDIA_ROOT
 
 from itertools import chain
@@ -82,12 +78,14 @@ class Team(models.Model):
     '''A user team is a group of individuals that are annotating reports together. They can be reports across collections, or 
     institutions, however each user is only allowed to join one team.
     '''
+    from docfish.apps.main.models import Collection
+
     name = models.CharField(max_length=250, null=False, blank=False,verbose_name="Team Name")
     owner = models.ForeignKey(User, blank=True, verbose_name="Team owner and adminstrator.")
     created_at = models.DateTimeField('date of creation', auto_now_add=True)
     updated_at = models.DateTimeField('date of last update', auto_now=True)
     team_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)    
-    collections = models.ManyToManyField(Collection,blank=True)
+    collections = models.ManyToManyField('main.Collection',blank=True)
     metrics_updated_at = models.DateTimeField('date of last calculation of rank and annotations',blank=True,null=True)
     ranking = models.PositiveIntegerField(blank=True,null=True,
                                           verbose_name="team ranking based on total number of annotations, calculated once daily.")
@@ -115,11 +113,13 @@ class Team(models.Model):
         return reverse('team_details', args=[str(self.id)])
 
     def contender_collections(self):
+        from docfish.apps.main.models import Collection
         owner_collections = Collection.objects.filter(owner=self.owner)
         public_collections = Collection.objects.exclude(owner=self.owner,private=False)
         return list(chain(owner_collections,public_collections))
        
     def add_collection(self,cid):
+        from docfish.apps.main.models import Collection
         collection = None
         try:
             collection = Collection.objects.get(id=cid)
@@ -132,6 +132,7 @@ class Team(models.Model):
 
 
     def remove_collection(self,cid):
+        from docfish.apps.main.models import Collection
         collection = None
         try:
             collection = Collection.objects.get(id=cid)

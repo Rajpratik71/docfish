@@ -30,6 +30,20 @@ import json
 import sys
 
 
+def read_cache(cache_pkl=None,combine=True):
+    '''read_cache will read in a pickled cache of ids, helpful for querying 
+    until we have a list that we know can be found'''
+    cache_ids = None
+    if cache_pkl is None:
+        cache_pkl = '%s/docfish/apps/pubmed/data/pubmed_idcache.pkl' %(BASE_DIR)
+    if os.path.exists(cache_pkl):
+        cache_ids = pickle.load(open(id_cache,'rb'))
+        if combine:
+            cache_ids = cache_ids['pmid'] + cache_ids['pmc']
+        cache_ids = set(cache_ids)
+    return cache_ids
+
+
 def search(query,email,retstart=0,retmax=100):
     '''do a search on behalf of a user. By default,
     we show 100 on a page at once, and start at 0'''
@@ -61,22 +75,25 @@ def get(query,user,retstart=0,retmax=100,get_abstract=True):
     list of results. The user email is sniffed or
     a faux doc.fish alias returned
     '''
+    done = True
+
     # We only can provide pmc open access content
-    query = "open access[filter] %s" %(query)
+    query = "%s AND open access[filter]" %(query)
     email = user.email
     if len(email) == 0 or email is None:
         email = "%s@doc.fish" %(user.username)
+
     results = search(query=query,
                      email=email,
                      retstart=retstart,
                      retmax=retmax)
-
     papers = None
-    if int(results['esearchresult']['count']) > 0:
-        id_list = results['esearchresult']['idlist']
+    result_count = int(results['esearchresult']['count'])
+    if result_count > 0:
+        id_list = set(results['esearchresult']['idlist'])
         papers = fetch(id_list,email)
+        papers = extract_articles(papers,get_abstract=get_abstract)
 
-    papers = extract_articles(papers,get_abstract=get_abstract)
     return papers
 
 

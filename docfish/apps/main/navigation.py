@@ -47,7 +47,7 @@ def get_contenders(collection,active=True,get_images=True):
     return contenders
 
 
-def get_next_to_markup(user,collection,get_images=True):
+def get_next_to_markup(user,collection,get_images=True,team=None):
     '''get next to markup will return images from a collection that a user has not seen, 
     chosen, from the entities that are available for annotation. From that set, it is a
     random selection
@@ -59,19 +59,30 @@ def get_next_to_markup(user,collection,get_images=True):
 
     # Do we want image or text markups?
     if get_images == True:
-        previous_markups = ImageMarkup.objects.filter(creator=user,image__in=contenders)
+        if team:
+            previous_markups = ImageMarkup.objects.filter(team=team,image__in=contenders)
+        else:
+            previous_markups = ImageMarkup.objects.filter(creator=user,image__in=contenders)
+
     else:
-        previous_markups = TextMarkup.objects.filter(creator=user,text__in=contenders)
+        if team:
+            previous_markups = TextMarkup.objects.filter(team=team,text__in=contenders)
+        else:
+            previous_markups = TextMarkup.objects.filter(creator=user,text__in=contenders)
 
     # Return a single unseen image or text
+    repeat = False
+    if team is not None:
+        repeat = True
     return get_unseen(contenders=contenders,
                       seen=previous_markups,
                       get_images=get_images,
-                      return_single=True)
+                      return_single=True,
+                      repeat=repeat)
 
 
 
-def get_next_to_describe(user,collection,get_images=True):
+def get_next_to_describe(user,collection,get_images=True,team=None):
     '''get next to describe will first return images for entities that a user has not seen,
     and then a random selection
     '''
@@ -79,18 +90,28 @@ def get_next_to_describe(user,collection,get_images=True):
 
     # Do we want image or text markups?
     if get_images == True:
-        previous_descriptions = ImageDescription.objects.filter(creator=user,image__in=contenders)
+        if team:
+            previous_descriptions = ImageDescription.objects.filter(team=team,image__in=contenders)
+        else:
+            previous_descriptions = ImageDescription.objects.filter(creator=user,image__in=contenders)
     else:
-        previous_descriptions = TextDescription.objects.filter(creator=user,text__in=contenders)
+        if team:
+            previous_descriptions = TextDescription.objects.filter(team=team,text__in=contenders)
+        else:
+            previous_descriptions = TextDescription.objects.filter(creator=user,text__in=contenders)
 
     # Return a single unseen image or text
+    repeat = False
+    if team is not None:
+        repeat = True
     return get_unseen(contenders=contenders,
                       seen=previous_descriptions,
                       get_images=get_images,
-                      return_single=True)
+                      return_single=True,
+                      repeat=repeat)
 
 
-def get_next_to_annotate(user,collection,get_images=True):
+def get_next_to_annotate(user,collection,get_images=True,team=None):
     '''get next to annotate will first return images for entities that a user has not seen,
     and then a random selection
     '''
@@ -98,25 +119,31 @@ def get_next_to_annotate(user,collection,get_images=True):
 
     # Do we want image or text markups?
     if get_images == True:
-        previous_annotations = ImageAnnotation.objects.filter(creator=user,image__in=contenders)
+        if team:
+            previous_annotations = ImageAnnotation.objects.filter(team=team,image__in=contenders) 
+        else:
+            previous_annotations = ImageAnnotation.objects.filter(creator=user,image__in=contenders)
     else:
-        previous_annotations = TextAnnotation.objects.filter(creator=user,text__in=contenders)
+        if team:
+            previous_annotations = TextAnnotation.objects.filter(team=team,text__in=contenders)
+        else:
+            previous_annotations = TextAnnotation.objects.filter(creator=user,text__in=contenders)
 
     # Return a single unseen image or text
+    repeat = False
+    if team is not None:
+        repeat = True
     return get_unseen(contenders=contenders,
                       seen=previous_annotations,
                       get_images=get_images,
-                      return_single=True)
+                      return_single=True,
+                      repeat=repeat)
 
 
 
 #############################################################################################
 # Image Filtering
 #############################################################################################
-
-
-def get_unseen_single(contenders,seen,get_images=True,return_single=True):
-    return get_unseen(contenders,seen,return_single=return_single,get_images=get_images)
 
 
 def get_unseen(contenders,seen,return_single=True,get_images=True,repeat=False):
