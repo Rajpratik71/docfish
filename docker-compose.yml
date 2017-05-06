@@ -32,6 +32,7 @@ redis:
   ports:
     - "6379:6379"
 
+
 worker:
   image: vanessa/docfish
   command: celery worker -A docfish.celery -Q default -l debug -n default@%h

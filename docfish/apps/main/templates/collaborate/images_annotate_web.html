@@ -24,13 +24,10 @@
 
 <div class="row">
     <div class="col-md-6">
-        <canvas id="pdf-canvas"></canvas>
+        <img id="som_image" src="{{ image.get_url | safe }}">
     </div>
     <div class="col-md-6">
 
-        <!-- Form to send updates to server-->
-        <form action="{% url 'update_image_annotation' collection.id image.id %}" method="POST" id="update_image_annotation">
-        {% csrf_token %}
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>
@@ -48,9 +45,9 @@
              </fieldset>
         {% endfor %}
 
-        </form>
         <div class="button-group">
-            <button id="skip_button" class="btn btn-primary"> >> </button>
+            <button id="skip_button" class="btn btn-info"> >> </button>
+            <button id="flag_button" class="btn btn btn-xs btn-danger">Mark as Bad</button>
         </div>
 
         
@@ -64,84 +61,13 @@
         </div>
     </div>
 </div>
+{% include "collections/return_to_collection_fixed.html" %}
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static "js/cookie-token.js" %}"></script>
-<script src="{% static "js/pdfjs/pdf.js" %}"></script>
 <script type='text/javascript'>
 $(function() {
-
-    PDFJS.workerSrc = '{% static "js/pdfjs/pdf.worker.js"%}';
-
-    var pdfDoc = null,
-        pageNum = 1,
-        pageRendering = false,
-        pageNumPending = null,
-        scale = 0.8,
-        canvas = document.getElementById('pdf-canvas'),
-        ctx = canvas.getContext('2d');
-
-
-    function renderPage(num) {
-      pageRendering = true;
-
-      pdfDoc.getPage(num).then(function(page) {
-        var viewport = page.getViewport(scale);
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        // Render PDF page into canvas context
-        var renderContext = {
-          canvasContext: ctx,
-          viewport: viewport
-        };
-        var renderTask = page.render(renderContext);
-
-        renderTask.promise.then(function() {
-          pageRendering = false;
-          if (pageNumPending !== null) {
-        renderPage(pageNumPending);
-        pageNumPending = null;
-          }
-        });
-      });
-
-      document.getElementById('page_num').textContent = pageNum;
-    }
-
-    function queueRenderPage(num) {
-      if (pageRendering) {
-        pageNumPending = num;
-      } else {
-        renderPage(num);
-      }
-    }
-
-    function onPrevPage() {
-      if (pageNum <= 1) {
-        return;
-      }
-      pageNum--;
-      queueRenderPage(pageNum);
-    }
-    document.getElementById('prev').addEventListener('click', onPrevPage);
-
-    function onNextPage() {
-      if (pageNum >= pdfDoc.numPages) {
-        return;
-      }
-      pageNum++;
-      queueRenderPage(pageNum);
-    }
-    document.getElementById('next').addEventListener('click', onNextPage);
-
-    PDFJS.getDocument("{{ image.original.file }}").then(function(pdfDoc_) {
-      pdfDoc = pdfDoc_;
-      document.getElementById('page_count').textContent = pdfDoc.numPages;
-
-      renderPage(pageNum);
-    });
 
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
@@ -153,7 +79,11 @@ $(function() {
          }
         
         if (e.which == 39) { 
+           {% if team %}
+           document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
+           {% else %}
            document.location = "{% url 'collection_annotate_image' collection.id %}"
+           {% endif %}
            e.preventDefault();
            return false;
         }
@@ -169,11 +99,20 @@ $(function() {
             
         }).then(function(annotations){
             console.log(annotations);
+
+            {% if team %}
+            var team_id = "{{ team.id }}"
+            {% endif %}
+
             $.ajax({
                 url : "{% url 'update_image_annotation' collection.id image.id %}", // the endpoint
                 type : "POST", // http method
+                {% if team %}
+                data : { annotations: annotations,
+                         team_id: team_id }, // data sent with the post request
+                {% else %}
                 data : { annotations: annotations }, // data sent with the post request
-
+                {% endif %}
                 // handle a successful response
                 success : function(json) {
                     console.log(json); // log the returned json to the console
@@ -194,8 +133,17 @@ $(function() {
     // Function to clear annotations
     function clearAnnotations() {
 
+        {% if team %}
+        var team_id = "{{ team.id }}"
+        {% endif %}
+
         $.ajax({
             url : "{% url 'clear_image_annotations' collection.id image.id %}", // the endpoint
+
+            {% if team %}
+            data: {team_id:team_id },
+            {% endif %}
+
             type : "POST", // http method
 
             // handle a successful response
@@ -236,8 +184,48 @@ $(function() {
 
 
    $("#skip_button").click(function(){
+       {% if team %}
+       document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
+       {% else %}
        document.location = "{% url 'collection_annotate_image' collection.id %}"
+       {% endif %}
+
    });
+
+
+
+   // Flag a small or bad image
+   function flagImage() {
+
+        $.ajax({
+            url : "{% url 'flag_image' image.id %}", // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+                {% if team %}
+                document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
+                {% else %}
+                document.location = "{% url 'collection_annotate_image' collection.id %}"
+                {% endif %}
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+   $("#flag_button").click(function(){
+      setTimeout(function(){
+           flagImage();
+      },500)
+   })
+
+
 })
 </script>
 {% endblock %}

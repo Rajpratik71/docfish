@@ -29,6 +29,7 @@ SOFTWARE.
 from django.conf.urls import include, url
 from docfish.apps.base import urls as base_urls
 from docfish.apps.main import urls as main_urls
+from docfish.apps.main import collaborate as team_urls
 from docfish.apps.users import urls as user_urls
 from docfish.apps.api import urls as api_urls
 from docfish.apps.storage import urls as storage_urls
@@ -54,6 +55,7 @@ urlpatterns = [
     url(r'^api/', include(api_urls)),
     url(r'^pmc/', include(pmc_urls)),
     url(r'^', include(main_urls)),
+    url(r'^', include(team_urls)),
     url(r'^', include(user_urls)),
     url(r'^', include(snack_urls)),
     url(r'^upload/', include(storage_urls)),

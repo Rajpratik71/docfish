@@ -36,7 +36,6 @@ from django.shortcuts import (
 )
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from docfish.apps.main.models import *
 import collections
 from datetime import datetime
@@ -274,3 +273,46 @@ def has_saml(user):
     if len(user_providers) == 0:
         return False
     return True
+
+
+####################################################################################
+# TEAM VIEWS #######################################################################
+####################################################################################
+
+# Markups --------------------------------------------------------------------------
+def get_team_markups(team,get_images=True):
+    if get_images == True:
+        return get_image_markups(team)
+    return get_text_markups(team)
+
+def get_image_markups(team):
+    return ImageMarkup.objects.filter(team=team)
+
+def get_text_markups(teams):
+    return TextMarkup.object.filter(team=team)
+
+
+# Descriptions ----------------------------------------------------------------------
+def get_team_descriptions(team,get_images=True):
+    if get_images == True:
+        return get_image_descriptions(team)
+    return get_text_descriptions(team)
+
+def get_image_descriptions(team):
+    return ImageDescription.objects.filter(team=team)
+
+def get_text_descriptions(team):
+    return TextDescription.objects.filter(team=team)
+
+
+# Annotations -----------------------------------------------------------------------
+def get_team_annotations(team,get_images=True):
+    if get_images == True:
+        return get_image_annotations(team)
+    return get_text_annotations(team)
+
+def get_image_annotations(team):
+    return ImageAnnoatation.objects.filter(team=team)
+
+def get_text_annotations(team):
+    return TextAnnotation.objects.filter(team=team)

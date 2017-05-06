@@ -1,0 +1,486 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+{% load humanize %}
+{% block head %}
+{% endblock %}
+{% block css %}
+<style>
+.upper-button {
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+.bottom-button {
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+.black-pick:hover {
+	background-color: #000;
+	border-color: #000;
+}
+.black-pick {
+	background-color: #202020;
+	border-color: #202020;
+}
+.outside_wrapper{ 
+    width:800px; height:700px; 
+    margin:20px 60px; 
+    border:0px solid transparent;
+    box-sizing: none !important;
+
+}
+.inside_wrapper{ 
+    width:100%; height:100%; 
+    position:relative;
+    background-color: blue;
+    box-sizing: none !important;
+}
+.som_image{ 
+    width:100%; height:100%; 
+    position:absolute; top:0px; left:0px;
+    box-sizing: none !important;
+}
+#previous_overlay{ 
+    width:100%; height:100%; 
+    position:absolute; top:0px; left:0px;
+    box-sizing: none !important;
+    background: rgba(76, 175, 80, 0.3);
+}
+#som_sketch{ 
+    width:100%; height:100%; 
+    position:absolute; top:0px; left:0px;
+    box-sizing: none !important;
+}
+#tools {
+    padding-left:100px;
+    padding-top:20px;
+}
+.button {
+    cursor: pointer;
+}
+.button:hover{
+    color: purple;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'messages/message.html' %}
+{% include 'base/loader.html' %}
+
+<div class="row">
+<div class="col-md-12">
+
+<a onclick="TogetherJS(this); return false;"><img src="https://togetherjs.com/images/start-togetherjs-blue.png" style="width: 135px" /></a>
+
+<div class="btn-group btn-group-justified" style="margin-right: auto; margin-top: 10px; width: 70%;"> 
+  <a class="btn btn-info color-picker upper-button">Blue</a>          
+  <a class="btn btn-success color-picker">Green</a>
+  <a class="btn btn-warning color-picker">Yellow</a>
+  <a class="btn btn-danger color-picker">Red</a>
+  <a class="btn btn-success color-picker black-pick upper-button" style="border-bottom-width: 0px;">Black</a>
+</div>
+<div class="clearfix"></div>
+<div id="sketchContainer" style="width: 70%; height: 300px; border: 1px solid rgba(0,0,0,0.2)"><canvas id="sketch"></canvas></div>
+<div class="btn-group btn-group-justified" style="margin-right: auto; width: 70%;"> 
+  <a class="btn btn-info user-color-pick bottom-button" style="width: 30%;">User Color</a>
+  <a class="btn btn-success plus-size" style="width: 15%;">
+    <i class="fa fa-plus-square"></i>
+  </a>
+  <a class="btn btn-warning clear" style="width: 15%;">
+    <i class="fa fa-times-circle"></i>
+  </a>
+  <a class="btn btn-danger minus-size" style="width: 15%;">
+    <i class="fa fa-minus-square"></i>
+  </a>
+  <a class="btn btn-default eraser bottom-button" style="width: 35%; border-top-width: 0px;">
+    <i class="fa fa-eraser"></i>
+  </a>
+</div>
+
+</div>
+</div>
+<div class="row">
+
+     <span id="tools"></span>
+     <span style="padding-left:320px;margin-top:20px">
+         <button id="clear_button" class="btn btn-xs btn-warning">Clear</button>
+         <button id="save_button" class="btn btn btn-xs btn-info">Save</button>
+         <button id="skip_button" class="btn btn btn-xs btn-info">Skip</button>
+         <button id="flag_button" class="btn btn btn-xs btn-danger">Mark as Bad</button>
+    </span>
+</div>
+
+{% if markup.overlay %}
+<div class="row" style="padding-top:20px">
+    <div class="col-md-12">
+        <div id='warning' class="alert alert-warning" style="margin-left:60px; width:768px;padding-top:5px; padding-bottom:5px">Warning: you have previously annotated this image. Saving will overwrite it. <button style="margin-bottom:5px" class="btn btn-warning btn-xs" id="previous_overlay_button">Toggle</button></div>
+    </div>
+</div>
+{% endif %}
+
+    <div class="outside_wrapper">
+        <div class="inside_wrapper">
+            <img class="som_image" src="{{ image.get_url | safe }}" style="height: 100%; width: 100%; margin: 0px; padding: 0px">
+            <canvas id='som_sketch' width="800" height="700" style="border: 0px solid transparent;"></canvas>
+            <img id="previous_overlay" src="{{ markup.overlay.url | safe }}" style='display:none'>
+        </div>
+    </div>
+     <div style="padding-left:60px">
+         <span style="color:#CCC;padding-right:180px">{{ image.uid }}</span>
+         <button id="preview_button" class="btn btn-xs btn-warning">Preview Markup</button>
+    </div>
+
+    <!-- Hidden form to send image markup to server -->
+    <form id="save_markup" class="form-horizontal" method="post" action="{% url 'markup_image' collection.id image.id %}" >
+        <input type="hidden" name="image_id" value="{{ image.id }}">  
+        <input type="hidden" name="pngdata" id="hidden_image">  
+        {% if team %}
+        <input type="hidden" name="team_id" id="team_id" value="{{ team.id }}">  
+        {% endif %}
+        {% if missing_base %}
+        <input type="hidden" name="pngdatabase" id="base_image">  
+        {% endif %}
+
+        {% csrf_token %}
+    </form>
+
+</div>
+{% include "collections/return_to_collection.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static "js/cookie-token.js" %}"></script>
+<script src="{% static "js/sketch.js" %}"></script>
+<script type='text/javascript'>
+$(function() {
+
+    $.each(['#FF0000','#EB5E94','#073AB1', '#378B2E', 'yellow', '#000', '#fff'], function() {
+          $('#tools').append("<a href='#som_sketch' data-color='" + this + "' style='border: 1px solid black; width: 30px; height: 30px; background: " + this + "; display: inline-block;'></a> ");
+        });
+   });
+
+   // Hold this guy around
+   var handle = $('#som_sketch').sketch();
+
+   {% if markup.overlay %}
+   //var imageObj = new Image();
+   //imageObj.src = '{{ markup.overlay.url | safe }}';
+   $("#previous_overlay_button").click(function(){
+       $("#previous_overlay").toggle();
+   })
+   //    var context = handle.sketch().context.getImageData(0,0,canvasWidth,canvasHeight)
+
+   function fillColor() {
+       var imageData = context.getImageData(0,0,800,700).data;
+   }
+ 
+   //    var canvas = handle.sketch().canvas[0]
+   //    imageObj.onload = context.drawImage(imageObj,0,0)
+
+   {% endif %}
+ 
+   // Convert canvas to png data to send to server
+   function convertCanvasToImage(canvas) {
+     var image = new Image();
+     image.src = canvas.toDataURL("image/png");
+     return image;
+   }
+
+   // Save button sends markup to server
+   $("#save_button").click(function(){
+       var canvas = $("#som_sketch");
+       var imageData = canvas[0].toDataURL('image/png');
+       $("#hidden_image").attr("value", imageData);
+
+       {% if missing_base %}
+       var baseImage = $(".som_image canvas")[0].toDataURL('2d');
+       $("#base_image").attr("value", baseImage);
+       {% endif %}
+
+       $("#save_markup").submit();
+   });
+
+   // Open new window with png when user saves
+   $("#preview_button").click(function(){
+      handle.sketch().download('png');
+   })
+
+   $("#clear_button").click(function(){
+       handle[0].getContext('2d').clearRect(0,0,1920,2000);
+       handle = $('#som_sketch').sketch('actions',[]);
+       //handle.sketch().clear()
+   })
+
+   $("#skip_button").click(function(){
+       document.location = "{% url 'collection_markup_image' collection.id team.id %}"
+   });
+
+   // Flag a small or bad image
+   function flagImage() {
+
+        $.ajax({
+            url : "{% url 'flag_image' image.id %}", // the endpoint
+            type : "POST", // http method
+
+            // handle a successful response
+            success : function(json) {
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+                document.location = "{% url 'collection_markup_image' collection.id team.id %}"
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+
+   $("#flag_button").click(function(){
+      setTimeout(function(){
+           flagImage();
+      },500)
+   })
+
+
+// get the canvas element and its context
+var canvas = document.getElementById('som_sketch');
+var context = canvas.getContext('2d');
+
+// the aspect ratio is always based on 1140x400, height is calculated from width:
+canvas.width = $('#sketchContainer').outerWidth();
+canvas.height = (canvas.width/1140)*400;
+$('#inside_wrapper').outerHeight(String(canvas.height) + "px", true);
+// scale function needs to know the width/height pre-resizing:
+var oWidth = canvas.width;
+var oHeight = canvas.height;
+var lines = [];
+
+var lastMouse = {
+  x: 0,
+  y: 0
+};
+
+// brush settings
+context.lineWidth = 2;
+context.lineJoin = 'round';
+context.lineCap = 'round';
+context.strokeStyle = '#000';
+
+// attach the mousedown, mouseout, mousemove, mouseup event listeners.
+canvas.addEventListener('mousedown', function (e) {
+  lastMouse = {
+    x: e.pageX - this.offsetLeft,
+    y: e.pageY - this.offsetTop
+  };
+  canvas.addEventListener('mousemove', move, false);
+}, false);
+
+canvas.addEventListener('mouseout', function () {
+  canvas.removeEventListener('mousemove', move, false);
+}, false);
+
+canvas.addEventListener('mouseup', function () {
+  canvas.removeEventListener('mousemove', move, false);
+}, false);
+
+// Sets the brush size:
+function setSize(size) {
+  context.lineWidth = size;
+}
+
+// Sets the brush color:
+function setColor(color) {
+  context.globalCompositeOperation = 'source-over';
+  context.strokeStyle = color;
+}
+
+// Sets the brush to erase-mode:
+function eraser() {
+  context.globalCompositeOperation = 'destination-out';
+  context.strokeStyle = 'rgba(0,0,0,1)';
+}
+
+// Clears the canvas and the lines-array:
+function clear(send) {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  lines = [];
+  if (send && TogetherJS.running) {
+    TogetherJS.send({
+      type: 'clear'
+    });
+  }
+}
+
+// Redraws the lines from the lines-array:
+function reDraw(lines){
+  for (var i in lines) {
+    draw(lines[i][0], lines[i][1], lines[i][2], lines[i][3], lines[i][4], false);
+  }
+}
+// Draws the lines, called by move and the TogetherJS event listener:
+function draw(start, end, color, size, compositeOperation, save) {
+  context.save();
+  context.lineJoin = 'round'; 
+  context.lineCap = 'round';
+  // Since the coordinates have been translated to an 1140x400 canvas, the context needs to be scaled before it can be drawn on:
+  context.scale(canvas.width/1140,canvas.height/400);
+  context.strokeStyle = color;
+  context.globalCompositeOperation = compositeOperation;
+  context.lineWidth = size;
+  context.beginPath();
+  context.moveTo(start.x, start.y);
+  context.lineTo(end.x, end.y);
+  context.closePath();
+  context.stroke();
+  context.restore();
+  if (save) {
+    // Won't save if draw() is called from reDraw().
+    lines.push([{x: start.x, y: start.y}, {x: end.x, y: end.y}, color, size, compositeOperation]);
+  }
+}
+
+// Called whenever the mousemove event is fired, calls the draw function:
+function move(e) {
+  var mouse = {
+    x: e.pageX - this.offsetLeft,
+    y: e.pageY - this.offsetTop
+  };
+  // Translates the coordinates from the local canvas size to 1140x400:
+  sendMouse = {
+    x: (1140/canvas.width)*mouse.x,
+    y: (400/canvas.height)*mouse.y
+  };
+  sendLastMouse = {
+    x: (1140/canvas.width)*lastMouse.x,
+    y: (400/canvas.height)*lastMouse.y
+  };
+  draw(sendLastMouse, sendMouse, context.strokeStyle, context.lineWidth, context.globalCompositeOperation, true);
+  if (TogetherJS.running) {
+    TogetherJS.send({
+      type: 'draw',
+      start: sendLastMouse,
+      end: sendMouse,
+      color: context.strokeStyle,
+      size: context.lineWidth,
+      compositeOperation: context.globalCompositeOperation
+    });
+  }
+  lastMouse = mouse;
+}
+
+// Listens for draw messages, sends info about the drawn lines:
+TogetherJS.hub.on('draw', function (msg) {
+  if (!msg.sameUrl) {
+      return;
+  }
+  draw(msg.start, msg.end, msg.color, msg.size, msg.compositeOperation, true);
+});
+
+
+// Clears the canvas whenever someone presses the clear-button
+TogetherJS.hub.on('clear', function (msg) {
+  if (!msg.sameUrl) {
+    return;
+  }
+  clear(false);
+});
+
+// Hello is sent from every newly connected user, this way they will receive what has already been drawn:
+TogetherJS.hub.on('togetherjs.hello', function () {
+  TogetherJS.send({
+    type: 'init',
+    lines: lines
+  });
+});
+
+// Draw initially received drawings:
+TogetherJS.hub.on('init', function (msg) {
+  reDraw(msg.lines);
+  lines = msg.lines;
+});
+
+// JQuery to handle buttons and resizing events, also changes the cursor to a dot resembling the brush size:
+$(document).ready(function () {
+  // changeMouse creates a temporary invisible canvas that shows the cursor, which is then set as the cursor through css:
+  function changeMouse() {
+    // Makes sure the cursorSize is scaled:
+    var cursorSize = context.lineWidth*(canvas.width/1140); 
+    if (cursorSize < 10){
+        cursorSize = 10;
+    }
+    var cursorColor = context.strokeStyle;
+    var cursorGenerator = document.createElement('canvas');
+    cursorGenerator.width = cursorSize;
+    cursorGenerator.height = cursorSize;
+    var ctx = cursorGenerator.getContext('2d');
+
+    var centerX = cursorGenerator.width/2;
+    var centerY = cursorGenerator.height/2;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, (cursorSize/2)-4, 0, 2 * Math.PI, false);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = cursorColor;
+    ctx.stroke();
+    $('#som_sketch').css('cursor', 'url(' + cursorGenerator.toDataURL('image/png') + ') ' + cursorSize/2 + ' ' + cursorSize/2 + ',crosshair');
+  }
+  // Init mouse
+  changeMouse();
+
+  // Redraws the lines whenever the canvas is resized:
+  $(window).resize(function() {
+    if ($('#inside_container').width() != oWidth) {
+      canvas.width = $('#inside_container').width();
+      canvas.height = (canvas.width/1140)*400;
+      $('#inside_container').outerHeight(String(canvas.height)+"px", true);
+      var ratio = canvas.width/oWidth;
+      oWidth = canvas.width;
+      oHeight = canvas.height;
+      reDraw(lines);
+      changeMouse();
+    }
+  });
+
+  // Clears the canvas:
+  $('.clear').click(function () {
+    clear(true);
+  });
+
+  // Color-button functions:
+  $('.color-picker').click(function () {
+    var $this = $(this);
+    console.log($this);
+    setColor($this.css("background-color"));
+    changeMouse();
+  });
+
+  $('.eraser').click(function () {
+    eraser();
+    changeMouse();
+  });
+  // TogetherJS user color:
+  $('.user-color-pick').click(function() {
+    setColor(TogetherJS.require('peers').Self.color);
+    changeMouse();
+  });
+
+  // Increase/decrease brush size:
+  $('.plus-size').click(function() {
+    setSize(context.lineWidth+3);
+    changeMouse();
+  });
+
+  $('.minus-size').click(function() {
+    if (context.lineWidth > 3) {
+      setSize(context.lineWidth-3);
+    }
+    changeMouse();
+  });          
+});
+
+
+</script>
+{% endblock %}

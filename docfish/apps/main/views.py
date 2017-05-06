@@ -58,7 +58,10 @@ from docfish.apps.main.actions import (
 
 from docfish.apps.users.utils import (
     get_user,
-    get_team
+    get_team,
+    get_team_markups,
+    get_team_descriptions,
+    get_team_annotations
 )
 
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -587,6 +590,9 @@ def collection_markup_image(request,cid,tid=None):
                    "team":team}
 
         template_type = sniff_template_extension(next_image.get_path())
+        if tid is not None:
+            context['team_markups'] = get_team_markups(team=team)
+            return render(request, "collaborate/images_markup_%s.html" %(template_type), context)
         return render(request, "annotate/images_markup_%s.html" %(template_type), context)
 
     messages.info(request,"This collection does not have any images to markup.")
@@ -676,6 +682,9 @@ def collection_describe_image(request,cid,tid=None):
                    "team":team}
     
         template_type = sniff_template_extension(next_image.get_path())
+        if tid is not None:
+            context['team_descriptions'] = get_team_descriptions(team=team)
+            return render(request, "collaborate/images_description_%s.html" %(template_type), context)
         return render(request, "annotate/images_description_%s.html" %(template_type), context)
 
     messages.info(request,"This collection does not have any images to describe.")
@@ -757,6 +766,9 @@ def collection_annotate_image(request,cid,tid=None):
                     "team":team }
 
         template_type = sniff_template_extension(next_image.get_path())
+        if tid is not None:
+            context['team_annotations'] = get_team_annotations(team=team)
+            return render(request, "collaborate/images_annotate_%s.html" %(template_type), context)
         return render(request, "annotate/images_annotate_%s.html" %(template_type), context)
 
     messages.info(request,"This collection does not have any images to annotate.")
@@ -823,6 +835,9 @@ def collection_markup_text(request,cid,tid=None):
                    "collection":collection,
                    "team":team }
 
+        if tid is not None:
+            context['team_markups'] = get_team_markups(team,get_images=False)
+            return render(request, "annotate/text_markup.html", context)
         return render(request, "annotate/text_markup.html", context)
 
     messages.info(request,"This collection does not have any text to markup.")
@@ -912,7 +927,11 @@ def collection_describe_text(request,cid,tid=None):
                    "description": description,
                    "nosidebar":"pancakes",
                    "team":team}
-    
+
+
+        if tid is not None:
+            context['team_descriptions'] = get_team_descriptions(team=team,get_images=False)
+            return render(request, "annotate/text_description.html", context)
         return render(request, "annotate/text_description.html", context)
 
     messages.info(request,"This collection does not have any text to describe.")
@@ -994,7 +1013,10 @@ def collection_annotate_text(request,cid,tid=None):
                     "nosidebar":"pizzapizza",
                     "allowed_annotations": allowed_annotations,
                     "team":team }
-
+ 
+        if tid is not None:
+            context['team_annotations'] = get_team_annotations(team=team,get_images=False)
+            return render(request, "annotate/text_annotate.html", context)
         return render(request, "annotate/text_annotate.html", context)
 
     messages.info(request,"This collection does not have any text to annotate.")
