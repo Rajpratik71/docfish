@@ -146,7 +146,11 @@ def describe_image(request,cid,uid=None,tid=None):
     if team is not None:  
 
         if collection.has_images():
-            image = get_image(uid)
+            # There will be a bug here of possibly selecting the same two
+            if uid is None:
+                image = get_next_to_describe(user=request.user,collection=collection,team=team)
+            else:   
+                image = get_image(uid)
             next_image = get_next_to_describe(user=request.user,collection=collection,team=team)
             description = get_description(user=request.user,
                                           instance=image,

@@ -10,20 +10,22 @@
 {% include 'base/loader.html' %}
 <div class="row">
     <div class="col-md-12">
-        <h3 class="title">{{ title }}</h3>
+        <h5>Add Collections to Team <a href="{{ team.get_absolute_url }}"> {{ team.name }}</a></h5>
             <main>
                 <div>
                      {% if request.user == team.owner %}
-
                      {% if team.contender_collections %}
                      <form  class="form-horizontal" method="post" action="{% url 'add_team_collections' team.id %}" >
-                     <select multiple="multiple" name="collection_ids">
-                     {% for collection in team.contender_collections %}
-                     <option value="{{ collection.id }}">{{ collection.name }}</option>
-                     {% endfor %}
+                         <select class="form-control" multiple name="collection_ids">
+                             {% for coll in team.contender_collections %}                 
+                             <option value="{{ coll.id }}">{{ coll.name }}</option>
+                             <option value="2">{{ coll.name }}</option>
+                             {% endfor %}
                      </select>                     
                      {% csrf_token %}
+                     <button class="btn btn-secondary" type="submit">Submit</button>
                      </form>
+
                      {% else %}
                      <p>DocFish doesn't have any collections yet! Why don't you <a href="{% url 'new_collection' %}">make one?</a>
                      {% endif %}
@@ -37,10 +39,4 @@
 
 {% block scripts %}
 <script src="{% static "js/select2.min.js" %}"></script>
-<script>
-$(document).ready(function(){
-    $("#collections").select2();
-})
-</script>
-
 {% endblock %}

@@ -35,6 +35,10 @@ urlpatterns = [
     url(r'^collections/(?P<cid>\d+)/text/describe$',views.describe_text,name='describe_text'),
     url(r'^collections/(?P<cid>\d+)/images/describe$',views.describe_image,name='describe_image'),
 
+    # Teams, describe first image or text
+    url(r'^collections/(?P<cid>\d+)/teams/(?P<tid>\d+)/describe/texts$',views.describe_text,name='team_describe_text'),
+    url(r'^collections/(?P<cid>\d+)/teams/(?P<tid>\d+)/describe/images$',views.describe_image,name='team_describe_image'),
+
     # Teams, describe specific image or text
     url(r'^collections/(?P<cid>\d+)/text/(?P<uid>\d+)/teams/(?P<tid>\d+)/describe$',views.describe_text,name='describe_text'),
     url(r'^collections/(?P<cid>\d+)/images/(?P<uid>\d+)/teams/(?P<tid>\d+)/describe$',views.describe_image,name='describe_image'),

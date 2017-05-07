@@ -21,6 +21,10 @@ from .entity import (
     view_entity
 )
 
+from .collaborate import (
+    team_portal
+)
+
 
 from .labels import (
     create_label,

@@ -229,22 +229,20 @@ def join_team(request, tid, code=None):
 
 def add_collections(request,tid):
     team = get_team(tid)
-    if request.user == team.owner:
-        if request.method == "POST":
-            collection_ids = request.POST.get("collection_ids",None)
+    if request.method == "POST":
+        if request.user == team.owner:
+            collection_ids = request.POST.getlist("collection_ids",None)
             if collection_ids is not None:
-                pickle.dump(collection_ids,open('collection_ids.pkl','wb'))
-                # Add collections
-                #for collection_id in collection_ids:
-                #    team.add_collection(collection_id)
-                #team.save()
+                for collection_id in collection_ids:
+                    team.add_collection(collection_id)
+                team.save()
                 messages.info(request,"%s collections added to team!" %(len(collection_ids)))
+        else:
+            messages.info(request, "Only team owners can edit teams.")
+            return HttpResponseRedirect(team.get_absolute_url())
 
-        context = {"team": team}
-        return render(request, "teams/add_team_collections.html", context)
-
-    messages.info(request, "Only team owners can edit teams.")
-    return HttpResponseRedirect(team.get_absolute_url())
+    context = {"team": team}
+    return render(request, "teams/add_team_collections.html", context)
 
 
 ##################################################################################
@@ -361,3 +359,4 @@ def social_user(backend, uid, user=None, *args, **kwargs):
             'user': user,
             'is_new': user is None,
             'new_association': social is None}
+

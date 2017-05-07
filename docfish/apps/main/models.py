@@ -93,12 +93,17 @@ ACTIVE_CHOICES = ((False, 'Inactive. The object is not shown to the user in stan
 # custom instructions and links for each task. By default, all are active, with no
 # instruction.
 
-collection_status = {'text_annotation': {'active':True,'instruction': None,'title':'Text Annotation','symbol':'fa-pencil-square'},
-                     'text_describe': {'active':True,'instruction': None,'title':'Text Description','symbol':'fa-pencil-square'},
-                     'text_markup': {'active':True,'instruction': None,'title':'Text Markup','symbol':'fa-pencil-square'},
-                     'image_annotation': {'active':True,'instruction': None,'title':'Image Annotation','symbol':'fa-picture-o'},
-                     'image_describe': {'active':True,'instruction': None,'title':'Image Description','symbol':'fa-picture-o'},
-                     'image_markup': {'active':True,'instruction': None, 'title':'Image Markup','symbol':'fa-picture-o'}}
+collection_status = {'text_annotation':  {'active':True,'instruction': "Please choose the descriptor that best matches the text.",
+                                          'title':'Text Annotation','symbol':'fa-pencil-square'},
+                     'text_describe':    {'active':True,'instruction': "Please describe the text.",
+                                          'title':'Text Description','symbol':'fa-pencil-square'},
+                     'text_markup':      {'active':True,'instruction': "Please highlight important parts of the text.",
+                                          'title':'Text Markup','symbol':'fa-pencil-square'},
+                     'image_annotation': {'active':True,'instruction': "Please choose descriptors that best match the image.",
+                                          'title':'Image Annotation','symbol':'fa-picture-o'},
+                     'image_describe':   {'active':True,'instruction': None,'title':'Image Description','symbol':'fa-picture-o'},
+                     'image_markup':     {'active':True,'instruction': "Please mark important parts of the image", 
+                                          'title':'Image Markup','symbol':'fa-picture-o'}}
 
 #######################################################################################################
 # Annotations #########################################################################################
@@ -210,6 +215,12 @@ class Collection(models.Model):
         if count > 0:
             return True
         return False
+
+    def images(self):
+        return Image.objects.filter(entity__collection=self)
+
+    def texts(self):
+        return Text.objects.filter(entity__collection=self)
 
     def get_annotations(self):
         '''get_annotations will return a nicely formatted dictionary with common

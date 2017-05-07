@@ -31,6 +31,8 @@ urlpatterns = [
     url(r'^contributors/(?P<cid>\d+)/(?P<uid>.+?)/remove$',views.remove_contributor,name='remove_contributor'),
     url(r'^contributors/(?P<cid>\d+)/add$',views.add_contributor,name='add_contributor'),
     url(r'^contributors/(?P<cid>\d+)/edit$',views.edit_contributors,name='edit_contributors'),
+   
+    url(r'^teams/(?P<tid>.+?)/collection/(?P<cid>.+?)/start$', views.team_portal, name="team_portal"),
 
     # Video
     #url(r'^teams/video/describe$',views.video_describe_web,name='video_describe_web'),

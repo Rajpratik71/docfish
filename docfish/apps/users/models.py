@@ -104,10 +104,10 @@ class Team(models.Model):
                                      # we will constrain each user to joining one team on view side
 
     def __str__(self):
-        return "<%s:%s>" %(self.id,self.name)
+        return "%s:%s" %(self.id,self.name)
 
     def __unicode__(self):
-        return "<%s:%s>" %(self.id,self.name)
+        return "%s:%s" %(self.id,self.name)
 
     def get_absolute_url(self):
         return reverse('team_details', args=[str(self.id)])

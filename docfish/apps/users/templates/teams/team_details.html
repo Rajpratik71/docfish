@@ -79,8 +79,14 @@
            <thead>
                <tr>
                    <th>Name</th>
+                   <th>Entities</th>
                    <th>Images</th>
                    <th>Texts</th>
+                   <th>Teams Watching</th>
+                   {% if collection.has_images or collection.has_text %}
+                   <th></th>
+                   {% endif %}
+                   <th></th>
                    {% if edit_permission %}
                    <th></th>
                    {% endif %}
@@ -90,8 +96,14 @@
            {% for collection in team.collections.all %}
                <tr id="collection_row_{{ collection.id }}">
                    <td>{{ collection.name }}</td>
-                   <td>{{ collection.image_set.count }}</td>
-                   <td>{{ collection.text_set.count }}</td>
+                   <td>{{ collection.entity_set.count }}</td>
+                   <td>{{ collection.images.count }}</td>
+                   <td>{{ collection.texts.count }}</td>
+                   <td>{{ collection.team_set.count }}</td>
+                   {% if collection.has_images or collection.has_text %}
+                   <th><a href="{% url 'team_portal' team.id collection.id %}">
+                       <button style="padding-bottom:0px" class="btn btn-warning btn-sm">Start</button></a></th>
+                   {% endif %}
                    {% if edit_permission %}
                    <td><button class="btn btn-danger remove_collection" id="collection_{{ collection.id }}">Remove</button></td>
                    {% endif %}
@@ -112,10 +124,10 @@
 
 <div class="row">
     <div class="col-md-12">
-    <!-- Team Members -->
+
     {% if team.members.count > 0 %}
       
-        <h3 style='padding-top:10px'>Team Members</h3>
+        <h4 style="padding-top:30px">Team Members</h4>
         <table id="annotators" class="mdl-data-table" cellspacing="0" width="100%" style="padding-top:20px"> 
            <thead>
                <tr>
