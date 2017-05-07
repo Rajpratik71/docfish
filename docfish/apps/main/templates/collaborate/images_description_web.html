@@ -28,11 +28,9 @@
         <img class="som_image" src="{{ image.get_url | safe }}">
     </div>
     <div class="col-md-6">
-        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' collection.id image.id %}">
+        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' collection.id next_image.id team_id %}">
              <input type="hidden" name="image_id" id="{{ image.id }}" value="{{ image.id }}">  
-             {% if team %}
              <input type="hidden" name="team_id" id="{{ team.id }}" value="{{ team.id }}">  
-             {% endif %}
              <div class="form-group">
                  <h3>What do you see?</h3>
                  <textarea class="form-control" rows="15" id="description" name="description">{% if description %}{{ description.description }}{% endif %}</textarea>
@@ -82,12 +80,7 @@ $(function() {
           
            // If the previous description is the same as current, assume the user wants to skip
            if (previous_description == current_description) {
-             {% if team %}
-             document.location = "{% url 'collection_describe_image' collection.id team.id %}"   
-             {% else %}
-             document.location = "{% url 'collection_describe_image' collection.id %}"   
-             {% endif %}
-
+             document.location = "{% url 'describe_image' collection.id next_image.id team.id %}"   
            } else {
                $("form").submit();
            }
@@ -97,11 +90,7 @@ $(function() {
     });
 
     $("#skip_button").click(function(){
-         {% if team %}
-         document.location = "{% url 'collection_describe_image' collection.id team.id %}"   
-         {% else %}
-         document.location = "{% url 'collection_describe_image' collection.id %}"   
-         {% endif %}
+        document.location = "{% url 'describe_image' collection.id next_image.id team.id %}"   
     });
 
 
@@ -112,15 +101,9 @@ $(function() {
             url : "{% url 'flag_image' image.id %}", // the endpoint
             type : "POST", // http method
 
-            // handle a successful response
             success : function(json) {
-                console.log(json); // log the returned json to the console
-                console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_describe_image' collection.id team.id %}"
-                {% else %}
-                document.location = "{% url 'collection_describe_image' collection.id %}"
-                {% endif %}
+                console.log(json);
+                document.location = "{% url 'describe_image' collection.id next_image.id team.id %}"   
             },
 
             // handle a non-successful response

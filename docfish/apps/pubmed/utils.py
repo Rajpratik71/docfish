@@ -158,6 +158,8 @@ def parse_journal(article):
 def parse_title(article):
     if 'article-title' in article['front']['article-meta']:
         title = article['front']['article-meta']['article-title']
+    elif 'issue-title' in article['front']['article-meta']:
+        title = article['front']['article-meta']['issue-title']
     else:
         title = article['front']['article-meta']['title-group']['article-title']
     if isinstance(title,dict):

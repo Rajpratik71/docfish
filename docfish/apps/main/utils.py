@@ -244,7 +244,7 @@ def get_image_base(image):
     return image_base
 
 
-def save_markup(markup,overlay=None,base=None):
+def save_markup(markup,overlay=None,base=None,team=None):
     '''save markup is intended to be used to save png data to a markup.
     It handles naming the file based on the user, and adding optional
     png data
@@ -252,13 +252,16 @@ def save_markup(markup,overlay=None,base=None):
     :param overlay: the png data of the overlay to save
     :param base: the base image to save
     '''
-    markup_name = "%s-%s.png" %(markup.creator.username,markup.image.uid)
-    if overlay != None:
-        if markup.overlay != None:
+    if tid is not None:
+        markup_name = "user-%s-%s.png" %(markup.creator.username,markup.image.uid)
+    else:
+        markup_name = "team-%s-%s.png" %(markup.team.id,markup.image.uid)
+    if overlay is not None:
+        if markup.overlay is not None:
             markup.overlay.delete()
         markup.overlay.save(markup_name, ContentFile(png2base64(overlay)))
-    if base != None:
-        if markup.base != None:
+    if base is not None:
+        if markup.base is not None:
             markup.base.delete()
         markup.base.save("base-%s.png" %(markup.image.uid), ContentFile(png2base64(base)))
     return markup

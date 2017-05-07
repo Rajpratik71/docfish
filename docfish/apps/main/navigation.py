@@ -47,7 +47,7 @@ def get_contenders(collection,active=True,get_images=True):
     return contenders
 
 
-def get_next_to_markup(user,collection,get_images=True,team=None):
+def get_next_to_markup(user,collection,get_images=True,team=None,N=1):
     '''get next to markup will return images from a collection that a user has not seen, 
     chosen, from the entities that are available for annotation. From that set, it is a
     random selection
@@ -77,12 +77,12 @@ def get_next_to_markup(user,collection,get_images=True,team=None):
     return get_unseen(contenders=contenders,
                       seen=previous_markups,
                       get_images=get_images,
-                      return_single=True,
+                      return_number=N,
                       repeat=repeat)
 
 
 
-def get_next_to_describe(user,collection,get_images=True,team=None):
+def get_next_to_describe(user,collection,get_images=True,team=None,N=1):
     '''get next to describe will first return images for entities that a user has not seen,
     and then a random selection
     '''
@@ -107,11 +107,11 @@ def get_next_to_describe(user,collection,get_images=True,team=None):
     return get_unseen(contenders=contenders,
                       seen=previous_descriptions,
                       get_images=get_images,
-                      return_single=True,
+                      return_number=N,
                       repeat=repeat)
 
 
-def get_next_to_annotate(user,collection,get_images=True,team=None):
+def get_next_to_annotate(user,collection,get_images=True,team=None,N=1):
     '''get next to annotate will first return images for entities that a user has not seen,
     and then a random selection
     '''
@@ -136,7 +136,7 @@ def get_next_to_annotate(user,collection,get_images=True,team=None):
     return get_unseen(contenders=contenders,
                       seen=previous_annotations,
                       get_images=get_images,
-                      return_single=True,
+                      return_number=N,
                       repeat=repeat)
 
 
@@ -146,12 +146,13 @@ def get_next_to_annotate(user,collection,get_images=True,team=None):
 #############################################################################################
 
 
-def get_unseen(contenders,seen,return_single=True,get_images=True,repeat=False):
+def get_unseen(contenders,seen,return_number=None,get_images=True,repeat=False):
     '''get unseen images will take a set of seen_images and a set of contenders
     and return one (in case of return_single is True) or a set of unseen images
     :param return_single: randomly select from the set
     :param seen: a list of already seen images
     :param contenders: all images to select from
+    :param return_number: if None, will return all
     :param repeat: allow the user to select from seen, otherwise return None.
     default is False, the user does not annotate twice.
     '''
@@ -172,10 +173,15 @@ def get_unseen(contenders,seen,return_single=True,get_images=True,repeat=False):
             return None
         selection = contenders
 
-    # Does the user want to return all selection?
-    if return_single == False:
+    # User wants to return all, or wants more than we have
+    if return_number == None or return_number > len(selection):
         return selection
-
+    
     # or randomly select one from it
-    idx = choice(range(0,len(selection)))
-    return selection[idx]
+    choices = []
+    for c in range(return_number):
+        idx = choice(range(0,len(selection)))
+        choices.append(selection.pop(idx))
+    if len(choices) == 1:
+        return choices[0]
+    return choices

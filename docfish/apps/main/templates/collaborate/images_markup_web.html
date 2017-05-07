@@ -97,6 +97,16 @@
         {% csrf_token %}
     </form>
 
+    <!--Show all other team members marketup -->
+    <div class="row">
+        <div class="col-md-12">
+            {% for tmarkup in team_markups %}
+            <img class="team_markup" src="{{ tmarkup.overlay.url | safe }}" style='display:none'>
+            {% endfor %}
+        </div>
+    </div>
+
+
 </div>
 {% include "collections/return_to_collection.html" %}
 {% endblock %}

@@ -23,9 +23,7 @@ SOFTWARE.
 '''
 
 from django.conf.urls import url
-from django.views.generic.base import TemplateView
 import docfish.apps.main.views as views
-import docfish.apps.main.actions as actions
 
 urlpatterns = [
 
@@ -34,17 +32,7 @@ urlpatterns = [
     url(r'^contributors/(?P<cid>\d+)/add$',views.add_contributor,name='add_contributor'),
     url(r'^contributors/(?P<cid>\d+)/edit$',views.edit_contributors,name='edit_contributors'),
 
-    ## TEAM annotation
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/markup$',views.collection_markup_text,name='collection_markup_text'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/describe$',views.collection_describe_text,name='collection_describe_text'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/annotate$',views.collection_annotate_text,name='collection_annotate_text'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/describe$',views.describe_text,name='describe_text'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/(?P<uid>.+?)/markup$',views.markup_text,name='markup_text'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/markup$',views.collection_markup_image,name='collection_markup_image'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/describe$',views.collection_describe_image,name='collection_describe_image'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/(?P<uid>.+?)/markup$',views.markup_image,name='markup_image'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/(?P<uid>\d+)/describe$',views.describe_image,name='describe_image'),
-    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/annotate$',views.collection_annotate_image,name='collection_annotate_image'),
-
+    # Video
+    #url(r'^teams/video/describe$',views.video_describe_web,name='video_describe_web'),
 
 ]

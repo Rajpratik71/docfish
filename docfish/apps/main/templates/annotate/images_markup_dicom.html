@@ -80,6 +80,8 @@ var params = {
          <button id="save_button" class="btn btn btn-xs btn-primary">Save</button>
          <button id="skip_button" class="btn btn btn-xs btn-primary">Skip</button>
          <button id="flag_button" class="btn btn btn-xs btn-danger">Mark as Bad</button>
+         <a style="cursor:pointer" data-toggle="tooltip" data-placement="right" title="If the image is small or blurry to make it not useful, mark it as bad."><i id="flag_info" class="fa fa-2x fa-info-circle"></i></a>
+
     </span>
 </div>
 
@@ -107,9 +109,6 @@ var params = {
     <form id="save_markup" class="form-horizontal" method="post" action="{% url 'markup_image' collection.id image.id %}" >
         <input type="hidden" name="image_id" value="{{ image.id }}">  
         <input type="hidden" name="pngdata" id="hidden_image">  
-        {% if team %}
-        <input type="hidden" name="team_id" id="team_id" value="{{ team.id }}">  
-        {% endif %}
         {% if missing_base %}
         <input type="hidden" name="pngdatabase" id="base_image">  
         {% endif %}
@@ -186,11 +185,7 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_markup_image' collection.id team.id %}"
-       {% else %}
        document.location = "{% url 'collection_markup_image' collection.id %}"
-       {% endif %}
    });
 
    // Flag a small or bad image
@@ -204,11 +199,7 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_markup_image' collection.id team.id %}"
-                {% else %}
                 document.location = "{% url 'collection_markup_image' collection.id %}"
-                {% endif %}
             },
 
             // handle a non-successful response

@@ -74,6 +74,7 @@ ref-list {
         <div class="button-group">
             <button id="flag_button" class="btn btn-danger">Mark As Bad</button>
             <button id="skip_button" class="btn btn-info"> >> </button>
+            <a style="cursor:pointer" data-toggle="tooltip" data-placement="right" title="For some older articles, only metadata is provided and the text appears empty. You should mark these as bad."><i id="flag_info" class="fa fa-2x fa-info-circle"></i></a>
         </div>
         </div>
         
@@ -111,11 +112,7 @@ $(function() {
          }
         
         if (e.which == 39) { 
-           {% if team %}
-           document.location = "{% url 'collection_annotate_text' collection.id team.id %}"
-           {% else %}
            document.location = "{% url 'collection_annotate_text' collection.id %}"
-           {% endif %}
            e.preventDefault();
            return false;
         }
@@ -131,17 +128,10 @@ $(function() {
             
         }).then(function(annotations){
             console.log(annotations);
-            {% if team %}
-            var team_id = "{{ team.id }}"
-            {% endif %}
             $.ajax({
 
                 url : "{% url 'update_text_annotation' collection.id text.id %}", // the endpoint
                 type : "POST", // http method
-                {% if team %}
-                data : { annotations: annotations,
-                         team_id: team_id },
-                {% else %}
                 data : { annotations: annotations }, // data sent with the post request
                 {% endif %}
 
@@ -166,11 +156,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            {% if team %}
-            url : "{% url 'clear_text_annotations' collection.id text.id team.id %}",
-            {% else %}
             url : "{% url 'clear_text_annotations' collection.id text.id %}",
-            {% endif %}
             type : "POST", // http method
 
             // handle a successful response
@@ -211,11 +197,7 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_annotate_text' collection.id team.id %}"
-       {% else %}
        document.location = "{% url 'collection_annotate_text' collection.id %}"
-       {% endif %}
    });
 
    // Flag a small or bad image
@@ -229,11 +211,7 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_annotate_text' collection.id team.id %}"
-                {% else %}
                 document.location = "{% url 'collection_annotate_text' collection.id %}"
-                {% endif %}
             },
 
             // handle a non-successful response
@@ -248,6 +226,7 @@ $(function() {
            flagText();
       },500)
    })
+
 
 
 })

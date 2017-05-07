@@ -43,6 +43,19 @@
     {% block css %}{% endblock %}
     {% endblock %}
     {% block head %}{% endblock %}
+    {% if collaborate %}
+    <script>
+    var TogetherJSConfig_siteName = "DocFish";
+    var TogetherJSConfig_toolName = "Team DocFish";
+    var TogetherJSConfig_youtube = true;
+    var TogetherJSConfig_inviteFromRoom = true;
+    var TogetherJSConfig_cloneClicks = true;
+    // var TogetherJSConfig_cloneClicks = ".tab"
+    // note - need to figure out way to sync movement through annotation?
+    </script>
+    <script src="{% static "js/togetherjs-min.js" %}"></script>
+    {% endif %}
+
     {% block functions %}{% endblock %}
 </head>
 
@@ -77,18 +90,6 @@
     <script type="text/javascript" src="{% static "js/toastr.min.js"%}"></script>
     <script type="text/javascript" src="{% static "js/functions.js"%}"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
-
-    {% if collaborate %}
-    <script>
-    var TogetherJSConfig_siteName = "DocFish";
-    var TogetherJSConfig_toolName = "Team DocFish";
-    var TogetherJSConfig_youtube = true;
-    var TogetherJSConfig_inviteFromRoom = true;
-    // var TogetherJSConfig_cloneClicks = ".tab"
-    // note - need to figure out way to sync movement through annotation?
-    </script>
-    <script src="{% static "js/togetherjs-min.js" %}"></script>
-    {% endif %}
 
 <script>
 $(document).ready(function(){
