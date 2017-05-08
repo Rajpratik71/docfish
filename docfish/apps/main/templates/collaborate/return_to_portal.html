@@ -1,0 +1,39 @@
+<style>
+#returnPortal {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: darkturquoise;
+  color: white;
+  cursor: pointer;
+  margin:15px;
+  border-radius: 10px;
+}
+
+#returnCollection:hover {
+  background-color: #555;
+}
+</style>
+
+<button onclick="returnPortal()" id="returnPortal" title="Return to Team Portal">Team Portal</button>
+
+<script>
+window.onscroll = function() {scrollReturnPortal()};
+
+function scrollReturnPortal() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("returnPortal").style.display = "block";
+    } else {
+        document.getElementById("returnPortal").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function returnPortal() {
+    document.location = "{% url 'team_portal' cid=collection.id tid=team.id %}"
+}
+</script>

@@ -182,7 +182,7 @@ def sniff_template_extension(filename):
     '''sniff_extension will determine the extension, and return a descriptor
     for the correct template.
     '''
-    template_type = None
+    template_type = "web"
 
     # standard web format
     if re.search('.png$|.jpg$|.jpeg|.tiff|.gif',filename.lower()):

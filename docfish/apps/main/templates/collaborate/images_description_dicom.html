@@ -82,7 +82,7 @@ var params = {
         </div>
     </div>
     <div class="col-md-6">
-        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' collection.id next_image.id team.id %}">
+        <form id="save_description" class="form-horizontal" method="post" action="{% url 'describe_image' cid=collection.id uid=next_image.id tid=team.id %}">
              <input type="hidden" name="image_id" id="{{ image.id }}" value="{{ image.id }}">  
              <input type="hidden" name="team_id" id="{{ team.id }}" value="{{ team.id }}">  
              <div class="form-group">
@@ -93,12 +93,15 @@ var params = {
         </form>
 
         <div>
-            <button class="btn btn-primary" id="submit" style="margin-left:0px">Submit</button>
-            <button id="skip_button" class="btn btn-primary">Skip</button>
+            {% include "social/collaborate_button.html" %}
+            <button class="btn btn-primary" id="submit" style="margin-left:0px">Save</button>
+            <button id="flag_button" class="btn btn btn-xs btn-danger">Bad</button>
+            <button id="skip_button" class="btn btn-primary">>></button>
         </div>
  
     </div>
 </div>
+{% include "collaborate/return_to_portal.html" %}
 {% endblock %}
 
 {% block scripts %}
@@ -130,7 +133,7 @@ $(function() {
           
            // If the previous description is the same as current, assume the user wants to skip
            if (previous_description == current_description) {
-             document.location = "{% url 'describe_image' collection.id next_image.id team.id %}"   
+             document.location = "{% url 'describe_image' cid=collection.id nid=next_image.id tid=team.id %}"   
            } else {
                $("form").submit();
            }
@@ -140,8 +143,35 @@ $(function() {
     });
  
    $("#skip_button").click(function(){
-        document.location = "{% url 'describe_image' collection.id next_image.id team.id %}"   
+        document.location = "{% url 'describe_image' cid=collection.id uid=next_image.id tid=team.id %}"   
    });
+
+   // Flag a small or bad image
+   function flagImage() {
+
+        $.ajax({
+            url : "{% url 'flag_image' image.id %}", // the endpoint
+            type : "POST", // http method
+
+            success : function(json) {
+                console.log(json);
+                document.location = "{% url 'describe_image' cid=collection.id uid=next_image.id tid=team.id %}"   
+            },
+
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+         });
+    }
+
+   $("#flag_button").click(function(){
+      setTimeout(function(){
+           flagImage();
+      },500)
+   })
+
+
 })
 </script>
 {% endblock %}
