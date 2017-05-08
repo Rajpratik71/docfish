@@ -1,6 +1,6 @@
 <style>
 #returnPortal {
-  display: none;
+  display: block;
   position: fixed;
   bottom: 20px;
   right: 30px;
@@ -23,14 +23,6 @@
 
 <script>
 window.onscroll = function() {scrollReturnPortal()};
-
-function scrollReturnPortal() {
-    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-        document.getElementById("returnPortal").style.display = "block";
-    } else {
-        document.getElementById("returnPortal").style.display = "none";
-    }
-}
 
 // When the user clicks on the button, scroll to the top of the document
 function returnPortal() {

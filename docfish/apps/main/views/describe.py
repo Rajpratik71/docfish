@@ -113,11 +113,12 @@ def describe_image(request,cid,uid=None,tid=None):
     If this is a team description (tid is provided) the view returns uid. If not, the user
     is redirected to the collection_describe_image that will randomly select the next. 
     '''
+    collaborate = True
     collection = get_collection(cid)
     team = get_team(tid,return_none=True)
 
     if collection.private == True:
-        if not has_collection_annotate_permission(request,collection):
+        if not has_collection_annotate_permission(request,collection,team):
             messages.info(request, '''This collection is private. You must be a contributor
                                       or member of the owner's institution to annotate.''')
             return redirect("collections")
@@ -148,6 +149,7 @@ def describe_image(request,cid,uid=None,tid=None):
         if collection.has_images():
             # There will be a bug here of possibly selecting the same two
             if uid is None:
+                collaborate = False # This is the first time visiting the page, url is not right for team
                 image = get_next_to_describe(user=request.user,collection=collection,team=team)
             else:   
                 image = get_image(uid)
@@ -163,8 +165,9 @@ def describe_image(request,cid,uid=None,tid=None):
                        "collection": collection,
                        "description": description,
                        "nosidebar":"pancakes",
-                       "team":team,
-                       "collaborate":"yes"}
+                       "team":team}
+            if collaborate:
+                context["collaborate"] = "yes"
     
             template_type = sniff_template_extension(image.get_path())
             return render(request, "collaborate/images_description_%s.html" %(template_type), context)
@@ -184,7 +187,7 @@ def collection_describe_text(request,cid):
     collection = get_collection(cid)
     
     if collection.private == True:
-        if not has_collection_annotate_permission(request,collection):
+        if not has_collection_annotate_permission(request,collection,team):
             messages.info(request, '''This collection is private. You must be a contributor
                                       or member of the owner's institution to annotate.''')
             return redirect("collections")

@@ -64,12 +64,19 @@ def has_collection_edit_permission(request,collection):
 
 
 # Supporting function
-def has_collection_annotate_permission(request,collection):
-    '''owner and annotators have annotate permission (not contributors)'''
-    from docfish.apps.users.models import Team
+def has_collection_annotate_permission(request,collection,team=None):
+    '''owner and annotators have annotate permission (not contributors). If
+    a team is provided, the user must be a member to contribute to the team
+    annotation.'''
+    if team is not None:
+        if request.user not in team.members.all():
+            return False
     if request.user == collection.owner:
+        return True
+    if collection.private == False:
+        return True
+    if request.user in collection.contributors.all():
         return True
     return has_same_institution(owner=request.user,
                                 requester=collection.owner)
-
 

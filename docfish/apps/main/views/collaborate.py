@@ -71,7 +71,7 @@ def team_portal(request,tid,cid,status=None):
         del status['image_markup']
         
     if collection.private == True:
-        if not has_collection_annotate_permission(request,collection):
+        if not has_collection_annotate_permission(request,collection,team):
             messages.info(request, '''This collection is private. You must be a contributor
                                       or member of the owner's institution to annotate.''')
             return redirect("collections")
