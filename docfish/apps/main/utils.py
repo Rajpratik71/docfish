@@ -252,7 +252,7 @@ def save_markup(markup,overlay=None,base=None,team=None):
     :param overlay: the png data of the overlay to save
     :param base: the base image to save
     '''
-    if tid is not None:
+    if team is None:
         markup_name = "user-%s-%s.png" %(markup.creator.username,markup.image.uid)
     else:
         markup_name = "team-%s-%s.png" %(markup.team.id,markup.image.uid)

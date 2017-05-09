@@ -151,7 +151,8 @@ def describe_image(request,cid,uid=None,tid=None):
                 collaborate = False
                 image,next_image = get_next_to_describe(user=request.user,
                                                         collection=collection,
-                                                        team=team)
+                                                        team=team,
+                                                        N=2)
             else:   
                 image = get_image(uid)
                 next_image = get_next_to_describe(user=request.user,

@@ -112,16 +112,17 @@ def collection_markup_image(request,cid):
 
 
 @login_required
-def markup_image(request,cid,uid):
+def markup_image(request,cid,uid=None,tid=None):
     '''markup_image will return a (free hand) annotator to markup an image.
     It is assumed that we have already chosen the image for the collection,
     and we will redirect back to the route to choose an image.
     '''
-    image = get_image(uid)
+    collaborate = True
+    team = get_team(tid,return_none=True)
     collection = get_collection(cid)
 
     if collection.private == True:
-        if not has_collection_annotate_permission(request,collection):
+        if not has_collection_annotate_permission(request,collection,team):
             messages.info(request, '''This collection is private. You must be a contributor
                                       or member of the owner's institution to annotate.''')
             return redirect("collections")
@@ -132,28 +133,77 @@ def markup_image(request,cid,uid):
         # Retrieve base64 encoded data
         png_data = request.POST.get('pngdata',None)
         base_data = request.POST.get('pngdatabase',None)
-        uid = request.POST.get('image_id',None)
+        image_id = request.POST.get('image_id',None)
         
-        if png_data:
+        if png_data and image_id is not None:
 
-            markup,created = ImageMarkup.objects.update_or_create(creator=request.user,image=image)
+            image = get_image(image_id)
+            if team is not None:
+                markup,created = ImageMarkup.objects.update_or_create(team=team,
+                                                                      image=image)
+            else:
+                markup,created = ImageMarkup.objects.update_or_create(creator=request.user,
+                                                                      image=image)
 
             # The interface will send the base image if being annotated for first time
             if base_data not in [None,'']:
-                markup = save_markup(markup=markup,overlay=png_data,base=base_data,team=team)
+                markup = save_markup(markup=markup,
+                                     overlay=png_data,
+                                     base=base_data,
+                                     team=team)
 
             # Otherwise, try to retrieve the already existing image
             else:
                 base_image = get_image_base(image)
                 markup = save_markup(markup=markup,overlay=png_data)
                 markup.base = base_image
-            markup.save()
+                markup.save()
 
         else:
             messages.info(request, "No markup detected. Did you annotate the image?")
 
-    return redirect("collection_markup_image", cid=cid, tid=tid)
+    if team is not None:  
 
+        if collection.has_images():
+            if uid is None:
+                collaborate = False
+                image,next_image = get_next_to_markup(user=request.user,
+                                                      collection=collection,
+                                                      team=team,
+                                                      N=2)
+            else:   
+                image = get_image(uid)
+                next_image = get_next_to_markup(user=request.user,
+                                                collection=collection,
+                                                team=team,
+                                                skip=image.id)
+    
+            markup = get_markup(user=request.user,
+                                instance=image,
+                                team=team)
+
+            # Has the image base been saved?
+            missing_base = not has_image_base(image)
+
+            # Pass to view if we need to save a base for the image
+            context = {"entity": image.entity,
+                       "image": image,
+                       "next_image": next_image,
+                       "markup": markup,
+                       "collection":collection,
+                       "missing_base":missing_base,
+                       "nosidebar":"harrypottah",
+                       "team":team}
+            if collaborate:
+                context['collaborate'] = "yes"
+
+            template_type = sniff_template_extension(image.get_path())
+            return render(request, "collaborate/images_markup_%s.html" %(template_type), context)
+    
+        messages.info(request,"This collection does not have any images to markup.")
+        return HttpResponseRedirect(collection.get_absolute_url())
+
+    return redirect("collection_markup_image", cid=cid)
 
 
 
@@ -201,12 +251,12 @@ def collection_markup_text(request,cid):
 
 
 @login_required
-def markup_text(request,cid,uid):
+def markup_text(request,cid,uid=None,tid=None):
     '''markup_text will return a highlighter to markup a text.
-    '''
-
-    text = get_text(uid)
+    '''   
     collection = get_collection(cid)
+    team = get_team(tid,return_none=True)
+    collaborate = True
 
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection):
@@ -214,28 +264,44 @@ def markup_text(request,cid,uid):
                                       or member of the owner's institution to annotate.''')
             return redirect("collections")
 
-    # If it's a post, save the markup
-    #TODO: what are we saving?
-    if request.method == "POST": 
 
-        # Retrieve base64 encoded data
-        uid = request.POST.get('image_id',None)
+    if team is not None:  
 
-        if uid:
-            markup,created = ImageMarkup.objects.get_or_create(creator=request.user,image=image)
+        if collection.has_text():
+            if uid is None:
+                collaborate = False
+                text,next_text = get_next_to_markup(user=request.user,
+                                                    collection=collection,
+                                                    team=team,
+                                                    get_images=False,
+                                                    N=2)
+            else:   
+                text = get_text(uid)
+                next_text = get_next_to_markup(user=request.user,
+                                               collection=collection,
+                                               team=team,
+                                               get_images=False,
+                                               skip=text.id)
+    
+            markup = get_markup(user=request.user,
+                                instance=text,
+                                team=team)
 
-            # The interface will send the base image if being annotated for first time
-            if base_data not in [None,'']:
-                markup = save_markup(markup=markup,overlay=png_data,base=base_data)
+            # Pass to view if we need to save a base for the image
+            context = {"entity": next_text.entity,
+                       "text": text,
+                       "next_text": next_text,
+                       "markup": markup,
+                       "nosidebar":"ronweesley!",
+                       "collection":collection,
+                       "team":team}
 
-            # Otherwise, try to retrieve the already existing image
-            else:
-                base_image = get_image_base(image)
-                markup = save_markup(markup=markup,overlay=png_data)
-                markup.base = base_image
-            markup.save()
+            if collaborate:
+                context['collaborate'] = "yes"
 
-        else:
-            messages.info(request, "No markup detected. Did you annotate the image?")
+            return render(request, "collaborate/text_markup.html", context)
+    
+        messages.info(request,"This collection does not have any text to markup.")
+        return HttpResponseRedirect(collection.get_absolute_url())
 
-    return redirect("collection_markup_image", cid=cid)
+    return redirect("collection_markup_text", cid=cid)
