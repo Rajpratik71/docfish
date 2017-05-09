@@ -71,7 +71,8 @@ def collection_describe_image(request,cid):
 
     if collection.has_images():
         
-        next_image = get_next_to_describe(user=request.user,collection=collection)
+        next_image = get_next_to_describe(user=request.user,
+                                          collection=collection)
 
         # Next image will never be none for a team, keeps cycling
         if next_image == None:
@@ -131,14 +132,13 @@ def describe_image(request,cid,uid=None,tid=None):
         image_id = request.POST.get('image_id',None)
 
         if description_text not in [None,''] and image_id not in [None,'']:
-            image = get_image(image_id)
             if team is not None:
                 description,created = ImageDescription.objects.get_or_create(team=team,
-                                                                             image=image,
+                                                                             image__id=image_id,
                                                                              description=description_text)
             else:
                 description,created = ImageDescription.objects.get_or_create(creator=request.user,
-                                                                             image=image,
+                                                                             image__id=image_id,
                                                                              description=description_text)
             description.save()
 
@@ -147,13 +147,18 @@ def describe_image(request,cid,uid=None,tid=None):
     if team is not None:  
 
         if collection.has_images():
-            # There will be a bug here of possibly selecting the same two
             if uid is None:
-                collaborate = False # This is the first time visiting the page, url is not right for team
-                image = get_next_to_describe(user=request.user,collection=collection,team=team)
+                collaborate = False
+                image,next_image = get_next_to_describe(user=request.user,
+                                                        collection=collection,
+                                                        team=team)
             else:   
                 image = get_image(uid)
-            next_image = get_next_to_describe(user=request.user,collection=collection,team=team)
+                next_image = get_next_to_describe(user=request.user,
+                                                  collection=collection,
+                                                  team=team,
+                                                  skip=image.id)
+    
             description = get_description(user=request.user,
                                           instance=image,
                                           team=team)
@@ -221,6 +226,7 @@ def collection_describe_text(request,cid):
 def describe_text(request,cid,uid=None,tid=None):
     '''describe_text will return a static view of text to describe. 
     '''
+    collaborate = True
     team = get_team(tid,return_none=True)
     collection = get_collection(cid)
 
@@ -237,41 +243,50 @@ def describe_text(request,cid,uid=None,tid=None):
         text_id = request.POST.get('text_id',None)
 
         if description_text not in [None,''] and text_id not in [None,'']:
-            text = get_text(text_id)
             if team:
                 description,created = TextDescription.objects.get_or_create(team=team,
-                                                                            text=text,
+                                                                            text__id=text_id,
                                                                             description=description_text) 
             else:
                 description,created = TextDescription.objects.get_or_create(creator=request.user,
-                                                                            text=text,
+                                                                            text__id=text_id,
                                                                             description=description_text)
             description.save()
 
-    # Team description has (somewhat) controlled movement through images
+    # Team description has (somewhat) controlled movement through texts
     if team is not None:  
 
         if collection.has_text():
-            text = get_text(uid)
-            next_text = get_next_to_describe(user=request.user,
-                                             collection=collection,
-                                             team=team,
-                                             get_images=False)
+            if uid == None:
+                collaborate = False
+                text, next_text = get_next_to_describe(user=request.user,
+                                                       collection=collection,
+                                                       team=team,
+                                                       N=2,
+                                                       get_images=False)
+            else:
+                text = get_text(uid)
+                next_text = get_next_to_describe(user=request.user,
+                                                 collection=collection,
+                                                 team=team,
+                                                 get_images=False,
+                                                 skip=text.id)
 
             description = get_description(user=request.user,
-                                          instance=image,
+                                          instance=text,
                                           team=team)
     
             # Pass to view if we need to save a base for the image
-            context = {"entity":image.entity,
+            context = {"entity":text.entity,
                        "text": text,
                        "next_text": next_text,
                        "collection": collection,
                        "description": description,
                        "nosidebar":"pancakes",
-                       "team":team,
-                       "collaborate":"yes"}
-    
+                       "team":team}
+
+            if collaborate:
+                context["collaborate"] = "yes"
             return render(request, "collaborate/text_description.html", context)
 
         messages.info(request,"This collection does not have any texts to describe.")

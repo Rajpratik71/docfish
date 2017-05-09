@@ -128,13 +128,7 @@ $(function() {
          }
         
         if (e.which == 39) { 
-
-           {% if team %}
-           document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
-           {% else %}
-           document.location = "{% url 'collection_annotate_image' collection.id %}"
-           {% endif %}
-
+           document.location = "{% url 'team_annotate_image' cid=collection.id tid=team.id uid=next_image.id %}"
            e.preventDefault();
            return false;
         }
@@ -151,20 +145,12 @@ $(function() {
         }).then(function(annotations){
             console.log(annotations);
 
-            {% if team %}
-            var team_id = "{{ team.id }}"
-            {% endif %}
-
             $.ajax({
-                url : "{% url 'update_image_annotation' image.id %}", // the endpoint
-                type : "POST", // http method
+                url : "{% url 'update_image_annotation' image.id %}",
+                type : "POST",
 
-                {% if team %}
                 data : { annotations: annotations,
-                         team_id: team_id },
-                {% else %}
-                data : { annotations: annotations },
-                {% endif %}
+                         team_id: "{{ team.id }}" },
 
                 // handle a successful response
                 success : function(json) {
@@ -186,17 +172,10 @@ $(function() {
     // Function to clear annotations
     function clearAnnotations() {
 
-        {% if team %}
-        var team_id = "{{ team.id }}"
-        {% endif %}
-
         $.ajax({
-            url : "{% url 'clear_image_annotations' collection.id image.id %}", // the endpoint
-            type : "POST", // http method
-
-            {% if team %}
-            data: {team_id: team_id},
-            {% endif %}
+            url : "{% url 'clear_image_annotations' collection.id image.id %}",
+            type : "POST",
+            data: {team_id: "{{ team.id }}"},
 
             // handle a successful response
             success : function(json) {
@@ -236,30 +215,22 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
-       {% else %}
-       document.location = "{% url 'collection_annotate_image' collection.id %}"
-       {% endif %}
+       document.location = "{% url 'team_annotate_image' cid=collection.id tid=team.id uid=next_image.id %}"
+
    });
 
    // Flag a small or bad image
    function flagImage() {
 
         $.ajax({
-            url : "{% url 'flag_image' image.id %}", // the endpoint
-            type : "POST", // http method
+            url : "{% url 'flag_image' image.id %}",
+            type : "POST",
 
             // handle a successful response
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
-                {% else %}
-                document.location = "{% url 'collection_annotate_image' collection.id %}"
-                {% endif %}
- 
+                document.location = "{% url 'team_annotate_image' cid=collection.id tid=team.id uid=next_image.id %}"
             },
 
             // handle a non-successful response

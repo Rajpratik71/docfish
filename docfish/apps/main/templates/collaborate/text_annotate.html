@@ -72,6 +72,7 @@ ref-list {
         {% endfor %}
 
         <div class="button-group">
+            {% include "social/collaborate_button.html" %}
             <button id="flag_button" class="btn btn-danger">Mark As Bad</button>
             <button id="skip_button" class="btn btn-info"> >> </button>
         </div>
@@ -111,11 +112,7 @@ $(function() {
          }
         
         if (e.which == 39) { 
-           {% if team %}
-           document.location = "{% url 'collection_annotate_text' collection.id team.id %}"
-           {% else %}
-           document.location = "{% url 'collection_annotate_text' collection.id %}"
-           {% endif %}
+           document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id, uid=next_image.id %}"
            e.preventDefault();
            return false;
         }
@@ -131,19 +128,12 @@ $(function() {
             
         }).then(function(annotations){
             console.log(annotations);
-            {% if team %}
-            var team_id = "{{ team.id }}"
-            {% endif %}
             $.ajax({
 
                 url : "{% url 'update_text_annotation' collection.id text.id %}", // the endpoint
                 type : "POST", // http method
-                {% if team %}
                 data : { annotations: annotations,
-                         team_id: team_id },
-                {% else %}
-                data : { annotations: annotations }, // data sent with the post request
-                {% endif %}
+                         team_id: "{{ team.id }}" },
 
                 // handle a successful response
                 success : function(json) {
@@ -166,11 +156,8 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            {% if team %}
-            url : "{% url 'clear_text_annotations' collection.id text.id team.id %}",
-            {% else %}
             url : "{% url 'clear_text_annotations' collection.id text.id %}",
-            {% endif %}
+            data: { team_id: "{{ team.id }}"},
             type : "POST", // http method
 
             // handle a successful response
@@ -211,11 +198,7 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_annotate_text' collection.id team.id %}"
-       {% else %}
-       document.location = "{% url 'collection_annotate_text' collection.id %}"
-       {% endif %}
+       document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id, uid=next_image.id %}"
    });
 
    // Flag a small or bad image
@@ -229,11 +212,7 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_annotate_text' collection.id team.id %}"
-                {% else %}
-                document.location = "{% url 'collection_annotate_text' collection.id %}"
-                {% endif %}
+                document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id, uid=next_image.id %}"
             },
 
             // handle a non-successful response

@@ -47,7 +47,7 @@ def get_contenders(collection,active=True,get_images=True):
     return contenders
 
 
-def get_next_to_markup(user,collection,get_images=True,team=None,N=1):
+def get_next_to_markup(user,collection,get_images=True,team=None,N=1,skip=None):
     '''get next to markup will return images from a collection that a user has not seen, 
     chosen, from the entities that are available for annotation. From that set, it is a
     random selection
@@ -78,11 +78,12 @@ def get_next_to_markup(user,collection,get_images=True,team=None,N=1):
                       seen=previous_markups,
                       get_images=get_images,
                       return_number=N,
-                      repeat=repeat)
+                      repeat=repeat,                      
+                      random_select=not repeat,
+                      skip=skip)
 
 
-
-def get_next_to_describe(user,collection,get_images=True,team=None,N=1):
+def get_next_to_describe(user,collection,get_images=True,team=None,N=1,skip=None):
     '''get next to describe will first return images for entities that a user has not seen,
     and then a random selection
     '''
@@ -108,10 +109,12 @@ def get_next_to_describe(user,collection,get_images=True,team=None,N=1):
                       seen=previous_descriptions,
                       get_images=get_images,
                       return_number=N,
-                      repeat=repeat)
+                      repeat=repeat,
+                      random_select=not repeat,
+                      skip=skip)
 
 
-def get_next_to_annotate(user,collection,get_images=True,team=None,N=1):
+def get_next_to_annotate(user,collection,get_images=True,team=None,N=1,skip=None):
     '''get next to annotate will first return images for entities that a user has not seen,
     and then a random selection
     '''
@@ -137,7 +140,9 @@ def get_next_to_annotate(user,collection,get_images=True,team=None,N=1):
                       seen=previous_annotations,
                       get_images=get_images,
                       return_number=N,
-                      repeat=repeat)
+                      repeat=repeat,
+                      random_select=not repeat,
+                      skip=skip)
 
 
 
@@ -146,7 +151,8 @@ def get_next_to_annotate(user,collection,get_images=True,team=None,N=1):
 #############################################################################################
 
 
-def get_unseen(contenders,seen,return_number=None,get_images=True,repeat=False):
+def get_unseen(contenders,seen,return_number=None,get_images=True,repeat=False,
+               random_select=True,skip=None):
     '''get unseen images will take a set of seen_images and a set of contenders
     and return one (in case of return_single is True) or a set of unseen images
     :param return_single: randomly select from the set
@@ -155,11 +161,18 @@ def get_unseen(contenders,seen,return_number=None,get_images=True,repeat=False):
     :param return_number: if None, will return all
     :param repeat: allow the user to select from seen, otherwise return None.
     default is False, the user does not annotate twice.
+    :param random_select: if False, take first off list
+    :param skip: skip over one or more images (in the case of already being selected)
     '''
     if get_images == True:
         already_seen = [saw.image.id for saw in seen]
     else:
         already_seen = [saw.text.id for saw in seen]
+
+    if skip is not None:
+        if not isinstance(skip,list):
+            skip = [skip]
+        already_seen = already_seen + skip
 
     remaining = [c for c in contenders if c.id not in already_seen]
 
@@ -180,7 +193,10 @@ def get_unseen(contenders,seen,return_number=None,get_images=True,repeat=False):
     # or randomly select one from it
     choices = []
     for c in range(return_number):
-        idx = choice(range(0,len(selection)))
+        if random_select:
+            idx = choice(range(0,len(selection)))
+        else:
+            idx = 0
         choices.append(selection.pop(idx))
     if len(choices) == 1:
         return choices[0]

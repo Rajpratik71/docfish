@@ -27,16 +27,23 @@ import docfish.apps.main.views as views
 
 urlpatterns = [
 
+    # Collections, annotate newly selected image or text
     url(r'^collections/(?P<cid>\d+)/images/annotate$',views.collection_annotate_image,name='collection_annotate_image'),
     url(r'^collections/(?P<cid>\d+)/text/annotate$',views.collection_annotate_text,name='collection_annotate_text'),
+
+    # Collections or teams, update an annotation or text. Teams pass the team_id via the request.POST
     url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/images/update$',views.update_image_annotation,name='update_image_annotation'),
     url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/images/clear$',views.clear_image_annotations,name='clear_image_annotations'),
     url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/update$',views.update_text_annotation,name='update_text_annotation'),
     url(r'^annotate/(?P<cid>\d+)/entity/(?P<uid>\d+)/text/clear$',views.clear_text_annotations,name='clear_text_annotations'),
  
-    # Team views (not yet implemented)
-    # url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/annotate$',views.collection_annotate_text,name='collection_annotate_text'),
-    # url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/annotate$',views.collection_annotate_image,name='collection_annotate_image'),
+    # Teams, annotate first image or text
+    url(r'^collections/(?P<cid>\d+)/teams/(?P<tid>\d+)/texts/annotate$',views.team_annotate_text,name='team_annotate_text'),
+    url(r'^collections/(?P<cid>\d+)/teams/(?P<tid>\d+)/images/annotate$',views.team_annotate_image,name='team_annotate_image'),
+
+    # Teams, annotate specific image or text
+    url(r'^collections/(?P<cid>\d+)/text/(?P<uid>\d+)/teams/(?P<tid>\d+)/annotate$',views.team_annotate_text,name='team_annotate_text'),
+    url(r'^collections/(?P<cid>\d+)/images/(?P<uid>\d+)/teams/(?P<tid>\d+)/annotate$',views.team_annotate_image,name='team_annotate_image'),
 
    
 ]

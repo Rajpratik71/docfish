@@ -49,6 +49,8 @@ from .describe import (
 from .annotate import (
     collection_annotate_image,
     collection_annotate_text,
+    team_annotate_image,
+    team_annotate_text,
     update_image_annotation,
     clear_image_annotations,
     update_text_annotation,

@@ -1,8 +1,8 @@
-{% if collaborate %}
+{% if collaborate %}{% if team %}
     <button id="start-togetherjs" class="btn btn-secondary btn-xs"
     type="button" style="border:none; color:#31b0d5"
     onclick="TogetherJS(this); return false"
     data-end-togetherjs-html="End TogetherJS">
     <i class="fa fa-group fa-2x"></i>
     </button>
-{% endif %}
+{% endif %}{% endif %}
