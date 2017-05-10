@@ -27,6 +27,7 @@ SOFTWARE.
 from django.core.files.base import ContentFile
 from notifications.signals import notify
 
+from docfish.apps.users.utils import get_team
 from docfish.apps.main.models import *
 from docfish.apps.main.utils import (
     get_collection,
@@ -146,7 +147,7 @@ def serve_text(request,uid):
 # Annotations #################################################################################
 ###############################################################################################
 
-def update_annotation(user,allowed_annotation,instance,tid=None):
+def update_annotation(user,allowed_annotation,instance,cid,tid=None):
     '''update_annotation will take a user, and an annotation, some instance
     (text or image) and call the appropriate function to update it.
     :param user: the user object or user id
@@ -158,9 +159,9 @@ def update_annotation(user,allowed_annotation,instance,tid=None):
     if not isinstance(allowed_annotation,Annotation):
         allowed_annotation = Annotation.objects.get(id=allowed_annotation)
     if isinstance(instance,Image):
-        return update_image_annotation(user,allowed_annotation,instance,tid=tid)
+        return update_image_annotation(user,allowed_annotation,instance,tid=tid,cid=cid)
     elif isinstance(instance,Text):
-        return update_text_annotation(user,allowed_annotation,instance,tid=tid)
+        return update_text_annotation(user,allowed_annotation,instance,tid=tid,cid=cid)
 
 
 def update_image_annotation(user,allowed_annotation,image,tid=None):
@@ -195,29 +196,38 @@ def update_image_annotation(user,allowed_annotation,image,tid=None):
 
 
 
-def update_text_annotation(user,allowed_annotation,text,tid=None):
+def update_text_annotation(user,allowed_annotation,text,cid,tid=None):
     '''update_text_annotation is called from update_annotation given that the
     user has provided text
     '''
     if not isinstance(text,Text):
         text = Text.objects.get(id=text)
 
+    collection = get_collection(cid)
+    team = get_team(tid)
+
     if tid is not None:
-        previous_annotations = TextAnnotation.objects.filter(team__id=tid,
-                                                             text__id=text.id,
+        previous_annotations = TextAnnotation.objects.filter(team=team,
+                                                             text=text,
+                                                             collection=collection,
                                                              annotation__name=allowed_annotation.name)
-        annotation,created = TextAnnotation.objects.get_or_create(team__id=tid,
-                                                                  text=text,
-                                                                  annotation=allowed_annotation)
+        annotation,created = TextAnnotation.objects.update_or_create(team=team,
+                                                                     text=text,
+                                                                     collection=collection,
+                                                                     annotation=allowed_annotation)
 
     else:
+        # STOPPED HERE - walk through this manually, is just one returned? If so, we might want to update it
+        # (without filtering first)
         previous_annotations = TextAnnotation.objects.filter(creator=user,
-                                                             text__id=text.id,
+                                                             text=text,
+                                                             collection=collection,
                                                              annotation__name=allowed_annotation.name)
 
-        annotation,created = TextAnnotation.objects.get_or_create(creator=user,
-                                                                  text=text,
-                                                                  annotation=allowed_annotation)
+        annotation,created = TextAnnotation.objects.update_or_create(creator=user,
+                                                                     text=text,
+                                                                     collection=collection,
+                                                                     annotation=allowed_annotation)
 
     # If the annotation was just created, save it, and add report
     if created == True:
@@ -239,19 +249,22 @@ def finalize_annotation(previous_annotations,annotation):
     return annotation
 
 
-def clear_user_annotations(user,instance):
+def clear_user_annotations(user,instance,cid):
     '''clear_user_annotations will remove all annotations for a user for
     an instance, whether an image or text.
     :param user: the user
     :param instance: the image or text to clear annotations for
     '''
+    collection = get_collection(cid)
     try:
         if isinstance(instance,Text):
             previous_annotations = TextAnnotation.objects.filter(creator=user,
-                                                                 image__id=instance.id)
+                                                                 text=instance,
+                                                                 collection=collection)
         elif isinstance(instance,Image):
             previous_annotations = ImageAnnotation.objects.filter(creator=user,
-                                                                  text__id=instance.id)
+                                                                  image=instance,
+                                                                  collection=collection)
 
         [x.delete() for x in previous_annotations]
 
@@ -260,14 +273,17 @@ def clear_user_annotations(user,instance):
         return False
 
 
-def clear_team_annotations(team,instance):
+def clear_team_annotations(team,instance,cid):
+    collection = get_collection(cid)
     try:
         if isinstance(instance,Text):
             previous_annotations = TextAnnotation.objects.filter(team=team,
-                                                                 image__id=instance.id)
+                                                                 collection=collection,
+                                                                 text=instance)
         elif isinstance(instance,Image):
             previous_annotations = ImageAnnotation.objects.filter(team=team,
-                                                                  text__id=instance.id)
+                                                                  collection=collection,
+                                                                  text=instance)
 
         [x.delete() for x in previous_annotations]
         return True
@@ -277,7 +293,7 @@ def clear_team_annotations(team,instance):
 
 
 @login_required
-def update_annotations(request,instance):
+def update_annotations(request,cid,instance):
     '''update_annotation_view is a general view to handle update of an annotation for a
     text or image instance
     '''
@@ -289,6 +305,8 @@ def update_annotations(request,instance):
             return JsonResponse({"error": "error parsing array!"})
 
         # Update the annotations
+        result = {'annots':new_annotations,'tid':tid}
+        pickle.dump(result,open('tmp.pkl','wb'))
         for new_annotation in new_annotations:
             if new_annotation['value'] == "on":
                 aname,alabel = new_annotation['name'].split('||')
@@ -297,7 +315,8 @@ def update_annotations(request,instance):
                 annot = update_annotation(user=request.user,
                                           allowed_annotation=annotation_object,
                                           instance=instance,
-                                          tid=tid)
+                                          tid=tid,
+                                          cid=cid)
         response_data = {'result':'Create post successful!'}
         return JsonResponse(response_data)
 
@@ -305,7 +324,7 @@ def update_annotations(request,instance):
 
 
 
-def clear_annotations(request,instance):
+def clear_annotations(request,cid,instance):
     '''clear annotations view clears all annotations for a text or image instance
     :param instance: the text or image instance
     '''
@@ -314,9 +333,13 @@ def clear_annotations(request,instance):
             tid = request.POST.get("team_id",None)
             team = get_team(tid,return_none=True)
             if team is not None:
-                status = clear_team_annotations(team,image)
+                status = clear_team_annotations(team=team,
+                                                instance=image,
+                                                cid=cid)
             else:
-                status = clear_user_annotations(request.user,image)
+                status = clear_user_annotations(user=request.user,
+                                                instance=image,
+                                                cid=cid)
             response_data = {'result':'Annotations successfully cleared',
                              'status': status}
         except:
@@ -332,7 +355,7 @@ def clear_annotations(request,instance):
 
 @login_required
 def update_text_markup(request,uid):
-    '''update_text_annotation will update a user's text annotation
+    '''update_text_markup will update a user's text annotation
     '''
     if request.method == 'POST':
         try:

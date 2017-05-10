@@ -122,7 +122,8 @@ def get_annotations(instance,user=None,team=None,return_dict=True):
         return annotations
 
     if team is not None:
-        annotations = get_team_annotations(instance,team)
+        annotations = get_team_annotations(instance=instance,
+                                           team=team)
     else:
         annotations = get_user_annotations(instance,user)
 
@@ -153,7 +154,7 @@ def get_team_annotations(instance,team):
     else:
         counter = Count('annotation_of_text', distinct=True)
         annotations = Annotation.objects.filter(annotation_of_text__text_id=instance.id,
-                                                annotation_of_text__team=team).annotate(counter)
+                                                annotation_of_text__team_id=team.id).annotate(counter)
     return annotations
 
 

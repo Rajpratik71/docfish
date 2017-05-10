@@ -153,7 +153,7 @@ $(function() {
 
 
    // Together JS function to sync markup
-   TogetherJS.hub.on('Afterhighlight', function (msg) {
+   TogetherJS.hub.on('AfterhighlightTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
@@ -167,7 +167,7 @@ $(function() {
    });
 
 
-   TogetherJS.hub.on('Dohighlight', function (msg) {
+   TogetherJS.hub.on('DohighlightTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
@@ -198,11 +198,11 @@ $(function() {
 
            if (TogetherJS.running) {
                TogetherJS.send({
-                   type: 'Dohighlight',
+                   type: 'DohighlightTextMarkup',
                    text:$('.som_highlight').html(),
                })
                TogetherJS.send({
-                   type: 'Afterhighlight',
+                   type: 'AfterhighlightTextMarkup',
                    range:range,
                    text:hlts[0].innerHTML,
                    bgcolor:bgcolor,
@@ -245,7 +245,7 @@ $(function() {
    })
 
    // Together JS function to change colors across browsers
-   TogetherJS.hub.on('colors', function (msg) {
+   TogetherJS.hub.on('colorsTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
@@ -257,14 +257,14 @@ $(function() {
        hltr.setColor(color);
        if (TogetherJS.running) {
           TogetherJS.send({
-          type: 'colors',
+          type: 'colorsTextMarkup',
           color: color
          });
       }
    });
 
    // Together JS function to clear across browsers
-   TogetherJS.hub.on('clear', function (msg) {
+   TogetherJS.hub.on('clearTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
@@ -275,14 +275,14 @@ $(function() {
       hltr.removeHighlights();
       if (TogetherJS.running) {
           TogetherJS.send({
-          type: 'clear'
+          type: 'clearTextMarkup'
       });
    }
 
    })
 
    // Together JS function to skip across browsers
-   TogetherJS.hub.on('skip', function (msg) {
+   TogetherJS.hub.on('skipTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
@@ -291,12 +291,12 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
        if (TogetherJS.running) {
           TogetherJS.send({
-             type: 'skip'
+             type: 'skipTextMarkup'
           });
        }
+       document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
    });
 
    // Flag a small or bad image
@@ -312,7 +312,7 @@ $(function() {
                 console.log("success"); // another sanity check
                 if (TogetherJS.running) {
                    TogetherJS.send({
-                       type: 'skip'
+                       type: 'skipTextMarkup'
                     });
                 }
                 document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"

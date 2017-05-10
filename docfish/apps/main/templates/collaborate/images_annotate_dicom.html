@@ -146,7 +146,7 @@ $(function() {
             console.log(annotations);
 
             $.ajax({
-                url : "{% url 'update_image_annotation' image.id %}",
+                url : "{% url 'update_image_annotation' collection.id image.id %}",
                 type : "POST",
 
                 data : { annotations: annotations,
@@ -173,7 +173,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_image_annotations' image.id %}",
+            url : "{% url 'clear_image_annotations' collection.id image.id %}",
             type : "POST",
             data: {team_id: "{{ team.id }}"},
 

@@ -209,7 +209,7 @@ def team_annotate_text(request,cid,tid,uid=None):
                                              team=team,
                                              skip=text.id)
         
-        annotations = get_annotations(user=request.user,
+        annotations = get_annotations(user=None,
                                       instance=text,
                                       team=team)
 
@@ -288,19 +288,19 @@ def team_annotate_image(request,cid,tid,uid=None):
 
 
 @login_required
-def clear_text_annotations(request,uid):
+def clear_text_annotations(request,uid,cid):
     '''clear all annotations for a specific image'''
 
     text = Text.objects.get(id=uid)
-    return clear_annotations(request,instance=text)
+    return clear_annotations(request,cid=cid,instance=text)
 
 
 @login_required
-def update_text_annotation(request,uid):
+def update_text_annotation(request,cid,uid):
     '''update_text_annotation is the view to update an annotation when it changes. 
     It should return a JSON response.
     '''
     text = Text.objects.get(id=uid)
-    return update_annotations(request,instance=text)
+    return update_annotations(request,cid=cid,instance=text)
 
 

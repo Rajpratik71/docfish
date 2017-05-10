@@ -53,6 +53,7 @@ ref-list {
     <div class="col-md-6">
 
         <div id="annotate_box">
+        <form id="update_text_annotation">
         <!-- Form to send updates to server-->
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
@@ -70,6 +71,7 @@ ref-list {
                  </div>
              </fieldset>
         {% endfor %}
+        </form>
 
         <div class="button-group">
             {% include "social/collaborate_button.html" %}
@@ -102,6 +104,14 @@ $(function() {
 
     $("#annotate_box").sticky({topSpacing:20});
 
+   // Together JS function to change colors across browsers
+   TogetherJS.hub.on('skipAnnotText', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+       document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
+   });
+
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
 
@@ -130,7 +140,7 @@ $(function() {
             console.log(annotations);
             $.ajax({
 
-                url : "{% url 'update_text_annotation' text.id %}", // the endpoint
+                url : "{% url 'update_text_annotation' collection.id text.id %}", // the endpoint
                 type : "POST", // http method
                 data : { annotations: annotations,
                          team_id: "{{ team.id }}" },
@@ -156,7 +166,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_text_annotations' text.id %}",
+            url : "{% url 'clear_text_annotations' collection.id text.id %}",
             data: { team_id: "{{ team.id }}"},
             type : "POST", // http method
 
@@ -186,18 +196,38 @@ $(function() {
              pushAnnotation();
         },500)
    })
+
+   // Together JS function to change colors across browsers
+   TogetherJS.hub.on('clearAnnotText', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     $("#clear_button").click()
+   });
+
  
   // On click, clear annotations
     $("#clear_button").click(function(){
         setTimeout(function(){
-             clearAnnotations();
+           clearAnnotations();
         },500)
         $('input:radio').attr('checked',false)
         $('.annotate-button').removeClass('active');
+        if (TogetherJS.running) {
+            TogetherJS.send({
+            type: 'clearAnnotText'
+         });
+       }
+
     });
 
 
    $("#skip_button").click(function(){
+       if (TogetherJS.running) {
+            TogetherJS.send({
+            type: 'skipAnnotText'
+         });
+       }
        document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
    });
 
@@ -212,6 +242,11 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                if (TogetherJS.running) {
+                   TogetherJS.send({
+                   type: 'skipAnnotText'
+                  });
+                }
                 document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
             },
 

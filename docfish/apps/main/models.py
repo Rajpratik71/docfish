@@ -383,7 +383,7 @@ class ImageMarkup(models.Model):
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     team = models.ForeignKey('users.Team',blank=True,null=True)
-    creator = models.ForeignKey(User,related_name="creator_of_image",
+    creator = models.ForeignKey(User,related_name="creator_of_image", null=True,
                                 related_query_name="creator_of_image", blank=True,
                                 help_text="user that created the markup.",verbose_name="Creator")
     base = models.ImageField(upload_to=get_upload_folder,null=True,blank=True, 
@@ -404,7 +404,7 @@ class ImageDescription(models.Model):
     team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
-    creator = models.ForeignKey(User,related_name="creator_of_image_description",
+    creator = models.ForeignKey(User,related_name="creator_of_image_description", null=True,
                                 related_query_name="creator_of_image_description", blank=False,
                                 help_text="user that created the description.",verbose_name="Creator")
     description = models.TextField(blank=True,null=True)
@@ -430,14 +430,15 @@ class ImageAnnotation(models.Model):
     image = models.ForeignKey(Image,blank=False,related_query_name="image_annotation")
     modify_date = models.DateTimeField('date modified', auto_now=True)
     collection = models.ForeignKey(Collection)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     creator = models.ForeignKey(User,related_name="creator_of_image_annotation",
-                              related_query_name="creator_of_image_annotation", blank=False,
-                              help_text="user that created the annotation.",verbose_name="Creator")
+                                related_query_name="creator_of_image_annotation", blank=False, null=True,
+                                help_text="user that created the annotation.",verbose_name="Creator")
     annotation = models.ForeignKey(Annotation,related_name="annotation_of_image",related_query_name="annotation_of_image")
     coordinates = JSONField(default={})
 
     class Meta:
-        unique_together =  (("image", "creator","annotation"),)
+        unique_together =  (("image", "creator","annotation"),("image", "team","annotation"),)
 
 
 #######################################################################################################
@@ -532,7 +533,7 @@ class TextDescription(models.Model):
     team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
-    creator = models.ForeignKey(User,related_name="creator_of_text_description",
+    creator = models.ForeignKey(User,related_name="creator_of_text_description", null=True,
                                 related_query_name="creator_of_text_description", blank=False,
                                 help_text="user that created the description.",verbose_name="Creator")
     description = models.TextField(blank=True,null=True)
@@ -551,7 +552,7 @@ class TextMarkup(models.Model):
     team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     creator = models.ForeignKey(User,related_name="creator_text",related_query_name="creator_text", blank=False,
-                                help_text="user that created the markup.",verbose_name="Creator")
+                                help_text="user that created the markup.",verbose_name="Creator",null=True)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     delimiter = models.CharField(max_length=50, null=False, blank=False, default="\w")
     locations = JSONField(default={}, 

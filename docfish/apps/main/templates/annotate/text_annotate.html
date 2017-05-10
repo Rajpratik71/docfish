@@ -54,6 +54,7 @@ ref-list {
 
         <div id="annotate_box">
         <!-- Form to send updates to server-->
+        <form id="update_text_annotation">
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>
@@ -70,6 +71,7 @@ ref-list {
                  </div>
              </fieldset>
         {% endfor %}
+        </form>
 
         <div class="button-group">
             <button id="flag_button" class="btn btn-danger">Mark As Bad</button>
@@ -130,9 +132,9 @@ $(function() {
             console.log(annotations);
             $.ajax({
 
-                url : "{% url 'update_text_annotation' text.id %}", // the endpoint
+                url : "{% url 'update_text_annotation' collection.id text.id %}", // the endpoint
                 type : "POST", // http method
-                data : { annotations: annotations }, // data sent with the post request
+                data : { annotations: annotations },
                 {% endif %}
 
                 // handle a successful response
@@ -156,7 +158,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_text_annotations' text.id %}",
+            url : "{% url 'clear_text_annotations' collection.id text.id %}",
             type : "POST", // http method
 
             // handle a successful response
