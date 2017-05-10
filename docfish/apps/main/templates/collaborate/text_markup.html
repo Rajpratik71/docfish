@@ -152,6 +152,28 @@ $(function() {
    }
 
 
+   // Together JS function to sync markup
+   TogetherJS.hub.on('Afterhighlight', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     console.log(msg.range);
+     hltr.highlightRange(msg.range);
+     updateHighlights(msg.text,
+                      msg.bgcolor,
+                      msg.startOffset,
+                      msg.endOffset,
+                      msg.timestamp)
+   });
+
+
+   TogetherJS.hub.on('Dohighlight', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     $('.som_highlight').html(msg.text);
+   });
+
    // We will save a list of highlights
    {% if markup.locations|length > 0 %}
        {% for hl in markup.locations %}
@@ -159,12 +181,12 @@ $(function() {
        {% endfor %}
    {% endif %}
 
-   var colors = new ColorPicker(document.querySelector('.color-picker')); 
+   var colors = new ColorPicker(document.querySelector('.color-picker'));
    var context = $(".som_highlight")[0];
    var loggy = $(".loggy");
    var hltr = new TextHighlighter(context, {
         onBeforeHighlight: function (range) {
-            return true;
+           return true;
         },
         onAfterHighlight: function (range, hlts) {
             var bgcolor = $('.color-picker').find('.selected').css('background-color');
@@ -173,6 +195,22 @@ $(function() {
                              range.startOffset,
                              range.endOffset,
                              $(hlts[0]).attr('data-timestamp'))
+
+           if (TogetherJS.running) {
+               TogetherJS.send({
+                   type: 'Dohighlight',
+                   text:$('.som_highlight').html(),
+               })
+               TogetherJS.send({
+                   type: 'Afterhighlight',
+                   range:range,
+                   text:hlts[0].innerHTML,
+                   bgcolor:bgcolor,
+                   startOffset:range.startOffset,
+                   endOffset:range.endOffset,
+                   timestamp:$(hlts[0]).attr('data-timestamp')
+               })
+           }
         },
         onRemoveHighlight: function (hlt) {
             return true;
@@ -206,16 +244,59 @@ $(function() {
         })
    })
 
+   // Together JS function to change colors across browsers
+   TogetherJS.hub.on('colors', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     var color = msg.color;
+     hltr.setColor(color);
+   });
+
    colors.onColorChange(function (color) {
        hltr.setColor(color);
+       if (TogetherJS.running) {
+          TogetherJS.send({
+          type: 'colors',
+          color: color
+         });
+      }
+   });
+
+   // Together JS function to clear across browsers
+   TogetherJS.hub.on('clear', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     hltr.removeHighlights();
    });
 
    $("#clear_button").click(function(){
       hltr.removeHighlights();
+      if (TogetherJS.running) {
+          TogetherJS.send({
+          type: 'clear'
+      });
+   }
+
    })
+
+   // Together JS function to skip across browsers
+   TogetherJS.hub.on('skip', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
+   });
+
 
    $("#skip_button").click(function(){
        document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
+       if (TogetherJS.running) {
+          TogetherJS.send({
+             type: 'skip'
+          });
+       }
    });
 
    // Flag a small or bad image
@@ -229,6 +310,11 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                if (TogetherJS.running) {
+                   TogetherJS.send({
+                       type: 'skip'
+                    });
+                }
                 document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
             },
 

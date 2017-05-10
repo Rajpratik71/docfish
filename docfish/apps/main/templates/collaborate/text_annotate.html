@@ -112,7 +112,7 @@ $(function() {
          }
         
         if (e.which == 39) { 
-           document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id, uid=next_image.id %}"
+           document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
            e.preventDefault();
            return false;
         }
@@ -130,7 +130,7 @@ $(function() {
             console.log(annotations);
             $.ajax({
 
-                url : "{% url 'update_text_annotation' collection.id text.id %}", // the endpoint
+                url : "{% url 'update_text_annotation' text.id %}", // the endpoint
                 type : "POST", // http method
                 data : { annotations: annotations,
                          team_id: "{{ team.id }}" },
@@ -156,7 +156,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_text_annotations' collection.id text.id %}",
+            url : "{% url 'clear_text_annotations' text.id %}",
             data: { team_id: "{{ team.id }}"},
             type : "POST", // http method
 
@@ -198,10 +198,10 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id, uid=next_image.id %}"
+       document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
    });
 
-   // Flag a small or bad image
+
    function flagText() {
 
         $.ajax({
@@ -212,7 +212,7 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id, uid=next_image.id %}"
+                document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
             },
 
             // handle a non-successful response

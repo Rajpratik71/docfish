@@ -107,7 +107,7 @@ $(function() {
             {% endif %}
 
             $.ajax({
-                url : "{% url 'update_image_annotation' collection.id image.id %}", // the endpoint
+                url : "{% url 'update_image_annotation' image.id %}", // the endpoint
                 type : "POST", // http method
                 {% if team %}
                 data : { annotations: annotations,

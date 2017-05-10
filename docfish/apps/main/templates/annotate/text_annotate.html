@@ -130,7 +130,7 @@ $(function() {
             console.log(annotations);
             $.ajax({
 
-                url : "{% url 'update_text_annotation' collection.id text.id %}", // the endpoint
+                url : "{% url 'update_text_annotation' text.id %}", // the endpoint
                 type : "POST", // http method
                 data : { annotations: annotations }, // data sent with the post request
                 {% endif %}
@@ -156,7 +156,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_text_annotations' collection.id text.id %}",
+            url : "{% url 'clear_text_annotations' text.id %}",
             type : "POST", // http method
 
             // handle a successful response

@@ -173,7 +173,7 @@ $(function() {
     function clearAnnotations() {
 
         $.ajax({
-            url : "{% url 'clear_image_annotations' collection.id image.id %}",
+            url : "{% url 'clear_image_annotations' image.id %}",
             type : "POST",
             data: {team_id: "{{ team.id }}"},
 
