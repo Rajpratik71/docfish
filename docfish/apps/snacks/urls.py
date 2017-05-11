@@ -24,6 +24,6 @@ urlpatterns = [
     url(r'^snacks/searching$', snack_views.snack_search, name="snack_search"),
 
     # User snacks
-    url(r'^users/snacks/(?P<uid>\d+)$', snack_views.user_snacks, name="user_snacks"),
+    url(r'^users/profile/(?P<uid>\d+)$', snack_views.user_snacks, name="user_snacks"),
 
 ]

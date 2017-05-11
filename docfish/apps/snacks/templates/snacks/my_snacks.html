@@ -3,6 +3,11 @@
 {% load staticfiles %}
 {% load humanize %}
 {% block css %}
+<style>
+.pagination {
+  padding-top:30px !important;
+}
+</style>
 <link rel="stylesheet" href="{% static "css/flickity.min.css" %}" media="screen">
 <link rel="stylesheet" href="{% static "css/calendar-heatmap.css" %}" media="screen">
 {% endblock %}
@@ -14,7 +19,7 @@ https://victoriamineva.github.io/D3-progress-bars/index.html
 -->
 <div class="row" style='padding-top:20px;padding-bottom:20px'>
     <div class="col-md-12">
-        <h2>{{ snackbox.user.username }}</h2>
+        <h3>{{ snackbox.user.username }}</h3>
         <hr>
     </div>
 </div>
@@ -26,6 +31,11 @@ https://victoriamineva.github.io/D3-progress-bars/index.html
         <li class="nav-item">
             <a class="nav-link active" data-toggle="tab" href="#stats" role="pill">Stats</a>
         </li>
+        {% if user.team_set.all %}
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#teams" role="pill">Teams</a>
+        </li>
+        {% endif %}
         <li class="nav-item">
             <a class="nav-link" data-toggle="tab" href="#gils" role="pill">Gils</a>
         </li>
@@ -39,19 +49,43 @@ https://victoriamineva.github.io/D3-progress-bars/index.html
         <div class="tab-pane active" id="stats" style="padding-top:30px" role="tabpanel">
             <div class='statsmap'></div>
         </div>
+
+        {% if user.team_set.all %}
+        <div class="tab-pane" id="teams" style="padding-top:30px" role="tabpanel">
+           <table id="teams_table" class="mdl-data-table" cellspacing="0" width="100%" style="padding-top:20px">
+               <thead>
+                   <tr>
+                      <th>Name</th>
+                      <th>Members</th>
+                      <th>Collections</th>
+                   </tr>
+              </thead>
+              <tbody>
+                  {% for team in user.team_set.all %}
+                  <tr>
+                      <td><a href="{{ team.get_absolute_url }}">{{ team.name }}</a></td>
+                      <td>{{ team.members.count }}</td>
+                      <td>{{ team.collection_ids|length }}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody> 
+          </table>
+        </div>
+        {% endif %}
+        
         <div class="tab-pane" id="gils" role="tabpanel" style='padding-top:20px'>
 
             <div class="row" style='padding-top:20px'>
             <div class="col-md-3">
-                <h4>Gils Earned</h4>
+                <h6>Gils Earned</h6>
                 <p class="alert alert-success">{{ snackbox.gils_earned }}</p>
             </div>
             <div class="col-md-3">
-               <h4>Gils Spent</h4>
+               <h6>Gils Spent</h6>
                    <p class="alert alert-danger">{{ snackbox.gils_spent }}</p>    
             </div>
             <div class="col-md-3">
-                <h4>Price per Snack</h4>
+                <h6>Price per Snack</h6>
                 <p class="alert alert-info">{{ snack_price }}</p>
             </div>
             <div class="col-md-3">
@@ -67,7 +101,7 @@ https://victoriamineva.github.io/D3-progress-bars/index.html
         <div class="row" style='padding-top:20px'>
             <div class="col-md-12">
 
-                <h3>Snacks</h3>
+                <h4>Snacks</h4>
                 <div style='padding-top:10px' id="snack-1">
                     {% for snack in snackbox.snacks.all %}
                      <div class="carousel-cell" id="carousel-{{ snack.id }}">
@@ -98,6 +132,7 @@ https://victoriamineva.github.io/D3-progress-bars/index.html
 
 {% endblock %}
 {% block scripts %}
+{% include "style/datatable.html" %}
 <script src="{% static "js/flickity.pkgd.min.js" %}"></script>
 <script src="{% static "js/calendar-heatmap.js" %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js" charset="utf-8"></script>
@@ -109,6 +144,16 @@ var dates = []
 var lookup = new Object();
 
 $(document).ready(function() {
+
+     $('#teams_table').DataTable( {
+       pageLength: 50, 
+       columnDefs: [
+            {
+                targets: [ 0, 1, 2 ],
+                className: 'mdl-data-table__cell--non-numeric'
+            }
+        ]
+    } );
  
 
     var get_type = function(obj) {

@@ -40,29 +40,8 @@ ref-list {
 .loggy li {
   padding:5px;
 }
-
-.color-picker {
-    float: left;
-    display: block;
-    margin: 1px 0 5px;
-    text-align: left;
-}
-.color-picker div {
-    width: 20px;
-    height: 20px;
-    border-radius: 12px;
-    margin: 5px 5px;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.color-picker div:hover {
-}
-
-.color-picker div.selected {
-    border: 2px solid #444;
-}
 </style>
+{% include "style/color_picker.html" %}
 {% endblock %}
 
 {% block content %}
@@ -138,6 +117,12 @@ $(function() {
             e.preventDefault();
             return false;
          }
+
+        // prevent pressing enter
+        if(e.which == 13) {
+           e.preventDefault();
+           return false;
+        }
         
         if (e.which == 39) { 
            document.location = "{% url 'collection_markup_text' collection.id %}"
@@ -155,14 +140,15 @@ $(function() {
 
 
    var loggy = $(".loggy");
-   function updateHighlights(text,bgcolor,startOffset,endOffset,timestamp){
+   function updateHighlights(text,bgcolor,startOffset,endOffset,timestamp,descriptor){
       loggy.append("<li style='background-color:" + bgcolor + ";background:" + bgcolor +"'>" + text + "</li>")
       // Add the new highlight to our list
       record = {'timestamp': timestamp,
                 'color': bgcolor,
                 'text': text,
                 'startOffset': startOffset,
-                'endOffset': endOffset }
+                'endOffset': endOffset,
+                'label': descriptor }
       highlights.push(record);
    }
 
@@ -170,7 +156,7 @@ $(function() {
    // We will save a list of highlights
    {% if markup.locations|length > 0 %}
        {% for hl in markup.locations.markups %}
-       updateHighlights("{{ hl.text }}","{{ hl.color }}",{{ hl.startOffset }},{{ hl.endOffset }},{{ hl.timestamp }})
+       updateHighlights("{{ hl.text }}","{{ hl.color }}",{{ hl.startOffset }},{{ hl.endOffset }},{{ hl.timestamp }},{{ hl.label}})
        {% endfor %}
    {% endif %}
 
@@ -182,11 +168,13 @@ $(function() {
         },
         onAfterHighlight: function (range, hlts) {
             var bgcolor = $('.color-picker').find('.selected').css('background-color');
+            var descriptor = $('.selected').text();
             updateHighlights(hlts[0].innerHTML,
                              bgcolor,
                              range.startOffset,
                              range.endOffset,
-                             $(hlts[0]).attr('data-timestamp'))
+                             $(hlts[0]).attr('data-timestamp'),
+                             descriptor)
         },
         onRemoveHighlight: function (hlt) {
             return true;
@@ -263,7 +251,6 @@ $(function() {
            flagText();
       },500)
    })
-
 
 });
 </script>

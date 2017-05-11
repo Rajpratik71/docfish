@@ -7,7 +7,7 @@ var ColorPicker = (function () {
         '#8BC34A',
         '#29B6F6'
     ];
-    var CLASS_SELECTED = 'selected';
+    var CLASS_SELECTED = 'selected color-button';
 
     function ColorPicker(el) {
         var self = this;
@@ -17,11 +17,17 @@ var ColorPicker = (function () {
         COLORS.forEach(function (color) {
             var div = document.createElement('div');
             div.style.backgroundColor = color;
+            div.setAttribute("contenteditable","true");
 
             if (self.color === color) {
                 div.className = CLASS_SELECTED;
                 self.selected = div;
             }
+
+            div.addEventListener('onmouseup', function () {
+               var content = div.innerHTML.replace(/(?:\r\n|\r|<br>|\n)/g, '');
+               div.innerHTML = content;
+            }, false);
 
             div.addEventListener('click', function () {
                 if (color !== self.color) {

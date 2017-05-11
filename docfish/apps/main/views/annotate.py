@@ -100,8 +100,7 @@ def collection_annotate_image(request,cid):
         context = { "entity": next_image.entity,
                     "image": next_image,
                     "collection":collection,
-                    "annotations": annotations['labels'],
-                    "counts": annotations['counts'],
+                    "annotations": annotations,
                     "nosidebar":"pizzapizza",
                     "allowed_annotations": allowed_annotations}
 
@@ -155,15 +154,15 @@ def collection_annotate_text(request,cid):
             return redirect('collection_details',cid=cid)
 
         annotations = get_annotations(user=request.user,
-                                      instance=next_text)
+                                      instance=next_text,
+                                      return_dict=True)
 
         allowed_annotations = collection.get_annotations()
 
         context = { "entity": next_text.entity,
                     "text": next_text,
                     "collection":collection,
-                    "annotations": annotations['labels'],
-                    "counts": annotations['counts'],
+                    "annotations": annotations,
                     "nosidebar":"pizzapizza",
                     "allowed_annotations": allowed_annotations}
  
@@ -212,6 +211,7 @@ def team_annotate_text(request,cid,tid,uid=None):
         
         annotations = get_annotations(user=None,
                                       instance=text,
+                                      return_dict=True,
                                       team=team)
 
         allowed_annotations = collection.get_annotations()
@@ -263,6 +263,7 @@ def team_annotate_image(request,cid,tid,uid=None):
         
         # Stopped here - this function isn't returning any annotations
         annotations = get_annotations(user=request.user,
+                                      return_dict=True,
                                       instance=image,
                                       team=team)
 

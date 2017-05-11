@@ -144,7 +144,7 @@
            <tbody>
             {% for member in team.members.all %}
                <tr id="member_row_{{ member.id }}">
-                   <td>{{ member.username }}</td>
+                   <td><a href="{% url 'user_snacks' member.id %}">{{ member.username }}</a></td>
                    <td>{{ annotation_counts|access:member.username }}</td>
                    {% if edit_permission %}
                    <td><button class="btn btn-danger remove_member" id="userid_{{ member.id }}">Remove</button></td>

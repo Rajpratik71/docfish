@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+{% load staticfiles %}
+{% block css %}
+<style>
+.pagination {
+  padding-top:30px !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+
+        <h2>DocFish Portals</h2>
+        <hr>
+        <a href="{% url 'teams' %}"><button class="btn btn-secondary btn-lg" style="padding-bottom:30px;margin-bottom:30px">Collaborative Annotation</button></a>
+        <p>If you want to do label images and texts with a team, then you should go here.</p>
+        <hr>
+        <a href="{% url 'collections' %}"><button class="btn btn-secondary btn-lg" style="padding-bottom:30px;margin-bottom:30px">Collection Portal</button></a>
+        <p>If you want to make personal or private annotations associated with just your user, then go here.</p>
+        <hr>
+
+{% endblock %}
+{% block scripts %}
+<style>
+.mdl-grid {
+   padding-bottom:20px !important;
+}
+</style>
+<script>
+$(document).ready(function() {
+
+    // Enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+});
+</script>
+{% endblock %}

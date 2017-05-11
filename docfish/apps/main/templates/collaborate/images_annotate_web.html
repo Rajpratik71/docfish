@@ -33,13 +33,11 @@
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>
                 <div class="btn-group" data-toggle="buttons">
                     {% for label in labels %}
-                        {% for annot in annotations %}
-                           {% if annot.name == name and annot.label == label %}
-                           <label class="btn btn-secondary annotate-button active">
-                           {% else %}
-                           <label style="border:none;" class="btn btn-secondary annotate-button">                    
-                           {% endif %}
-                        {% endfor %}
+                        {% if name in annotations.labels and annotations.labels|access:name == label %}
+                        <label class="btn btn-secondary annotate-button active">
+                        {% else %}
+                        <label style="border:none;" class="btn btn-secondary annotate-button">                    
+                        {% endif %}
                         <input class="annotate-button" type="radio" name="{{ name }}||{{ label }}" id="{{ label }}" autocomplete="off"> {{ label }}
                         </label>
                     {% endfor %}

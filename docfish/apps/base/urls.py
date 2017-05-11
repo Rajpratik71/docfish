@@ -36,6 +36,7 @@ favicon_view = RedirectView.as_view(url='/static/img/favicon/favicon.ico',
 urlpatterns = [
     url(r'^$', base_views.index_view, name="index"),
     url(r'^about$', base_views.about_view, name="about"),
+    url(r'^data$', base_views.data_view, name="data"),
     url(r'^guide$', base_views.user_guide_view, name="user_guide"),
     url(r'^favicon\.ico$', favicon_view),
     url(r'^notifications/', include(notifications.urls,namespace='notifications')),
