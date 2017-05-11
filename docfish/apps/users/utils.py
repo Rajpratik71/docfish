@@ -143,6 +143,22 @@ def count_user_annotations(users):
     return counts
 
 
+def count_team_annotations(team):
+    '''return the count of a single user's annotations, by type
+    (meaning across images, text, annotations, descriptions, and markups)
+    '''
+    counts = dict()
+
+    counts['image-markup'] = ImageMarkup.objects.filter(team=team).distinct().count()
+    counts['text-markup'] = TextMarkup.objects.filter(team=team).distinct().count()
+    counts['text-annotation'] = TextAnnotation.objects.filter(team=team).distinct().count()
+    counts['image-annotation'] = ImageAnnotation.objects.filter(team=team).distinct().count()
+    counts['text-description'] = TextDescription.objects.filter(team=team).distinct().count()
+    counts['image-description'] = ImageDescription.objects.filter(team=team).distinct().count()
+
+    return counts
+
+
 def count_annotations_bydate(user):
     '''return a list of dates and counts that a user has annotated, in the past year.
     '''

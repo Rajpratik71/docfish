@@ -66,20 +66,23 @@
                                <th>Owner</th>
                                <th>Entities</th>
                                <th></th>
+                               <th></th>
                            </tr>
                        </thead>
                        <tbody>
                        {% for collection in collections %}
                        {% if forloop.counter < 51 %}
                        <tr>
-                           <td><a href="{% url 'collection_details' collection.id %}">{{ collection.name }}</a></td>
+                           <td><a href="{% url 'collection_explorer' collection.id %}">{{ collection.name }}</a></td>
                            <td>{{ collection.owner }}</td>
                            <td>{{ collection.entity_set.count }}</td>
                            <td>
+                            <a href="{% url 'collection_explorer' collection.id %}"><button style="cursor:pointer" class="btn btn-secondary">View</button></a>
                             {% if collection.has_images or collection.has_text %}
                             <a href="{% url 'collection_start' collection.id %}"><button style="cursor:pointer" class="btn btn-warning">Start</button></a>
                             {% endif %}
                            </td>
+                           <td><a href="{% url 'collection_details' collection.id %}"><button style="cursor:pointer" class="btn btn-secondary">Edit</button></a></td>
                        </tr>
                     {% endif %}
                     {% endfor %} 
@@ -106,7 +109,7 @@ $(document).ready(function() {
        pageLength: 50, 
        columnDefs: [
             {
-                targets: [ 0, 1, 2 ],
+                targets: [ 0, 1, 2, 3 ],
                 className: 'mdl-data-table__cell--non-numeric'
             }
         ]

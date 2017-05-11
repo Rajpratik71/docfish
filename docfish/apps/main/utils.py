@@ -111,7 +111,7 @@ def get_collection_users(collection):
     return list(chain(contributors,[owner]))
 
 
-def get_annotations(instance,user=None,team=None,return_dict=True):
+def get_annotations(instance,user=None,team=None,return_dict=False):
     '''get_annotations will return the Annotation objects for a user and image.
     :param user: the user to return objects for
     :param image: the image to find annotations for
@@ -168,8 +168,8 @@ def summarize_annotations(annotations):
     summary = dict()
     counts = dict()
     for annotation in annotations:
-        summary[annotation.annotation.name] = annotation.annotation.label
-        counts[annotation.annotation.name] = annotation.annotation__count
+        summary[annotation.name] = annotation.label
+        counts[annotation.name] = annotation.count
     result = {"labels":summary,
               "counts":counts}
     return result
@@ -272,23 +272,32 @@ def png2base64(data):
     return b64decode(data)
 
 
-def get_markup(instance,user,team=None):
+def get_markup(instance,user,collection,team=None):
     '''get_markup will return a user's markup of an image, if it exists.
     otherwise, None is returned.
-    :param image: the image object
+    :param instance: the image or text object
     :param user: the user to get the markup for
     '''
     markup = None
     if isinstance(instance,Image):
         if team is not None:
-            markups = ImageMarkup.objects.filter(image=instance,team=team).first()
+            markup = ImageMarkup.objects.filter(image=instance,
+                                                team=team,
+                                                collection=collection).first()
         else:
-            markups = ImageMarkup.objects.filter(image=instance,creator=user).first()
+            markup = ImageMarkup.objects.filter(image=instance,
+                                                creator=user,
+                                                collection=collection).first()
+
     elif isinstance(instance,Text):
         if team is not None:
-            markups = TextMarkup.objects.filter(text=instance,team=team).first()
+            markup = TextMarkup.objects.filter(text=instance,
+                                               team=team,
+                                               collection=collection).first()
         else:
-            markups = TextMarkup.objects.filter(text=instance,creator=user).first()
+            markup = TextMarkup.objects.filter(text=instance,
+                                               creator=user,
+                                               collection=collection).first()
     return markup
 
 

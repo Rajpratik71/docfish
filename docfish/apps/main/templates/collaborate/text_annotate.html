@@ -104,6 +104,7 @@ $(function() {
 
     $("#annotate_box").sticky({topSpacing:20});
 
+   {% if collaborate %}
    // Together JS function to change colors across browsers
    TogetherJS.hub.on('skipAnnotText', function (msg) {
     if (!msg.sameUrl) {
@@ -111,6 +112,7 @@ $(function() {
      }
        document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
    });
+   {% endif %}
 
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
@@ -198,13 +200,14 @@ $(function() {
    })
 
    // Together JS function to change colors across browsers
+   {% if collaborate %}
    TogetherJS.hub.on('clearAnnotText', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
      $("#clear_button").click()
    });
-
+   {% endif %}
  
   // On click, clear annotations
     $("#clear_button").click(function(){
@@ -213,21 +216,24 @@ $(function() {
         },500)
         $('input:radio').attr('checked',false)
         $('.annotate-button').removeClass('active');
+        {% if collaborate %}
         if (TogetherJS.running) {
             TogetherJS.send({
             type: 'clearAnnotText'
          });
        }
-
+       {% endif %}
     });
 
 
    $("#skip_button").click(function(){
+       {% if collaborate %}
        if (TogetherJS.running) {
             TogetherJS.send({
             type: 'skipAnnotText'
          });
        }
+      {% endif %}
        document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
    });
 
@@ -242,11 +248,13 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                {% if collaborate %}
                 if (TogetherJS.running) {
                    TogetherJS.send({
                    type: 'skipAnnotText'
                   });
                 }
+                {% endif %}
                 document.location = "{% url 'team_annotate_text' cid=collection.id tid=team.id uid=next_text.id %}"
             },
 

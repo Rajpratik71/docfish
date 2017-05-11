@@ -27,6 +27,7 @@ SOFTWARE.
 from notifications.signals import notify
 from docfish.apps.main.models import *
 
+from docfish.apps.main.forms import CollectionForm
 from docfish.apps.main.stats import (
     count_collection_annotations,
     count_task_annotations
@@ -247,9 +248,9 @@ def edit_collection(request, cid=None):
         collection = Collection(owner=request.user)
 
     # Only owners allowed to edit collections
-    if request.user is not collection.owner:
+    if request.user != collection.owner:
         messages.info(request, "You don't have permission to edit this collection.")
-        return redirect("collections")
+        return view_collections(request)
         
     if request.method == "POST":
         form = CollectionForm(request.POST,instance=collection)

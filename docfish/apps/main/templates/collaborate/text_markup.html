@@ -76,7 +76,7 @@ ref-list {
              {% include "social/collaborate_button.html" %}
              <button id="clear_button" class="btn btn-xs btn-secondary">Clear</button>
              <button id="save_button" class="btn btn btn-xs btn-secondary">Save</button>
-             <button id="skip_button" class="btn btn btn-xs btn-secondary">Skip</button>
+             <button id="skip_button" class="btn btn btn-xs btn-secondary">>></button>
              <button id="flag_button" class="btn btn btn-xs btn-danger">Mark Bad</button>
         </span>
     </div>
@@ -86,12 +86,25 @@ ref-list {
 </div>
 <div class="row">
     <div class="col-md-12">
-
-        {% if text.is_xml %}
-        <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ text.get_text | safe  }}</pre></p>
-        {% else %}
-        <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text }}</p>
+ 
+        {% if markup.locations %}
+            {% if markup.locations.text|length > 0 %}
+            <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ markup.locations.text | safe  }}</pre></p>
+            {% else %}
+                {% if text.is_xml %}
+                <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ text.get_text | safe  }}</pre></p>
+                {% else %}
+                <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text }}</p>
+                {% endif %}
+            {% endif %}
+        {% else %}        
+            {% if text.is_xml %}
+            <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ text.get_text | safe  }}</pre></p>
+            {% else %}
+            <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text }}</p>
+            {% endif %}
         {% endif %}
+
     </div>
 </div>
 
@@ -133,9 +146,11 @@ $(function() {
         }
     });
 
+   var loggy = $(".loggy");
+
    // We will save a list of highlights
    {% if markup.locations|length > 0 %}
-   var highlights = [{{ markup.locations | safe }}]
+   var highlights = [{{ markup.locations.markups | safe }}]
    {% else %}
    var highlights = []
    {% endif %}
@@ -153,6 +168,7 @@ $(function() {
 
 
    // Together JS function to sync markup
+   {% if collaborate %}
    TogetherJS.hub.on('AfterhighlightTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
@@ -166,36 +182,37 @@ $(function() {
                       msg.timestamp)
    });
 
-
    TogetherJS.hub.on('DohighlightTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
      $('.som_highlight').html(msg.text);
    });
+   {% endif %}
 
    // We will save a list of highlights
    {% if markup.locations|length > 0 %}
-       {% for hl in markup.locations %}
+       {% for hl in markup.locations.markups %}
        updateHighlights("{{ hl.text }}","{{ hl.color }}",{{ hl.startOffset }},{{ hl.endOffset }},{{ hl.timestamp }})
        {% endfor %}
    {% endif %}
 
    var colors = new ColorPicker(document.querySelector('.color-picker'));
    var context = $(".som_highlight")[0];
-   var loggy = $(".loggy");
    var hltr = new TextHighlighter(context, {
         onBeforeHighlight: function (range) {
            return true;
         },
         onAfterHighlight: function (range, hlts) {
+            console.log(hlts);
+            console.log(range);
             var bgcolor = $('.color-picker').find('.selected').css('background-color');
             updateHighlights(hlts[0].innerHTML,
                              bgcolor,
                              range.startOffset,
                              range.endOffset,
                              $(hlts[0]).attr('data-timestamp'))
-
+           {% if collaborate %}
            if (TogetherJS.running) {
                TogetherJS.send({
                    type: 'DohighlightTextMarkup',
@@ -211,17 +228,19 @@ $(function() {
                    timestamp:$(hlts[0]).attr('data-timestamp')
                })
            }
+           {% endif %}
         },
         onRemoveHighlight: function (hlt) {
             return true;
         }
    });
 
-    function pushMarkup(serialized) {
+    function pushMarkup(markup,text) {
         $.ajax({
-            url : "{% url 'update_text_markup' cid=collection.id uid=text.entity.id %}", // the endpoint
+            url : "{% url 'update_text_markup' cid=collection.id uid=text.id %}", // the endpoint
             type : "POST", // http method
-            data : { markup: serialized,
+            data : { markup: markup,
+                     text: text,
                      team_id:"{{ team.id }}" },
 
             success : function(json) {
@@ -237,14 +256,17 @@ $(function() {
 
    $("#save_button").click(function(){
        var promise = new Promise(function(resolve, reject) {
-           var serialized = JSON.stringify(highlights)     
-           return resolve(serialized);
-        }).then(function(serialized) {
-             pushMarkup(serialized)
+           var serialized = JSON.stringify(highlights);
+           var text = $(".som_highlight").html()
+           result = {"text":text,'markup':serialized}     
+           return resolve(result);
+        }).then(function(result) {
+             pushMarkup(result.markup,result.text)
         })
    })
 
    // Together JS function to change colors across browsers
+   {% if collaborate %}
    TogetherJS.hub.on('colorsTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
@@ -252,52 +274,67 @@ $(function() {
      var color = msg.color;
      hltr.setColor(color);
    });
-
+   {% endif %}
    colors.onColorChange(function (color) {
        hltr.setColor(color);
+
+       {% if collaborate %}
        if (TogetherJS.running) {
           TogetherJS.send({
           type: 'colorsTextMarkup',
           color: color
          });
       }
+      {% endif %}
    });
 
    // Together JS function to clear across browsers
+   {% if collaborate %}
    TogetherJS.hub.on('clearTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
      hltr.removeHighlights();
    });
+   {% endif %}
 
    $("#clear_button").click(function(){
       hltr.removeHighlights();
+      {% if collaborate %}
       if (TogetherJS.running) {
           TogetherJS.send({
           type: 'clearTextMarkup'
       });
    }
+   {% endif %}
 
    })
 
+   {% if collaborate %}
    // Together JS function to skip across browsers
    TogetherJS.hub.on('skipTextMarkup', function (msg) {
     if (!msg.sameUrl) {
         return;
      }
-     document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
+
+     $("#message").text('One of your team mates has skipped this image!<a href="{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}">Follow here.</a>">')
+     $('#message').show();
+
    });
+   {% endif %}
 
 
    $("#skip_button").click(function(){
+       {% if collaborate %}
        if (TogetherJS.running) {
           TogetherJS.send({
              type: 'skipTextMarkup'
           });
        }
+       {% endif %}
        document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
    });
+
 
    // Flag a small or bad image
    function flagText() {
@@ -310,11 +347,13 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                {% if collaborate %}
                 if (TogetherJS.running) {
                    TogetherJS.send({
                        type: 'skipTextMarkup'
                     });
                 }
+                {% endif %}
                 document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
             },
 

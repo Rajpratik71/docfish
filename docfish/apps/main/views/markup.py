@@ -90,7 +90,8 @@ def collection_markup_image(request,cid):
 
         # Has the user marked up the image previously?
         markup = get_markup(instance=next_image,
-                            user=request.user)
+                            user=request.user,
+                            collection=collection)
 
         # Has the image base been saved?
         missing_base = not has_image_base(next_image)
@@ -180,7 +181,8 @@ def markup_image(request,cid,uid=None,tid=None):
     
             markup = get_markup(user=request.user,
                                 instance=image,
-                                team=team)
+                                team=team,
+                                collection=collection)
 
             # Has the image base been saved?
             missing_base = not has_image_base(image)
@@ -234,7 +236,8 @@ def collection_markup_text(request,cid):
 
         # Has the user marked up the image previously?
         markup = get_markup(instance=next_text,
-                            user=request.user)
+                            user=request.user,
+                            collection=collection)
 
         # Pass to view if we need to save a base for the image
         context = {"entity": next_text.entity,
@@ -285,7 +288,8 @@ def markup_text(request,cid,uid=None,tid=None):
     
             markup = get_markup(user=request.user,
                                 instance=text,
-                                team=team)
+                                team=team,
+                                collection=collection)
 
             # Pass to view if we need to save a base for the image
             context = {"entity": next_text.entity,

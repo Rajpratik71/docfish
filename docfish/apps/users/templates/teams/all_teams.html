@@ -12,9 +12,11 @@
         <!-- Content -->
         <article id="content">
             <header>
-                <h2>Teams <i data-toggle="tooltip" title="These are all public teams on DocFish" class="fa fa-question-circle"></i></h2>
+                <h2>Teams <i data-toggle="tooltip" style="font-size:20px" title="These are all public teams on DocFish" class="fa fa-2x fa-question-circle"></i></h2>
                 {% if not teams %}
-                <p>DocFish does not have any teams! Why don't you <a href="{% url 'new_team' %}">make a team?</p>
+                <p>A Team is a group of users and chosen collections for collaborative annotation. <br> DocFish does not have any teams! Why don't you <a href="{% url 'new_team' %}">make a team?</p>
+                {% else %}
+                <p>A Team is a group of users and chosen collections for collaborative annotation.</p>
                 {% endif %}
             </header>
             {% if teams %}
@@ -63,9 +65,9 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        {% if not user_team %}
+        {% if not user_team %}{% if teams %}
         <a href="{% url 'new_team' %}"><button class="btn btn-default">Create a Team</button></a>
-        {% endif %}
+        {% endif %}{% endif %}
     </div>
 </div>
 {% endblock %}

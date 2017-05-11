@@ -7,8 +7,14 @@
 
 a {
     color:#8c1515;
+    font-weight:300 !important;
 }
 
 a:hover {
     color:#8c1515;
+    text-decoration: none !important;
+}
+
+h1,h2,h3,h4 {
+  font-weight:300 !important;
 }

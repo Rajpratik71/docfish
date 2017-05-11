@@ -11,8 +11,26 @@
 {% endblock %}
 {% block content %}
     <div class="row">
+       <div class="col-md-12">
+          <div style="float:right">
+          {% if collection.has_images == True or collection.has_text == True %}          
+          <a href="{% url 'collection_start' collection.id %}"><button class="btn btn-small btn-warning">Start</button></a>
+          {% endif %}
+          <a href="{% url 'collection_details' collection.id %}"><button class="btn btn-small btn-secondary">Entities</button></a>
+          <div class="btn-group">
+              <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share</i></button>
+              <div class="dropdown-menu">
+                  <a class="dropdown-item" href="https://twitter.com/intent/tweet?text={{ collection.name }} Annotation on DocFish&url={{ collection.get_absolute_url }}" rel="nofollow" target="_blank" title="Share on Twitter"><i class="fa fa-twitter"></i> Twitter</a>
+                  <a class="dropdown-item" href="https://facebook.com/sharer.php?u={{ collection.get_absolute_url }} Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Facebook"><i class="fa fa-facebook"></i> Facebook</a>
+                  <a class="dropdown-item"  href="http://www.reddit.com/submit?url={{ collection.get_absolute_url }}&title={{ collection.name }}  Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Reddit"><i class="fa fa-reddit"></i> Reddit</a>
+              </div>
+           </div>
+           </div>
+       </div>
+    </div>
+    <div class="row">
         <div class="col-md-3">
-            <h2>Collection Explorer</h2>
+            <h4>Collection Explorer</h4>
                 <p class="alert alert-info"><a href="{% url 'collection_details' collection.id %}">{{ collection.name }}</a></p>
                 <div class="menu-tree-container">
                     <div class="menu-tree-preloader">
@@ -25,27 +43,32 @@
                         {% if entity.image_entity.count > 0 or entity.text_entity.count > 0 %}
                             <ul>
                             {% for image in entity.image_entity.all %}
-                                <li>{{ image.uid }}
+                                <li>{{ image.get_basename }}
                                 <ul>
-                                    <li><a class="image" data-url="{{ image.original.url }}">{{ image.get_file_name }}</a></li>
-                                    {% if image.metadata %}
-                                    <li><a class="json" data-url="{% url 'serve_image_metadata' image.id %}">metadata.json</a></li>
+                                    {% if image.is_pdf %}
+                                        <li><a class="pdf" data-url="{{ image.get_url }}">{{ image.get_file_name }}</a></li>
+                                    {% else %}
+                                        <li><a class="image" data-url="{{ image.get_url }}">{{ image.get_file_name }}</a></li>
+                                        <!--{% if image.metadata|length > 0 %}
+                                        <li><a class="json" data-url="{% url 'serve_image_metadata' image.id %}">metadata.json</a></li>
+                                        {% endif %}-->
                                     {% endif %}
                                 </ul>
                                 </li>
                             {% endfor %}
+                            <!--
                             {% for text in entity.text_entity.all %}
-                                <li>{{ text.uid }}
+                                <li>{{ text.get_basename }}
                                 <ul>
                                     <li><a class="txt" data-url="{% url 'serve_text' text.id %}">{{ text.get_file_name }}</a></li>
-                                    {% if text.metadata %}
+                                    {% if text.metadata|length > 0 %}
                                     <li><a class="json" data-url="{% url 'serve_text_metadata' text.id %}">metadata.json</a></li>
                                     {% endif %}
                                 {% if forloop.last %}
                                 </ul>
                                 </li>
                                 {% endif %}
-                            {% endfor %}
+                            {% endfor %}-->
                             </ul>
                         {% endif %}
                         </li>
@@ -58,7 +81,7 @@
                 </div>
         </div>
         <div class="col-md-9">
-          <div id='content'></div>
+          <div id='content'><h5 style='margin:auto;width:50%;margin-top:200px'>Select an entity to the left.</h5></div>
         </div>
 </div>
 {% endblock %}
@@ -66,6 +89,15 @@
 <script src="{% static "js/dataset_explorer.js" %}"></script>
 <script>
         $(document).ready(function(){
+
+          // Clicking an image shows it. Right now we assume png
+          $('.pdf').click(function(){
+              var file = $(this).attr('data-url');
+              // In future can use this to change display of image type
+              var extension = file.substr((file.lastIndexOf('.') +1));
+              $("#content").text("");
+              $("#content").append("<iframe frameBorder='0' src='" + file + "' width='100%' height='600px'>");
+          })
 
           // Clicking an image shows it. Right now we assume png
           $('.image').click(function(){

@@ -81,11 +81,7 @@ $(function() {
          }
         
         if (e.which == 39) { 
-           {% if team %}
-           document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
-           {% else %}
            document.location = "{% url 'collection_annotate_image' collection.id %}"
-           {% endif %}
            e.preventDefault();
            return false;
         }
@@ -102,19 +98,10 @@ $(function() {
         }).then(function(annotations){
             console.log(annotations);
 
-            {% if team %}
-            var team_id = "{{ team.id }}"
-            {% endif %}
-
             $.ajax({
                 url : "{% url 'update_image_annotation' collection.id image.id %}", // the endpoint
                 type : "POST", // http method
-                {% if team %}
-                data : { annotations: annotations,
-                         team_id: team_id }, // data sent with the post request
-                {% else %}
                 data : { annotations: annotations }, // data sent with the post request
-                {% endif %}
                 // handle a successful response
                 success : function(json) {
                     console.log(json); // log the returned json to the console
@@ -141,10 +128,6 @@ $(function() {
 
         $.ajax({
             url : "{% url 'clear_image_annotations' collection.id image.id %}", // the endpoint
-
-            {% if team %}
-            data: {team_id:team_id },
-            {% endif %}
 
             type : "POST", // http method
 
@@ -186,12 +169,7 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
-       {% else %}
        document.location = "{% url 'collection_annotate_image' collection.id %}"
-       {% endif %}
-
    });
 
 
@@ -207,11 +185,7 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_annotate_image' collection.id team.id %}"
-                {% else %}
                 document.location = "{% url 'collection_annotate_image' collection.id %}"
-                {% endif %}
             },
 
             // handle a non-successful response

@@ -92,7 +92,8 @@ def collection_annotate_image(request,cid):
             return HttpResponseRedirect(collection.get_absolute_url())
 
         annotations = get_annotations(user=request.user,
-                                      instance=next_image)
+                                      instance=next_image,
+                                      return_dict=True)
 
         allowed_annotations = collection.get_annotations()
 
@@ -219,8 +220,7 @@ def team_annotate_text(request,cid,tid,uid=None):
                     "next_text": next_text,
                     "text": text,
                     "collection":collection,
-                    "annotations": annotations['labels'],
-                    "counts": annotations['counts'],
+                    "annotations": annotations,
                     "nosidebar":"pizzapizza",
                     "allowed_annotations": allowed_annotations,
                     "team":team}
@@ -271,8 +271,7 @@ def team_annotate_image(request,cid,tid,uid=None):
                     "image": image,
                     "next_image": next_image,
                     "collection": collection,
-                    "annotations": annotations['labels'],
-                    "counts": annotations['counts'],
+                    "annotations": annotations,
                     "nosidebar":"pizzapizza",
                     "allowed_annotations": allowed_annotations,
                     "team": team}
