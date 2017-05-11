@@ -318,7 +318,7 @@ def collection_change_privacy(request,cid):
 
 
 @login_required
-def collection_activate(request,cid,fieldtype=None):
+def collection_activate(request,cid,fieldtype=None,tid=None):
     '''collection activate will turn an annotation or markup view on or off, or an entire
     collection on or off.
     '''
@@ -333,7 +333,7 @@ def collection_activate(request,cid,fieldtype=None):
                 if fieldtype in ['image_annotation','text_annotation']:
                     if collection.status[fieldtype]['active'] is False and collection.allowed_annotations.count() == 0:
                         messages.info(request,"You must create labels before using annotation.")
-                        return view_label(request,collection.id)
+                        return view_label(request,collection.id,tid=tid)
 
                 # Otherwise, let them freely change it
                 collection.status[fieldtype]['active'] = not collection.status[fieldtype]['active']
@@ -347,7 +347,9 @@ def collection_activate(request,cid,fieldtype=None):
                 message.info(request,"%s is not a valid annotation or markup type for a Collection.")
     else:
         messages.info(request,"You don't have permission to perform this action.")
-    return redirect('collection_start',cid=cid)
+    if tid is None:
+        return redirect('collection_start',cid=cid)
+    return redirect('team_portal',tid=tid,cid=cid)
  
 
 

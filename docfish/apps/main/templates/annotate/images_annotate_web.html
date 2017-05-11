@@ -28,22 +28,26 @@
     </div>
     <div class="col-md-6">
 
+        <form id="update_image_annotation">
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>
                 <div class="btn-group" data-toggle="buttons">
                     {% for label in labels %}
-                        {% if name in annotations and annotations|access:name == label %}
-                        <label class="btn btn-secondary annotate-button active">
-                        {% else %}
-                        <label style="border:none;" class="btn btn-secondary annotate-button">                    
-                        {% endif %}
+                        {% for annot in annotations %}
+                           {% if annot.name == name and annot.label == label %}
+                           <label class="btn btn-secondary annotate-button active">
+                           {% else %}
+                           <label style="border:none;" class="btn btn-secondary annotate-button">                    
+                           {% endif %}
+                        {% endfor %}
                         <input class="annotate-button" type="radio" name="{{ name }}||{{ label }}" id="{{ label }}" autocomplete="off"> {{ label }}
                         </label>
                     {% endfor %}
                  </div>
              </fieldset>
         {% endfor %}
+        </form>
 
         <div class="button-group">
             <button id="skip_button" class="btn btn-info"> >> </button>

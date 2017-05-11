@@ -67,8 +67,6 @@ def team_portal(request,tid,cid,status=None):
 
     if status == None:
         status = collection.status
-        # Currently not supporting these
-        del status['image_markup']
         
     if collection.private == True:
         if not has_collection_annotate_permission(request,collection,team):

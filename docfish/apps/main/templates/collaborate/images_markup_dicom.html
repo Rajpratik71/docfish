@@ -159,6 +159,31 @@ $(function() {
        return image;
    }
 
+   {% if collaborate %}
+   $('canvas').on('mouseup', function() {
+      var canvas = $("#som_sketch");       
+       if (TogetherJS.running) {
+          TogetherJS.send({
+          type: 'DoImageMarkup',
+          dataUrl: canvas[0].toDataURL('image/png')
+         });
+     }
+   });
+
+   TogetherJS.hub.on('DoImageMarkup', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+      var context = handle[0].getContext('2d')
+      var imageObj = new Image();
+      imageObj.onload = function() {
+          context.drawImage(this, 0, 0);
+      };
+      imageObj.src = msg.dataUrl;
+   });
+
+   {% endif %}
+
    // Save button sends markup to server
    $("#save_button").click(function(){
        var canvas = $("#som_sketch");
@@ -186,11 +211,14 @@ $(function() {
 
 
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_markup_image' collection.id team.id %}"
-       {% else %}
-       document.location = "{% url 'collection_markup_image' collection.id %}"
-       {% endif %}
+        {% if collaborate %}
+           if (TogetherJS.running) {
+              TogetherJS.send({
+               type: 'skipImageMarkup'
+            });
+         }
+        {% endif %}
+       document.location = "{% url 'markup_image' cid=collection.id uid=next_image.id tid=team.id %}"
    });
 
    // Flag a small or bad image
@@ -204,11 +232,7 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_markup_image' collection.id team.id %}"
-                {% else %}
-                document.location = "{% url 'collection_markup_image' collection.id %}"
-                {% endif %}
+                document.location = "{% url 'markup_image' cid=collection.id uid=next_image.id tid=team.id %}"
             },
 
             // handle a non-successful response

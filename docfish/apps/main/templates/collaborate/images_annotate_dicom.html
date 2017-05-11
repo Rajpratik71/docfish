@@ -85,22 +85,26 @@ var params = {
     </div>
     <div class="col-md-6">
 
+        <form id="update_image_annotation">
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>
                 <div class="btn-group" data-toggle="buttons">
                     {% for label in labels %}
-                        {% if name in annotations and annotations|access:name == label %}
-                        <label class="btn btn-secondary annotate-button active">
-                        {% else %}
-                        <label style="border:none;" class="btn btn-secondary annotate-button">                    
-                        {% endif %}
+                        {% for annot in annotations %}
+                           {% if annot.name == name and annot.label == label %}
+                           <label class="btn btn-secondary annotate-button active">
+                           {% else %}
+                           <label style="border:none;" class="btn btn-secondary annotate-button">                    
+                           {% endif %}
+                        {% endfor %}
                         <input class="annotate-button" type="radio" name="{{ name }}||{{ label }}" id="{{ label }}" autocomplete="off"> {{ label }}
                         </label>
                     {% endfor %}
                  </div>
              </fieldset>
         {% endfor %}
+        </form>
 
         <div>
             <button id="skip_button" class="btn btn-info"> >> </button>
@@ -204,6 +208,7 @@ $(function() {
         },500)
    })
  
+
   // On click, clear annotations
     $("#clear_button").click(function(){
         setTimeout(function(){
@@ -211,13 +216,55 @@ $(function() {
         },500)
         $('input:radio').attr('checked',false)
         $('.annotate-button').removeClass('active');
+        {% if collaborate %}
+           if (TogetherJS.running) {
+              TogetherJS.send({
+               type: 'clearImageAnnotations'
+            });
+         }
+        {% endif %}
+
     });
 
 
    $("#skip_button").click(function(){
+        {% if collaborate %}
+           if (TogetherJS.running) {
+              TogetherJS.send({
+               type: 'skipImageAnnotations'
+            });
+         }
+        {% endif %}
        document.location = "{% url 'team_annotate_image' cid=collection.id tid=team.id uid=next_image.id %}"
-
    });
+
+
+   {% if collaborate %}
+   TogetherJS.hub.on('flagImageAnnotations', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+        $('#message').text("A friend has flagged this annotation and moved on.")
+        $("#message").show();
+   });
+
+   TogetherJS.hub.on('clearImageAnnotations', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+        $('input:radio').attr('checked',false)
+        $('.annotate-button').removeClass('active');
+   });
+
+   TogetherJS.hub.on('skipImageAnnotations', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+        $('#message').text("A friend has skipped this annotation.")
+        $("#message").show();
+   });
+   {% endif %}
+
 
    // Flag a small or bad image
    function flagImage() {
@@ -244,6 +291,13 @@ $(function() {
       setTimeout(function(){
            flagImage();
       },500)
+        {% if collaborate %}
+           if (TogetherJS.running) {
+              TogetherJS.send({
+               type: 'flagImageAnnotations'
+            });
+         }
+        {% endif %}
    })
 
 })

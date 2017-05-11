@@ -91,7 +91,7 @@ background-color:#F7F7F7;
                 {% if fieldvalues.instruction %}
                 <p class="fish-instruction" id="fish-instruction-{{ fieldtype }}" contenteditable="true" onkeyup="saveInstruction('{{ fieldtype }}','{{ collection.id }}')">{{ fieldvalues.instruction }}</p>
                 {% endif %}
-                <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
+                <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype tid=team.id %}"><button class="btn btn-sm btn-success">Activate</button></a>
             {% else %}
                 <p class="fish-instruction alert alert-info">This collection does not have images for {{ fieldvalues.title }}. </p>
             {% endif %}
@@ -101,14 +101,14 @@ background-color:#F7F7F7;
                 <p class="fish-instruction" id="fish-instruction-{{ fieldtype }}" contenteditable="true" onkeyup="saveInstruction('{{ fieldtype }}','{{ collection.id }})'">{{ fieldvalues.instruction }}</p>
                 {% endif %}
                 {% if fieldtype == "text_annotation "%}{% if collection.allowed_annotations.count > 0 %}
-                <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
+                <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype tid=team.id %}"><button class="btn btn-sm btn-success">Activate</button></a>
                 {% endif %}
                 {% else %}
                     {% if fieldtype == "image_annotation "%}{% if collection.allowed_annotations.count > 0 %}
-                    <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
+                    <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype tid=team.id %}"><button class="btn btn-sm btn-success">Activate</button></a>
                     {% endif %}
                     {% else %}
-                    <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
+                    <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype tid=team.id %}"><button class="btn btn-sm btn-success">Activate</button></a>
                     {% endif %}
                 {% endif %}
             {% else %}

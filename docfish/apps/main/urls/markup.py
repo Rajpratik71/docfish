@@ -41,11 +41,10 @@ urlpatterns = [
 
     # Teams Markup - first browse (no collaborative annotation)
     url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/markup$',views.markup_text,name='markup_text'),
-    # images (not yet implemented)
-    #url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/markup$',views.markup_image,name='markup_image'),
+    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/markup$',views.markup_image,name='markup_image'),
 
     # Teams markup (collaboration after first)
     url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/text/(?P<uid>\d+)/markup$',views.markup_text,name='markup_text'),
-    #url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/(?P<uid>\d+)/markup$',views.markup_image,name='team_markup_image'),
+    url(r'^teams/(?P<tid>\d+)/collection/(?P<cid>\d+)/images/(?P<uid>\d+)/markup$',views.markup_image,name='markup_image'),
 
 ]

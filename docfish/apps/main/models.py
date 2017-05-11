@@ -101,7 +101,7 @@ collection_status = {'text_annotation':  {'active':True,'instruction': "Please c
                                           'title':'Text Markup','symbol':'fa-pencil-square'},
                      'image_annotation': {'active':True,'instruction': "Please choose descriptors that best match the image.",
                                           'title':'Image Annotation','symbol':'fa-picture-o'},
-                     'image_describe':   {'active':True,'instruction': None,'title':'Image Description','symbol':'fa-picture-o'},
+                     'image_describe':   {'active':True,'instruction': "Please describe the image.",'title':'Image Description','symbol':'fa-picture-o'},
                      'image_markup':     {'active':True,'instruction': "Please mark important parts of the image", 
                                           'title':'Image Markup','symbol':'fa-picture-o'}}
 

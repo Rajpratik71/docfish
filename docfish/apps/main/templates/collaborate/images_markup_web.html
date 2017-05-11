@@ -56,10 +56,10 @@
 
      <span id="tools"></span>
      <span style="padding-left:320px;margin-top:20px">
+         <button id="flag_button" class="btn btn btn-xs btn-danger">Bad</button>
          <button id="clear_button" class="btn btn-xs btn-warning">Clear</button>
          <button id="save_button" class="btn btn btn-xs btn-info">Save</button>
-         <button id="skip_button" class="btn btn btn-xs btn-info">Skip</button>
-         <button id="flag_button" class="btn btn btn-xs btn-danger">Mark as Bad</button>
+         <button id="skip_button" class="btn btn btn-xs btn-info">>></button>
     </span>
 </div>
 
@@ -84,27 +84,16 @@
     </div>
 
     <!-- Hidden form to send image markup to server -->
-    <form id="save_markup" class="form-horizontal" method="post" action="{% url 'markup_image' collection.id image.id %}" >
+    <form id="save_markup" class="form-horizontal" method="post" action="{% url 'markup_image' cid=collection.id uid=image.id tid=team.id %}" >
         <input type="hidden" name="image_id" value="{{ image.id }}">  
         <input type="hidden" name="pngdata" id="hidden_image">  
-        {% if team %}
         <input type="hidden" name="team_id" id="team_id" value="{{ team.id }}">  
-        {% endif %}
         {% if missing_base %}
         <input type="hidden" name="pngdatabase" id="base_image">  
         {% endif %}
 
         {% csrf_token %}
     </form>
-
-    <!--Show all other team members marketup -->
-    <div class="row">
-        <div class="col-md-12">
-            {% for tmarkup in team_markups %}
-            <img class="team_markup" src="{{ tmarkup.overlay.url | safe }}" style='display:none'>
-            {% endfor %}
-        </div>
-    </div>
 
 
 </div>
@@ -123,7 +112,35 @@ $(function() {
    });
 
    // Hold this guy around
+   var canvas = $("#som_sketch");
    var handle = $('#som_sketch').sketch();
+
+   {% if collaborate %}
+   $('canvas').on('mouseup', function() {
+      var canvas = $("#som_sketch");       
+       if (TogetherJS.running) {
+          TogetherJS.send({
+          type: 'DoImageMarkup',
+          dataUrl: canvas[0].toDataURL('image/png')
+         });
+     }
+   });
+
+   TogetherJS.hub.on('DoImageMarkup', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+      var context = handle[0].getContext('2d')
+      var imageObj = new Image();
+      imageObj.onload = function() {
+          context.drawImage(this, 0, 0);
+      };
+      imageObj.src = msg.dataUrl;
+      console.log(imageObj);
+   });
+
+   {% endif %}
+
 
    {% if markup.overlay %}
    //var imageObj = new Image();
@@ -174,12 +191,27 @@ $(function() {
        //handle.sketch().clear()
    })
 
+   // Together JS function to clear across browsers
+   {% if collaborate %}
+   TogetherJS.hub.on('skipImageMarkup', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     $("#message").text("A friend has skipped this markup.");
+     $("#message").show();
+   });
+   {% endif %}
+
+
    $("#skip_button").click(function(){
-       {% if team %}
-       document.location = "{% url 'collection_markup_image' collection.id team.id %}"
-       {% else %}
-       document.location = "{% url 'collection_markup_image' collection.id %}"
-       {% endif %}
+        {% if collaborate %}
+           if (TogetherJS.running) {
+              TogetherJS.send({
+               type: 'skipImageMarkup'
+            });
+         }
+        {% endif %}
+       document.location = "{% url 'markup_image' cid=collection.id uid=next_image.id tid=team.id %}"
    });
 
    // Flag a small or bad image
@@ -191,13 +223,9 @@ $(function() {
 
             // handle a successful response
             success : function(json) {
-                console.log(json); // log the returned json to the console
-                console.log("success"); // another sanity check
-                {% if team %}
-                document.location = "{% url 'collection_markup_image' collection.id team.id %}"
-                {% else %}
-                document.location = "{% url 'collection_markup_image' collection.id %}"
-                {% endif %}
+                console.log(json); 
+                console.log("success");
+                document.location = "{% url 'markup_image' cid=collection.id uid=next_image.id tid=team.id %}"
             },
 
             // handle a non-successful response
