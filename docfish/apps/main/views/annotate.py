@@ -114,20 +114,20 @@ def collection_annotate_image(request,cid):
 
 
 @login_required
-def clear_image_annotations(request,uid):
+def clear_image_annotations(request,cid,uid):
     '''clear all annotations for a specific image'''
     image = Image.objects.get(id=uid)
-    return clear_annotations(request,instance=image)
+    return clear_annotations(request,cid=cid,instance=image)
 
 
 @login_required
-def update_image_annotation(request,uid,tid=None):
+def update_image_annotation(request,uid,cid,tid=None):
     '''update_image_annotation is the view to update an annotation when it changes. 
     It should return a JSON response.
     Given a team annotation, the team_id should be in the request.POST
     '''
     image = Image.objects.get(id=uid)
-    return update_annotations(request,instance=image)
+    return update_annotations(request,cid=cid,instance=image)
 
 
 
@@ -261,6 +261,7 @@ def team_annotate_image(request,cid,tid,uid=None):
                                               team=team,
                                               skip=image.id)
         
+        # Stopped here - this function isn't returning any annotations
         annotations = get_annotations(user=request.user,
                                       instance=image,
                                       team=team)

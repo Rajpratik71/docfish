@@ -59,6 +59,13 @@ urlpatterns = [
     url(r'^labels/(?P<cid>\d+)/view$',views.view_label,name='view_label'), # create new label
     url(r'^labels/(?P<cid>\d+)/(?P<lid>.+?)/remove$',views.remove_label,name='remove_label'), # from existin
 
+    # Team Labels
+    url(r'^labels/(?P<cid>\d+)/team/(?P<tid>\d+)/new$',views.create_label,name='create_label'), # create new label
+    url(r'^labels/(?P<cid>\d+)/team/(?P<tid>\d+)/(?P<lid>.+?)/new$',views.create_label,name='create_label'), # from existing
+    url(r'^labels/(?P<cid>\d+)/team/(?P<tid>\d+)/view$',views.view_label,name='view_label'), # create new label
+    url(r'^labels/(?P<cid>\d+)/team/(?P<tid>\d+)/(?P<lid>.+?)/remove$',views.remove_label,name='remove_label'), # from existin
+ 
+
     # Flag Images and Text
     url(r'^actions/images/(?P<uid>.+?)/flag$',actions.flag_image,name='flag_image'),
     url(r'^actions/text/(?P<uid>.+?)/flag$',actions.flag_text,name='flag_text'),

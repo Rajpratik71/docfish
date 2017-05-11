@@ -245,6 +245,8 @@ $(function() {
 
             success : function(json) {
                 console.log(json); // log the returned json to the console
+                $("#message").text("Your markup has been saved!")
+                $("#message").show()
             },
 
             error : function(xhr,errmsg,err) {

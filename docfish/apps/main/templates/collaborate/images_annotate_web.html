@@ -27,7 +27,9 @@
         <img id="som_image" src="{{ image.get_url | safe }}">
     </div>
     <div class="col-md-6">
-
+        {% for annot in annotations %}
+           {{ annot }}
+        {% endfor %}
         {% for name,labels in allowed_annotations.items %}
             <fieldset style="border:dashed 1px;margin-bottom:10px">
                 <legend style="width:0%;font-size:1em;margin-bottom:0px"><span style="background-color:white">{{ name }}</span></legend>

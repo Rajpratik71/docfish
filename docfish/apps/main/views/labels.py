@@ -34,6 +34,7 @@ from django.http.response import (
     Http404
 )
 
+from docfish.apps.users.utils import get_team
 from docfish.apps.main.models import Annotation
 from docfish.apps.main.utils import get_collection
 from docfish.apps.main.permission import (
@@ -56,10 +57,11 @@ import re
 # Annotation Labels
 ######################################################################################
 
-def view_label(request,cid):
+def view_label(request,cid,tid=None):
     '''view_label is a general template to return a view of labels
     '''
     collection = get_collection(cid)
+    team = get_team(tid,return_none=True)
 
     if has_collection_edit_permission(request,collection):
 
@@ -69,17 +71,18 @@ def view_label(request,cid):
 
         context = {'labels':labels,
                    'collection':collection,
-                   'collection_labels':collection_labels}
+                   'collection_labels':collection_labels,
+                   'team':team}
 
         # send back json response success
         return render(request,'collections/new_collection_label.html', context)
 
     messages.info(request, "You do not have permission to perform this action.")
     return HttpResponseRedirect(collection.get_absolute_url())
-
+    
 
 @login_required
-def create_label(request,cid,lid=None):
+def create_label(request,cid,lid=None,tid=None):
     '''create_label will allow a user to create a new label to be associated with a collection. The user
     will be able to select from other collection labels
     :param cid: the collection id to associate the label with (not required, but no url accessible for it) 
@@ -123,7 +126,7 @@ def create_label(request,cid,lid=None):
             messages.info(request, "You do not have permission to perform this action.")
             return HttpResponseRedirect(collection.get_absolute_url())
 
-    return redirect('view_label',cid=cid)
+    return redirect('view_label',cid=cid,tid=tid)
 
 
 @login_required
@@ -142,6 +145,6 @@ def remove_label(request,cid,lid):
     else:                
         messages.info(request, "You do not have permission to perform this action.")
         return HttpResponseRedirect(collection.get_absolute_url())
-    return redirect('view_label',cid=cid)
+    return redirect('view_label',cid=cid,tid=tid)
 
 
