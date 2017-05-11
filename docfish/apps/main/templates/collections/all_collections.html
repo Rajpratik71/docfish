@@ -71,20 +71,22 @@
                        </thead>
                        <tbody>
                        {% for collection in collections %}
-                       {% if forloop.counter < 51 %}
                        <tr>
+                           {% if collection.has_images or collection.has_text %}
                            <td><a href="{% url 'collection_explorer' collection.id %}">{{ collection.name }}</a></td>
+                           {% else %}
+                           <td><a href="{% url 'collection_details' collection.id %}">{{ collection.name }}</a></td>
+                           {% endif %}
                            <td>{{ collection.owner }}</td>
                            <td>{{ collection.entity_set.count }}</td>
                            <td>
-                            <a href="{% url 'collection_explorer' collection.id %}"><button style="cursor:pointer" class="btn btn-secondary">View</button></a>
                             {% if collection.has_images or collection.has_text %}
+                            <a href="{% url 'collection_explorer' collection.id %}"><button style="cursor:pointer" class="btn btn-secondary">View</button></a>
                             <a href="{% url 'collection_start' collection.id %}"><button style="cursor:pointer" class="btn btn-warning">Start</button></a>
                             {% endif %}
                            </td>
                            <td><a href="{% url 'collection_details' collection.id %}"><button style="cursor:pointer" class="btn btn-secondary">Edit</button></a></td>
                        </tr>
-                    {% endif %}
                     {% endfor %} 
                     </table>
                     {% endif %}

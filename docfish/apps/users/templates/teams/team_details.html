@@ -111,6 +111,9 @@
             {% endfor %}
            </tbody>
        </table>
+       {% if edit_permission %}
+       <a href="{% url 'add_team_collections' team.id %}"><button class="btn btn-secondary btn-sm">Add a Collection</button></a>
+       {% endif %}
        {% else %}
            {% if edit_permission %}
            <p>There are no collections in this team! Why don't you <a href="{% url 'add_team_collections' team.id %}">add some</a>?</p>

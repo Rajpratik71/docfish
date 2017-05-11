@@ -381,7 +381,6 @@ class ImageLink(Image):
 
 
 class ImageMarkup(models.Model):
-    from docfish.apps.users.models import Team
     '''A markup is like a transparent layer that fits to its matched image (see Image.image_markups). 
        By default of being a markup, it is intended to be used on a 2D image, which means that if 
        a markup is created for a 2D image, what is being created is a slice. To support this, each 
@@ -392,7 +391,7 @@ class ImageMarkup(models.Model):
     image = models.ForeignKey(Image,blank=False,related_query_name="image_markup")
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
-    team = models.ForeignKey(Team,blank=True,null=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     creator = models.ForeignKey(User,related_name="creator_of_image", null=True,
                                 related_query_name="creator_of_image", blank=True,
                                 help_text="user that created the markup.",verbose_name="Creator")
@@ -411,9 +410,8 @@ class ImageMarkup(models.Model):
 class ImageDescription(models.Model):
     '''An image description is an open text field to describe an image.
     '''
-    from docfish.apps.users.models import Team
     image = models.ForeignKey(Image,blank=False,related_query_name="image_description")
-    team = models.ForeignKey(Team,blank=True,null=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_image_description", null=True,
@@ -437,14 +435,13 @@ def delete_markup(sender, instance, **kwargs):
 
 
 class ImageAnnotation(models.Model):
-    from docfish.apps.users.models import Team
     '''equivalent to an image markup (pointing to a matched image) but it has the additional allowed annotation. 
        If the overlay is empty for the ImageMarkup, it is assumed to describe the whole image.
     '''
     image = models.ForeignKey(Image,blank=False,related_query_name="image_annotation")
     modify_date = models.DateTimeField('date modified', auto_now=True)
     collection = models.ForeignKey(Collection)
-    team = models.ForeignKey(Team,blank=True,null=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     creator = models.ForeignKey(User,related_name="creator_of_image_annotation",
                                 related_query_name="creator_of_image_annotation", blank=False, null=True,
                                 help_text="user that created the annotation.",verbose_name="Creator")
@@ -549,9 +546,8 @@ class TextLink(Text):
 class TextDescription(models.Model):
     '''A text description is an open text field to describe a text.
     '''
-    from docfish.apps.users.models import Team
     text = models.ForeignKey(Text,related_query_name="text_description")
-    team = models.ForeignKey(Team,blank=True,null=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     creator = models.ForeignKey(User,related_name="creator_of_text_description", null=True,
@@ -579,9 +575,8 @@ class TextMarkup(models.Model):
        stored with a Text object (see Text.text_markup). The markup is just a list of start and 
        stop locations, based on some delimiter in the text (default is a space)
     '''
-    from docfish.apps.users.models import Team
     text = models.ForeignKey(Text,related_query_name="text_markup")
-    team = models.ForeignKey(Team,blank=True,null=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     creator = models.ForeignKey(User,related_name="creator_text",related_query_name="creator_text", blank=False,
                                 help_text="user that created the markup.",verbose_name="Creator",null=True)
@@ -599,10 +594,9 @@ class TextAnnotation(models.Model):
        additional allowed annotation. If the locations list is empty, it is assumed to 
        describe the whole body of text.
     '''
-    from docfish.apps.users.models import Team
     text = models.ForeignKey(Text,related_query_name="text_annotation")
     annotation = models.ForeignKey(Annotation,related_name="annotation_of_text",related_query_name="annotation_of_text")
-    team = models.ForeignKey(Team,blank=True,null=True)
+    team = models.ForeignKey('users.Team',blank=True,null=True)
     collection = models.ForeignKey(Collection)
     creator = models.ForeignKey(User, blank=True, related_name="text_annotation_creator", 
                                 related_query_name="text_annotation_creator",

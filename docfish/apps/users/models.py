@@ -73,19 +73,16 @@ REQUEST_CHOICES = (("denied", 'Request has not been granted.'),
 # Teams ###############################################################################################
 #######################################################################################################
 
-
 class Team(models.Model):
     '''A user team is a group of individuals that are annotating reports together. They can be reports across collections, or 
     institutions, however each user is only allowed to join one team.
     '''
-    from docfish.apps.main.models import Collection
-
     name = models.CharField(max_length=250, null=False, blank=False,verbose_name="Team Name")
     owner = models.ForeignKey(User, blank=True, verbose_name="Team owner and adminstrator.")
     created_at = models.DateTimeField('date of creation', auto_now_add=True)
     updated_at = models.DateTimeField('date of last update', auto_now=True)
+    collection_ids = JSONField(default=[])
     team_image = models.ImageField(upload_to=get_image_path, blank=True, null=True)    
-    collections = models.ManyToManyField('main.Collection',blank=True)
     metrics_updated_at = models.DateTimeField('date of last calculation of rank and annotations',blank=True,null=True)
     ranking = models.PositiveIntegerField(blank=True,null=True,
                                           verbose_name="team ranking based on total number of annotations, calculated once daily.")
@@ -103,6 +100,10 @@ class Team(models.Model):
                                      # would more ideally be implemented with User model, but this will work
                                      # we will constrain each user to joining one team on view side
 
+    def collections(self):
+        from docfish.apps.main.models import Collection
+        return Collection.objects.filter(id__in=self.collection_ids)
+        
     def __str__(self):
         return "%s:%s" %(self.id,self.name)
 
@@ -119,33 +120,15 @@ class Team(models.Model):
         return list(chain(owner_collections,public_collections))
        
     def add_collection(self,cid):
-        from docfish.apps.main.models import Collection
-        collection = None
-        try:
-            collection = Collection.objects.get(id=cid)
-            if collection not in self.collections.all():
-                self.collections.add(collection)
-                self.save()
-        except:
-            pass
-        return collection
-
-
+        if cid not in self.collection_ids:
+            self.collection_ids.append(cid)
+        
     def remove_collection(self,cid):
-        from docfish.apps.main.models import Collection
-        collection = None
-        try:
-            collection = Collection.objects.get(id=cid)
-            if collection in self.collections.all():
-                self.collections.remove(collection)
-                self.save()
-        except:
-            pass
-        return collection
-
+        self.collection_ids = [x for x in self.collection_ids if x != cid]
+        self.save()
 
     def has_collections(self):
-        if self.collections.count() > 0:
+        if len(self.collection_ids) > 0:
             return True
         return False
 
@@ -155,6 +138,7 @@ class Team(models.Model):
 
     class Meta:
         app_label = 'users'
+
 
 
 class MembershipInvite(models.Model):

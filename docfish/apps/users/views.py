@@ -130,7 +130,6 @@ def view_teams(request):
     :parma tid: the team id to edit or create. If none, indicates a new team
     '''
     teams = Team.objects.all()
-
     context = {"teams": teams}
     user_team = get_user_team(request)
     context['user_team'] = user_team # returns None if not in team

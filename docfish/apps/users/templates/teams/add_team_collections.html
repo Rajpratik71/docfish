@@ -19,7 +19,6 @@
                          <select class="form-control" multiple name="collection_ids">
                              {% for coll in team.contender_collections %}                 
                              <option value="{{ coll.id }}">{{ coll.name }}</option>
-                             <option value="2">{{ coll.name }}</option>
                              {% endfor %}
                      </select>                     
                      {% csrf_token %}

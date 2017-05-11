@@ -65,7 +65,6 @@ def add_storage_articles(pmids,cid=None):
         entity.save()
         images = pull_images(entity=article)
         texts = pull_text(entity=article)
-
         # Add images and text to entity
         for ds_image in images:
             metadata = dict(ds_image)
