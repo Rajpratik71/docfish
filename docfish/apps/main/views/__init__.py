@@ -2,6 +2,7 @@ from .collections import (
     add_contributor,
     collection_activate,
     collection_change_privacy,
+    collection_chooser,
     collection_explorer,
     collection_start,
     collection_stats,

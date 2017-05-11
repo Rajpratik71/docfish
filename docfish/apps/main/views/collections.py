@@ -142,6 +142,9 @@ def remove_contributor(request,cid,uid):
 # Collections #################################################################################
 ###############################################################################################
 
+# Team annotation or collections?
+def collection_chooser(request):
+    return render(request, 'portals/collection_chooser.html')
 
 # View all collections
 def view_collections(request):

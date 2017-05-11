@@ -59,7 +59,7 @@ def login(request):
     #context = RequestContext(request,context)
     #return render_to_response('social/login.html', context_instance=context)
     if request.user.is_authenticated():
-        return redirect('collections')
+        return redirect('collection_chooser')
     return render(request,'social/login.html')
 
 
