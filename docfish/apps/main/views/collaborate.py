@@ -36,7 +36,8 @@ from docfish.apps.main.permission import (
 from docfish.apps.main.utils import *
 
 from docfish.apps.users.utils import (
-    get_user
+    get_user,
+    get_team
 )
 
 from django.contrib.auth.decorators import login_required
@@ -111,4 +112,4 @@ def team_portal(request,tid,cid,status=None):
     # Get all permissions, context must have collection as key
     context = get_permissions(request,context)
 
-    return render(request, 'portals/team_start.html', context)
+    return render(request,'portals/team_start.html',context)
