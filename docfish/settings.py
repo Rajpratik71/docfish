@@ -17,8 +17,8 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DOMAIN_NAME = "https://localhost"
-DOMAIN_NAME_HTTP = "http://localhost"
+DOMAIN_NAME = "https://doc.fish"
+DOMAIN_NAME_HTTP = "http://doc.fish"
 ADMINS = (('vsochat', 'vsochat@gmail.com'),)
 MANAGERS = ADMINS
 
@@ -121,7 +121,7 @@ WSGI_APPLICATION = 'docfish.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
+DATABASES = {  
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
@@ -154,7 +154,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'social_core.backends.open_id.OpenIdAuth',
-#    'social_core.backends.saml.SAMLAuth',
+    'social_core.backends.saml.SAMLAuth',
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.twitter.TwitterOAuth',
     'social_core.backends.facebook.FacebookOAuth2',
@@ -267,7 +267,7 @@ if BROKER_URL == None:
     BROKER_URL = CELERY_RESULT_BACKEND
 
 # Always use https
-#SECURE_SSL_REDIRECT=True
+SECURE_SSL_REDIRECT=True
 
 # Gravatar
 GRAVATAR_DEFAULT_IMAGE = "retro" 

@@ -40,5 +40,5 @@ urlpatterns = [
     url(r'^guide$', base_views.user_guide_view, name="user_guide"),
     url(r'^favicon\.ico$', favicon_view),
     url(r'^notifications/', include(notifications.urls,namespace='notifications')),
-#    url(r'^saml.xml$', base_views.saml_metadata_view, name="samlxml")
+    url(r'^saml.xml$', base_views.saml_metadata_view, name="samlxml")
 ]

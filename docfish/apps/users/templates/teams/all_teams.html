@@ -45,12 +45,12 @@
                    </td>
                    <td>{{ team.annotation_count }}</td>
                    <td>{% if user_team == team %}
-                      <a href="{% url 'team_details' team.id %}"><button class="btn btn-primary" type="button" id="team_details">View your Team</button></a>
+                      <a href="{% url 'team_details' team.id %}"><button class="btn btn-primary" type="button" id="team_details">View</button></a>
                        {% else %}
                            {% if user_team %}
-                      <a href="{% url 'join_team' team.id %}"><button class="btn btn-info btn-primary" type="button" id="join_team">Change Team</button></a> 
+                      <a href="{% url 'join_team' team.id %}"><button class="btn btn-info btn-secondary" type="button" id="join_team">Join</button></a> 
                            {% else %}
- <a href="{% url 'join_team' team.id %}"><button class="btn btn-info btn-primary" type="button" id="join_team">Join</button></a>
+ <a href="{% url 'join_team' team.id %}"><button class="btn btn-info btn-secondary" type="button" id="join_team">Join</button></a>
                            {% endif %}
                        {% endif %}
                    </td>
@@ -77,9 +77,6 @@
 <script>
 $(document).ready(function() {
 
-  $("#join_team").click(function(){
-      confirm("Are you sure you want to do this? You are only allowed one team. Any previous memberships will be removed.");
-  })
 
   // Enable tooltips
   $('[data-toggle="tooltip"]').tooltip();
