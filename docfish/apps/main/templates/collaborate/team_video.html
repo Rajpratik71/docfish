@@ -1,0 +1,431 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+{% load humanize %}
+{% block head %}
+{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
+<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css">
+<style>
+#video-placeholder{
+    max-width: 35%;
+    width: 100%;
+    position: fixed;
+    top: 130px;
+    right: 40px;
+}
+
+#play, #pause {
+   cursor:pointer;
+}
+
+#controls{
+    margin-right: 40%;
+}
+
+#controls ul{
+    list-style: none;
+}
+
+#controls pre{
+    border: 6px solid #E7E9F3;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+#controls ul li {
+    margin: 40px;
+}
+
+#controls ul li code{
+    padding: 24px;
+    line-height: 1.45;
+    font-size: 13px;
+}
+
+h2 ~ * {
+    margin-bottom: 24px;
+}
+
+h2 + pre {
+    margin-top: 36px;
+}
+
+.thumbnail{
+    cursor: pointer;
+    margin: 0 10px 20px 0;
+    border: 6px solid #fff;
+    box-shadow: 0 1px 1px #ccc;
+    width: 200px;
+}
+
+#progress-bar{
+    position: relative;
+    width: 100%;
+    height: 20px;
+    cursor: pointer;
+}
+
+
+#controls i {
+    color: #000;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+#volume-input{
+    height: 32px;
+    width: 45px;
+}
+
+#next,
+#prev{
+    display: block;
+}
+
+
+@media (max-width: 1000px) {
+
+
+    header h1{
+        float: none;
+    }
+
+    header a{
+        margin-top: 25px;
+        float: none;
+    }
+
+}
+
+@media (max-width: 1200px) {
+
+    #video-placeholder{
+        max-width: 100%;
+        position: static;
+    }
+
+    #controls{
+        margin-right: 0;
+    }
+
+    #bsaHolder{ display:none;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'messages/message.html' %}
+
+
+<!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+
+<div id="video-placeholder"></div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div style="float:left">
+            <input type="range" id="progress-bar" value="0">
+            <i id="play" class="material-icons">play_arrow</i>
+            <i id="pause" class="material-icons">pause</i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div style="float:right">
+            <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+            <i id="prev" class="material-icons">fast_rewind</i> <i id="next" class="material-icons">fast_forward</i>
+        </div>
+    </div>
+</div>
+
+<form role="form">
+<div class="row" style="margin-top:200px">
+    <div class="col-md-4">
+        <input type="text" class="form-control" id="video-id-input" placeholder="Copy paste a youtube video-id to watch next.">
+     </div>
+     <button type="button" id="add-video" class="btn btn-secondary btn-sm">Submit</button>
+</div>
+</form>
+
+<span id="queue">
+<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="V152uJx9oQA"">
+<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="KkFnm-7jzOA">
+<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="Ph77yOQFihc">
+</span>
+
+<div id="controls">
+
+{% endblock %}
+{% block scripts %}
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+
+{% if colleborate %}
+// Pause Video
+TogetherJS.hub.on('appendVideoQueue', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+    $("#queue").append(msg.video)
+});
+{% endif %}
+
+$("#add-video").click(function(){
+   var new_url = $("#video-id-input").val();
+   stringy = '<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="'+ new_url +'">'
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'appendVideoQueue',
+          video:stringy
+      });
+     }
+    {% endif %}
+   $("#queue").append(stringy)
+})
+
+var player,
+    time_update_interval = 0;
+
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('video-placeholder', {
+        width: 600,
+        height: 400,
+        videoId: 'kkSRZD2G2p0',
+        playerVars: {
+            color: 'white',
+            playlist: 'PLaH4sZlUdQlDEVbN4EakXMUsjyJeiP4cK'
+        },
+        events: {
+            onReady: initialize
+        }
+    });
+}
+
+function initialize(){
+
+    // Update the controls on load
+    updateTimerDisplay();
+    updateProgressBar();
+
+    // Clear any old interval.
+    clearInterval(time_update_interval);
+
+    // Start interval to update elapsed time display and
+    // the elapsed part of the progress bar every second.
+    time_update_interval = setInterval(function () {
+        updateTimerDisplay();
+        updateProgressBar();
+    }, 1000);
+
+    $('#volume-input').val(Math.round(player.getVolume()));
+}
+
+
+// This function is called by initialize()
+function updateTimerDisplay(){
+    // Update current time text display.
+    $('#current-time').text(formatTime(player.getCurrentTime()));
+    $('#duration').text(formatTime(player.getDuration()));
+}
+
+
+// This function is called by initialize()
+function updateProgressBar(){
+    // Update the value of our progress bar accordingly.
+    $('#progress-bar').val((player.getCurrentTime() / player.getDuration()) * 100);
+}
+
+
+// Progress bar
+
+$('#progress-bar').on('mouseup touchend', function (e) {
+
+    // Calculate the new time for the video.
+    // new time in seconds = total duration in seconds * ( value of range input / 100 )
+    var newTime = player.getDuration() * (e.target.value / 100);
+    // Skip video to new time.
+    player.seekTo(newTime);
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'seekVideo',
+          time:newTime
+      });
+     }
+    {% endif %}
+});
+
+
+// Playback
+
+$('#play').on('click', function () {
+    player.playVideo();
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'playVideo'
+      });
+     }
+    {% endif %}
+});
+
+
+$('#pause').on('click', function () {
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'pauseVideo'
+      });
+     }
+    {% endif %}
+    player.pauseVideo();
+});
+
+
+// Sound volume
+
+
+$('#mute-toggle').on('click', function() {
+    var mute_toggle = $(this);
+
+    if(player.isMuted()){
+        player.unMute();
+        mute_toggle.text('volume_up');
+    }
+    else{
+        player.mute();
+        mute_toggle.text('volume_off');
+    }
+});
+
+$('#volume-input').on('change', function () {
+    player.setVolume($(this).val());
+});
+
+
+// Other options
+$('#speed').on('change', function () {
+    player.setPlaybackRate($(this).val());
+});
+
+$('#quality').on('change', function () {
+    player.setPlaybackQuality($(this).val());
+});
+
+
+// Playlist
+
+$('#next').on('click', function () {
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'nextVideo'
+      });
+     }
+    {% endif %}
+    player.nextVideo()
+});
+
+$('#prev').on('click', function () {
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'previousVideo'
+      });
+     }
+    {% endif %}
+    player.previousVideo()
+});
+
+
+{% if collaborate %}
+
+//Seek Video
+TogetherJS.hub.on('seekVideo', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+    player.seekTo(msg.time);
+});
+
+    
+
+// Pause Video
+TogetherJS.hub.on('pauseVideo', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+    player.pauseVideo();
+});
+
+
+// Previous Video
+TogetherJS.hub.on('nextVideo', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     player.nextVideo();
+});
+
+
+// Previous Video
+TogetherJS.hub.on('previousVideo', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     player.previousVideo();
+});
+
+
+// Cue Video
+TogetherJS.hub.on('cueVideo', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     player.cueVideoById(msg.url);
+});
+
+// Play Video
+TogetherJS.hub.on('playVideo', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+    player.playVideo();
+});
+
+{% endif %}
+
+// Load video
+$('.thumbnail').on('click', function () {
+    var url = $(this).attr('data-video-id');
+    {% if collaborate %}
+     if (TogetherJS.running) {
+        TogetherJS.send({
+          type: 'cueVideo',
+          url: url
+      });
+     }
+    {% endif %}
+    player.cueVideoById(url);
+});
+
+
+// Helper Functions
+function formatTime(time){
+    time = Math.round(time);
+
+    var minutes = Math.floor(time / 60),
+        seconds = time - minutes * 60;
+
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+
+    return minutes + ":" + seconds;
+}
+      
+
+</script>
+{% endblock %}
+

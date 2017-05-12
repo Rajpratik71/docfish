@@ -23,7 +23,8 @@ from .entity import (
 )
 
 from .collaborate import (
-    team_portal
+    team_portal,
+    team_video
 )
 
 

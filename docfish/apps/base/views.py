@@ -36,6 +36,9 @@ def index_view(request):
 def about_view(request):
     return render(request, 'base/about.html')
 
+def data_view(request):
+    return render(request, 'base/data.html')
+
 def user_guide_view(request):
     return render(request, 'base/user_guide.html')
 

@@ -59,6 +59,16 @@ from django.shortcuts import (
 import os
 import re
 
+@login_required
+def team_video(request,tid):
+    team = get_collection(tid)
+        
+    context = {"team":team,
+               "collaborate":"pohyes",
+               "nosidebar":"turkeybutt"}
+
+    return render(request, 'collaborate/team_video.html', context)
+
 
 @login_required
 def team_portal(request,tid,cid,status=None):

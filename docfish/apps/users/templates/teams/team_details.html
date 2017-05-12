@@ -25,6 +25,7 @@
                  <li style="margin-left:25px">Total Members: {{ team.members.count|intcomma }}</li>
                  <li style="margin-left:25px">Annotations: {{ annotation_counts.total|intcomma }}</li>
                  <li style="margin-left:25px">Team Type: {{ team.permission }}</li>
+                 <li style="margin-left:25px"><a href="{% url 'team_video' team.id %}">Team Video</a></li>
             </ul>
 
             <div class="row">

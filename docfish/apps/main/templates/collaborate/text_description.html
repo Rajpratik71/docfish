@@ -102,9 +102,36 @@ $(function() {
         }
     });
 
-    $("#skip_button").click(function(){
+
+   {% if collaborate %}
+   TogetherJS.hub.on('skipTextDescribe', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     $("#message").text('One of your team mates has skipped this text!<a href="{% url 'describe_text' cid=collection.id tid=team.id uid=next_text.id %}">Follow here.</a>">')
+     $('#message').show();
+   });
+
+   TogetherJS.hub.on('flagTextDescribe', function (msg) {
+    if (!msg.sameUrl) {
+        return;
+     }
+     $("#message").text('One of your team mates has flagged this text!<a href="{% url 'describe_text' cid=collection.id tid=team.id uid=next_text.id %}">Follow here.</a>">')
+     $('#message').show();
+   });
+   {% endif %}
+
+   $("#skip_button").click(function(){
+       {% if collaborate %}
+       if (TogetherJS.running) {
+          TogetherJS.send({
+             type: 'skipTextDescribe'
+          });
+       }
+       {% endif %}
         document.location = "{% url 'describe_text' collection.id next_text.id team.id %}"   
-    });
+   });
+
 
    // Flag a small or bad image
    function flagText() {
@@ -117,6 +144,13 @@ $(function() {
             success : function(json) {
                 console.log(json); // log the returned json to the console
                 console.log("success"); // another sanity check
+                {% if collaborate %}
+                if (TogetherJS.running) {
+                    TogetherJS.send({
+                    type: 'flagTextDescribe'
+                });
+                }
+                {% endif %}
                 document.location = "{% url 'describe_text' collection.id next_text.id team.id %}"
             },
 

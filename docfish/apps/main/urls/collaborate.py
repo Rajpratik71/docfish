@@ -34,6 +34,7 @@ urlpatterns = [
  
     url(r'^start$', views.collection_chooser, name="collection_chooser"),  
     url(r'^teams/(?P<tid>.+?)/collection/(?P<cid>.+?)/start$', views.team_portal, name="team_portal"),
+    url(r'^teams/(?P<tid>.+?)/video$', views.team_video, name="team_video"),
 
     # Video
     #url(r'^teams/video/describe$',views.video_describe_web,name='video_describe_web'),
