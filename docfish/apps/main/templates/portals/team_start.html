@@ -58,17 +58,7 @@ background-color:#F7F7F7;
     </div>
     <div class="col-md-9">
         {% if fieldvalues.instruction %}
-        {% if edit_permission %}
-        <p class="fish-instruction" id="fish-instruction-{{ fieldtype }}" contenteditable="true" onkeyup="saveInstruction('{{ fieldtype }}','{{ collection.id }}')">{{ fieldvalues.instruction }}</p>
-        <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-danger">Deactivate</button></a>
-        {% else %}
         <p class="fish-instruction">{{ fieldvalues.instruction }}</p>
-        {% endif %}
-        {% else %}
-        {% if edit_permission %}
-        <p class="fish-instruction" id="fish-instruction-{{ fieldtype }}" contenteditable="true" onkeyup="saveInstruction('{{ fieldtype }}','{{ collection.id }}')">Click to edit instructions for this task.</p>
-        <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-danger">Deactivate</button></a>
-        {% endif %}
         {% endif %}
         {% include "social/team_sharing.html" %}
     </div>
@@ -91,7 +81,6 @@ background-color:#F7F7F7;
                 {% if fieldvalues.instruction %}
                 <p class="fish-instruction" id="fish-instruction-{{ fieldtype }}" contenteditable="true" onkeyup="saveInstruction('{{ fieldtype }}','{{ collection.id }}')">{{ fieldvalues.instruction }}</p>
                 {% endif %}
-                <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
             {% else %}
                 <p class="fish-instruction alert alert-info">This collection does not have images for {{ fieldvalues.title }}. </p>
             {% endif %}
@@ -99,17 +88,6 @@ background-color:#F7F7F7;
             {% if collection.has_text %}
                 {% if fieldvalues.instruction %}
                 <p class="fish-instruction" id="fish-instruction-{{ fieldtype }}" contenteditable="true" onkeyup="saveInstruction('{{ fieldtype }}','{{ collection.id }})'">{{ fieldvalues.instruction }}</p>
-                {% endif %}
-                {% if fieldtype == "text_annotation "%}{% if collection.allowed_annotations.count > 0 %}
-                <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype  %}"><button class="btn btn-sm btn-success">Activate</button></a>
-                {% endif %}
-                {% else %}
-                    {% if fieldtype == "image_annotation "%}{% if collection.allowed_annotations.count > 0 %}
-                    <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
-                    {% endif %}
-                    {% else %}
-                    <a style="float:right" href="{% url 'collection_activate' collection.id fieldtype %}"><button class="btn btn-sm btn-success">Activate</button></a>
-                    {% endif %}
                 {% endif %}
             {% else %}
                 <p class="fish-instruction alert alert-info">This collection does not have text for {{ fieldvalues.title }}. </p>
