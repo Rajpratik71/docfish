@@ -72,7 +72,7 @@ def team_video(request,tid):
 
 @login_required
 def team_portal(request,tid,cid,status=None):
-    team = get_collection(tid)
+    team = get_team(tid)
     collection = get_collection(cid)
 
     if status == None:
