@@ -34,7 +34,6 @@ from docfish.settings import DOMAIN_NAME
 from docfish.apps.users.models import Team
 
 from docfish.apps.users.utils import (
-    summarize_team_annotations,
     summarize_teams_annotations
 )
 

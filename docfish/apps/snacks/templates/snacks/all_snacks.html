@@ -124,8 +124,6 @@ $(document).ready(function() {
 
     function update_snacks(snack_id) {
 
-        console.log(snack_id)
-        console.log(usersnacks)
         var snack = $("#snackinfo-" + snack_id)
         $("#snack-message").text();
         $('#snack-image').attr('src',$(snack).attr('image'));
@@ -133,12 +131,10 @@ $(document).ready(function() {
         $("#snack-link").attr('href',snack.attr('link'));
         $("#update-snack-button").attr('snackid',snack_id)
         if ($.inArray(parseInt(snack_id), usersnacks)!=-1) {
-            console.log('IN ARRAY')
             $("#update-snack-button").attr("class","btn btn-danger")
             $("#update-snack-button").attr('status','remove')
             $("#update-snack-button").text("Remove from Snacks")
         } else {
-            console.log('NOT IN ARRAY')
             $("#update-snack-button").attr("class","btn btn-primary")
             $("#update-snack").attr('status','add')
             $("#update-snack-button").text("Add to Snacks")
@@ -153,7 +149,6 @@ $(document).ready(function() {
             url : "/snacks/add/" + snack_id,
             type : "POST",
             success : function(json) {
-                 console.log(json);
                  var snack_id = $("#update-snack-button").attr('snackid')
                  usersnacks.push(parseInt(snack_id))
                  toast_message("Snack added to SnackBox.")
