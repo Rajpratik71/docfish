@@ -20,9 +20,9 @@
           <div class="btn-group">
               <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share</i></button>
               <div class="dropdown-menu">
-                  <a class="dropdown-item" href="https://twitter.com/intent/tweet?text={{ collection.name }} Annotation on DocFish&url={{ collection.get_absolute_url }}" rel="nofollow" target="_blank" title="Share on Twitter"><i class="fa fa-twitter"></i> Twitter</a>
-                  <a class="dropdown-item" href="https://facebook.com/sharer.php?u={{ collection.get_absolute_url }} Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Facebook"><i class="fa fa-facebook"></i> Facebook</a>
-                  <a class="dropdown-item"  href="http://www.reddit.com/submit?url={{ collection.get_absolute_url }}&title={{ collection.name }}  Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Reddit"><i class="fa fa-reddit"></i> Reddit</a>
+                  <a class="dropdown-item" href="https://twitter.com/intent/tweet?text={{ collection.name }} Annotation on DocFish&url={{ domain }}{{ collection.get_absolute_url }}" rel="nofollow" target="_blank" title="Share on Twitter"><i class="fa fa-twitter"></i> Twitter</a>
+                  <a class="dropdown-item" href="https://facebook.com/sharer.php?u={{ domain }}{{ collection.get_absolute_url }} Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Facebook"><i class="fa fa-facebook"></i> Facebook</a>
+                  <a class="dropdown-item"  href="http://www.reddit.com/submit?url={{ domain }}{{ collection.get_absolute_url }}&title={{ collection.name }}  Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Reddit"><i class="fa fa-reddit"></i> Reddit</a>
               </div>
            </div>
            </div>
@@ -53,7 +53,6 @@
                                 </ul>
                                 </li>
                             {% endfor %}
-                            <!--
                             {% for text in entity.text_entity.all %}
                                 <li>{{ text.get_basename }}
                                 <ul>
@@ -65,7 +64,7 @@
                                 </ul>
                                 </li>
                                 {% endif %}
-                            {% endfor %}-->
+                            {% endfor %}
                             </ul>
                         {% endif %}
                         </li>
@@ -85,7 +84,14 @@
 {% block scripts %}
 <script src="{% static "js/dataset_explorer.js" %}"></script>
 <script>
-        $(document).ready(function(){
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+    
+
+    $(document).ready(function(){
 
           // Clicking an image shows it. Right now we assume png
           $('.pdf').click(function(){
@@ -113,6 +119,7 @@
               $("#content").append('<textarea id="editor"></textarea>');
               var textarea = document.getElementById('editor');
               $.getJSON(file, function( data ) {
+                  console.log(data);
                   var editor = CodeMirror.fromTextArea('editor', {
                       height: "600px",
                       mode: "application/ld+json",
@@ -130,7 +137,8 @@
               console.log(file);
               $("#content").text("");
               $.getJSON(file, function( data ) {
-                  $("#content").append('<textarea id="editor" style="width:100%;margin-top:100px">' + data.original+'</textarea>');
+                  var content = data.original.replaceAll('<br>','\n');
+                  $("#content").append('<textarea id="editor" style="width:100%;height:500px;margin-top:100px">'+ content +'</textarea>');
               })
           })
         })

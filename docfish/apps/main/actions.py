@@ -140,7 +140,8 @@ def serve_text(request,uid):
     '''return raw text
     '''
     text = get_text(uid)
-    return JsonResponse({"original":text.original})
+    content = text.get_text()
+    return JsonResponse({"original": content})
 
 
 ###############################################################################################
