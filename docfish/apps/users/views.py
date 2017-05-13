@@ -218,7 +218,8 @@ def join_team(request, tid, code=None):
 
     if add_user:   
         if user not in team.members.all():
-            team = add_user(user,team,code)
+            team.members.add(user)
+            team.save()
             messages.info(request,"You have been added to team %s" %(team.name))
         else:
             messages.info(request,"You are already a member of %s!" %(team.name))

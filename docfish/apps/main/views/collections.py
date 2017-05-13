@@ -176,8 +176,6 @@ def view_collection(request,cid):
 
     return render(request, 'collections/collection_details.html', context)
 
-
-@login_required
 def collection_explorer(request,cid):
 
     collection = get_collection(cid)
@@ -188,7 +186,6 @@ def collection_explorer(request,cid):
                    "nosidebar":"iloveparsnips"}
 
         # Get all permissions, context must have collection as key
-        context = get_permissions(request,context)
         return render(request, 'collections/collection_explorer.html', context)
     
     messages.info(request, '''This collection is private. 

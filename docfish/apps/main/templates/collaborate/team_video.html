@@ -6,8 +6,8 @@
 {% endblock %}
 {% block css %}
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
-<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css">
 <style>
 #video-placeholder{
     max-width: 35%;
@@ -122,6 +122,7 @@ h2 + pre {
 <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
 
 <div id="video-placeholder"></div>
+{% include "social/collaborate_button.html" %}
 
 <div class="row">
     <div class="col-md-3">
@@ -149,9 +150,9 @@ h2 + pre {
 </form>
 
 <span id="queue">
-<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="V152uJx9oQA"">
-<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="KkFnm-7jzOA">
-<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="Ph77yOQFihc">
+<img class="thumbnail queue" src="/static/img/docfish/docfish.png" data-video-id="V152uJx9oQA"">
+<img class="thumbnail queue" src="/static/img/docfish/docfish.png" data-video-id="KkFnm-7jzOA">
+<img class="thumbnail queue" src="/static/img/docfish/docfish.png" data-video-id="Ph77yOQFihc">
 </span>
 
 <div id="controls">
@@ -159,7 +160,7 @@ h2 + pre {
 {% endblock %}
 {% block scripts %}
 
-<script src="https://www.youtube.com/iframe_api"></script>
+<script src="{% static "js/iframe_api.js" %}"></script>
 <script>
 
 {% if colleborate %}
@@ -174,7 +175,7 @@ TogetherJS.hub.on('appendVideoQueue', function (msg) {
 
 $("#add-video").click(function(){
    var new_url = $("#video-id-input").val();
-   stringy = '<img class="thumbnail queue" src="http://127.0.0.1/static/img/docfish/docfish.png" data-video-id="'+ new_url +'">'
+   stringy = '<img class="thumbnail queue" src="/static/img/docfish/docfish.png" data-video-id="'+ new_url +'">'
     {% if collaborate %}
      if (TogetherJS.running) {
         TogetherJS.send({

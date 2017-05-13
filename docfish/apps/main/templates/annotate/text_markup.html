@@ -73,14 +73,14 @@ ref-list {
                 {% if text.is_xml %}
                 <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ text.get_text | safe  }}</pre></p>
                 {% else %}
-                <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text }}</p>
+                <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text | safe }}</p>
                 {% endif %}
             {% endif %}
         {% else %}        
             {% if text.is_xml %}
             <p class="som_text" style="padding-bottom:20px"><pre class="som_highlight">{{ text.get_text | safe  }}</pre></p>
             {% else %}
-            <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text }}</p>
+            <p class="som_text som_highlight" style="padding-bottom:20px">{{ text.get_text | safe }}</p>
             {% endif %}
         {% endif %}
 

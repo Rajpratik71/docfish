@@ -25,6 +25,7 @@ SOFTWARE.
 '''
 
 from docfish.apps.main.models import Entity
+from docfish.apps.main.permission import get_permissions
 
 from docfish.apps.main.utils import *
 from django.contrib.auth.decorators import login_required

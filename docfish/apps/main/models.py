@@ -276,7 +276,7 @@ class Image(models.Model):
     '''An "imagebase" is broadly a parent class that holds an original (raw) 
        file, and then markups of it.
     '''
-    uid = models.CharField(max_length=250, null=False, blank=False, unique=True)
+    uid = models.CharField(max_length=250, null=False, blank=False)
     entity = models.ForeignKey(Entity,related_name="image_entity",related_query_name="image_entity")
     slug = models.SlugField(max_length=500, blank=True, null=True)
     metadata = JSONField(default={})
@@ -290,10 +290,14 @@ class Image(models.Model):
 
     class Meta:
         app_label = 'main'
+        unique_together =  (("entity", "uid"),)
 
     def is_pdf(self):
         if hasattr(self,'imagelink'):
             if self.imagelink.url.endswith('pdf'):
+                return True
+        elif hasattr(self,'imagefile'):
+            if self.imagefile.original.url.endswith('pdf'):
                 return True
         else:
             if self.original.url.endswith('pdf'):
@@ -310,6 +314,8 @@ class Image(models.Model):
     def get_url(self):
         if hasattr(self,'imagelink'):
             return self.imagelink.url
+        elif hasattr(self,'imagefile'):
+            return self.imagefile.original.url
         else:
             return self.original.url
 
@@ -317,6 +323,8 @@ class Image(models.Model):
     def get_path(self):
         if hasattr(self,'imagelink'):
             return self.imagelink.url
+        elif hasattr(self,'imagefile'):
+            return self.imagefile.original.path
         else:
             return self.original.path
 
@@ -461,7 +469,7 @@ class Text(models.Model):
     '''A "text" object is broadly a parent class that holds a chunk of text, 
        namely the original (raw) text content, and then markups of it.
     '''
-    uid = models.CharField(max_length=250, null=False, blank=False, unique=True)
+    uid = models.CharField(max_length=250, null=False, blank=False)
     entity = models.ForeignKey(Entity,related_name="text_entity",related_query_name="text_entity")
     metadata = JSONField(default={})
     active = models.BooleanField(choices=ACTIVE_CHOICES, 
@@ -472,7 +480,7 @@ class Text(models.Model):
     def is_xml(self):
         if self.get_url().endswith('xml'):
             return True
-        for tag in self.tags:
+        for tag in self.tags.all():
             if tag.name == "xml":
                 return True
         return False
@@ -491,6 +499,8 @@ class Text(models.Model):
     def get_url(self):
         if hasattr(self,'textlink'):
             return self.textlink.original
+        elif hasattr(self,'textfile'):
+            return self.textfile.original
         else:
             return self.original
 
@@ -498,6 +508,8 @@ class Text(models.Model):
         if hasattr(self,'textlink'):
             response = requests.get(self.textlink.original)
             return response.text
+        elif hasattr(self,'textfile'):
+            return self.textfile.original.replace('\n','<br>')
         else:
             return self.original
 
