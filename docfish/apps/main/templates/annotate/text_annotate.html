@@ -47,7 +47,7 @@ ref-list {
         {% if text.is_xml %}
         <p id="som_image"><pre>{{ text.get_text | safe }}</pre></p>
         {% else %}
-        <p id="som_image">{{ text.get_text }}</p>
+        <p id="som_image">{{ text.get_text | safe }}</p>
         {% endif %}
     </div>
     <div class="col-md-6">
@@ -78,7 +78,7 @@ ref-list {
 
 
         <div class="button-group">
-            <button id="flag_button" class="btn btn-danger">Mark As Bad</button>
+            <button id="flag_button" class="btn btn-danger">Bad</button>
             <button id="skip_button" class="btn btn-info"> >> </button>
             <a style="cursor:pointer" data-toggle="tooltip" data-placement="right" title="For some older articles, only metadata is provided and the text appears empty. You should mark these as bad."><i id="flag_info" class="fa fa-2x fa-info-circle"></i></a>
         </div>
@@ -95,7 +95,7 @@ ref-list {
     </div>
 </div>
 
-{% include "collections/return_to_collection.html" %}
+{% include "collections/return_to_collection_fixed.html" %}
 {% endblock %}
 
 {% block scripts %}
