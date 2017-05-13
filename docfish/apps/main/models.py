@@ -73,13 +73,13 @@ def get_upload_folder(instance,filename):
     if isinstance(instance,Image):
         entity = instance.entity
         image_folder = instance.uid.split('/')[0]
-        collection_path = "%s/%s/images/%s" %(entity.collection.id,entity.uid,image_folder)
+        entity_path = "%s/images/%s" %(entity.uid,image_folder)
     else:
         entity = instance.image.entity
-        collection_path = "%s/%s/images" %(entity.collection.id,entity.uid)
+        entity_path = "%s/images" %(entity.uid)
 
     # This is relative to MEDIA_ROOT
-    return os.path.join(str(collection_path), filename)
+    return os.path.join(str(entity_path), filename)
 
 
 PRIVACY_CHOICES = ((False, 'Public (The collection will be accessible by anyone and public entities exposed.'),
