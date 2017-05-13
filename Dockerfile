@@ -64,6 +64,13 @@ RUN pip install -r requirements.txt
 RUN /usr/bin/yes | pip uninstall cython
 RUN apt-get remove -y gfortran
 
+# Install crontab to setup job
+RUN apt-get update && apt-get install -y gnome-schedule
+#RUN echo "* * * * * /usr/bin/python /code/manage.py update_queue" >> /code/cronjob
+RUN echo "0 0 * * * /usr/bin/python /code/manage.py calculate_rankings" >> /code/cronjob
+RUN crontab /code/cronjob
+RUN rm /code/cronjob
+
 RUN apt-get autoremove -y
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

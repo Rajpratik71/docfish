@@ -101,7 +101,7 @@ def get_request(team,user):
 
 
 
-def summarize_team_annotations(members):
+def summarize_member_annotations(members):
     '''summarize_team_annotations will return a summary of annotations for a group of users, typically a team
     :param members: a list or queryset of users
     '''
@@ -143,7 +143,7 @@ def count_user_annotations(users):
     return counts
 
 
-def count_team_annotations(team):
+def count_team_annotations(team,summary=False):
     '''return the count of a single user's annotations, by type
     (meaning across images, text, annotations, descriptions, and markups)
     '''
@@ -155,7 +155,8 @@ def count_team_annotations(team):
     counts['image-annotation'] = ImageAnnotation.objects.filter(team=team).distinct().count()
     counts['text-description'] = TextDescription.objects.filter(team=team).distinct().count()
     counts['image-description'] = ImageDescription.objects.filter(team=team).distinct().count()
-
+    if summary is True:
+        counts = sum(list(counts.values()))
     return counts
 
 
@@ -193,8 +194,9 @@ def summarize_teams_annotations(teams,sort=True):
     '''
     sorted_teams = dict()
     for team in teams:
-        team_count = summarize_team_annotations(team.members.all())['total']
-        sorted_teams[team.id] = team_count
+        individual_count = summarize_member_annotations(team.members.all())['total']
+        team_count = count_team_annotations(team,summary=True)
+        sorted_teams[team.id] = team_count + individual_count
     if sort == True:
         sorted_teams = sorted(sorted_teams.items(), key=operator.itemgetter(1))
         sorted_teams.reverse() # ensure returns from most to least
