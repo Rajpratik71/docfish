@@ -113,23 +113,12 @@ $(function() {
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
 
-        if (e.which == 37) { 
-            history.back();
-            e.preventDefault();
-            return false;
-         }
-
         // prevent pressing enter
         if(e.which == 13) {
            e.preventDefault();
            return false;
         }
        
-        if (e.which == 39) { 
-           document.location = "{% url 'markup_text' cid=collection.id tid=team.id uid=next_text.id %}"
-           e.preventDefault();
-           return false;
-        }
     });
 
    var loggy = $(".loggy");

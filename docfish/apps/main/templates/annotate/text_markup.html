@@ -112,11 +112,6 @@ $(function() {
     // Left and right arrow keys navigate as well
     $(document).keydown(function(e) {
 
-        if (e.which == 37) { 
-            history.back();
-            e.preventDefault();
-            return false;
-         }
 
         // prevent pressing enter
         if(e.which == 13) {
@@ -124,11 +119,6 @@ $(function() {
            return false;
         }
         
-        if (e.which == 39) { 
-           document.location = "{% url 'collection_markup_text' collection.id %}"
-           e.preventDefault();
-           return false;
-        }
     });
 
    // We will save a list of highlights
