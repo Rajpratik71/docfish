@@ -24,7 +24,7 @@
             <thead>
                 <tr>
                     <th>User</th>
-                    <th>Team</th>
+                    <th>Teams</th>
                     <th>Annotations</th>
                     <th>Gils Earned</th>
                     <th>Gils Spent</th>
@@ -35,7 +35,14 @@
            {% for user in users %}
                <tr>
                    <td><a href="{% url 'user_snacks' user.id %}">{{ user.name }}</a></td>
-                   <td><a href="{% url 'team_details' user.team.id %}">{{ user.team.name }}</a></td>
+                   <td>{% for team in user.teams %}
+                        <a href="{% url 'team_details' team.id %}">{{ team.name }}</a>
+                           {% if forloop.last %}
+                           {% else %}
+                           <br>
+                           {% endif %}
+                        {% endfor %}
+                   </td>
                    <td>{{ user.count }}</td>
                    <td>{{ user.snacks.gils_earned }}</td>
                    <td>{{ user.snacks.gils_spent }}</td>

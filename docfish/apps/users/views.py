@@ -141,11 +141,11 @@ def view_users(request):
     '''view all users
     '''
     users = User.objects.all()
-    counts = summarize_team_annotations(users)
+    counts = summarize_member_annotations(users)
     lookups = []
     for user in users:
         if user.username != "AnonymousUser":
-            userinfo = {'team': user.team_members.first(),
+            userinfo = {'teams': user.team_set.all(),
                         'count':counts[user.username],
                         'name':user.username,
                         'id':user.id,
