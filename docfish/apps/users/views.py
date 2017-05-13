@@ -164,7 +164,7 @@ def view_team(request, tid, code=None):
     team = get_team(tid)
 
     # Need to create annotation counts with "total" for all members
-    annotation_counts = summarize_team_annotations(team.members.all())
+    annotation_counts = summarize_member_annotations(team.members.all())
     edit_permission = has_team_edit_permission(request,team)
 
     context = {"team": team,

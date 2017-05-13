@@ -146,7 +146,7 @@ $(function() {
    // We will save a list of highlights
    {% if markup.locations|length > 0 %}
        {% for hl in markup.locations.markups %}
-       updateHighlights("{{ hl.text }}","{{ hl.color }}",{{ hl.startOffset }},{{ hl.endOffset }},{{ hl.timestamp }},{{ hl.label}})
+       updateHighlights("{{ hl.text }}","{{ hl.color }}",{{ hl.startOffset }},{{ hl.endOffset }},{{ hl.timestamp }},"{{ hl.label}}")
        {% endfor %}
    {% endif %}
 
