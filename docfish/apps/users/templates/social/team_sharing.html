@@ -1,30 +1,30 @@
 {% if fieldtype == "image_annotation" %}
 {% with url="images/annotate" %}
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Annotate!</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Annotate!</button></a>
 {% endwith %}
 {% endif %}
 {% if fieldtype == "image_markup" %}
 {% with url="images/markup" %}  
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Markup!</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Markup!</button></a>
 {% endwith %}
 {% endif %}
 {% if fieldtype == "image_describe" %}
 {% with url="images/describe" %}  
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/collections/{{ collection.id }}/teams/{{ team.id }}/describe/images"><button class="btn btn-sm btn-secondary">Describe</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain }}/collections/{{ collection.id }}/teams/{{ team.id }}/describe/images"><button class="btn btn-sm btn-secondary">Describe</button></a>
 {% endwith %}
 {% endif %}
 {% if fieldtype == "text_annotation" %}
 {% with url="text/annotate" %}  
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Annotate!</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Annotate!</button></a>
 {% endwith %}
 {% endif %}
 {% if fieldtype == "text_markup" %}
 {% with url="text/markup" %}  
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Markup!</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain }}/teams/{{ team.id }}/collection/{{ collection.id }}/{{ url }}"><button class="btn btn-sm btn-secondary">Markup!</button></a>
 {% endwith %}
 {% endif %}
 {% if fieldtype == "text_describe" %}
 {% with url="text/describe" %}  
-<a id="{{ fieldtype }}_link" href="{{ domain_name }}/collections/{{ collection.id }}/teams/{{ team.id }}/describe/texts"><button class="btn btn-sm btn-secondary">Describe</button></a>
+<a id="{{ fieldtype }}_link" href="{{ domain }}/collections/{{ collection.id }}/teams/{{ team.id }}/describe/texts"><button class="btn btn-sm btn-secondary">Describe</button></a>
 {% endwith %}
 {% endif %}

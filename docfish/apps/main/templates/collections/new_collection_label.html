@@ -94,7 +94,7 @@ input {
   <div id="newlabel" class="tab-pane">
 
         <!-- Here the user has the option to add a new label -->
-        <form action="{% url 'create_label' cid=collection.id %}" method="post">
+        <form action="{% url 'create_label' collection.id %}" method="post">
 
             {% csrf_token %}
 
@@ -136,7 +136,7 @@ input {
                 <tr>
                     <td>{{ label.name }}</td>
                     <td>{{ label.label }}</td> 
-                    <td><a class="add_existing" data-url="{% url 'create_label' cid=collection.id lib=label.id %}"><button class="btn btn-success btn-sm">Add Label</button></a>                  
+                    <td><a class="add_existing" data-url="{% url 'create_label' collection.id label.id %}"><button class="btn btn-success btn-sm">Add Label</button></a>                  
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -152,7 +152,7 @@ input {
 {% block scripts %}
 <script src="{% static "js/cookie-token.js" %}"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
 <script>

@@ -65,9 +65,9 @@
   <div class="btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share</i></button>
     <div class="dropdown-menu">
-      <a class="dropdown-item" href="https://twitter.com/intent/tweet?text={{ collection.name }} Annotation on DocFish&url={{ collection.get_absolute_url }}" rel="nofollow" target="_blank" title="Share on Twitter"><i class="fa fa-twitter"></i> Twitter</a>
-      <a class="dropdown-item" href="https://facebook.com/sharer.php?u={{ collection.get_absolute_url }} Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Facebook"><i class="fa fa-facebook"></i> Facebook</a>
-      <a class="dropdown-item"  href="http://www.reddit.com/submit?url={{ collection.get_absolute_url }}&title={{ collection.name }}  Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Reddit"><i class="fa fa-reddit"></i> Reddit</a>
+      <a class="dropdown-item" href="https://twitter.com/intent/tweet?text={{ collection.name }} Annotation on DocFish&url={{ domain }}{{ collection.get_absolute_url }}" rel="nofollow" target="_blank" title="Share on Twitter"><i class="fa fa-twitter"></i> Twitter</a>
+      <a class="dropdown-item" href="https://facebook.com/sharer.php?u={{ domain }}{{ collection.get_absolute_url }} Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Facebook"><i class="fa fa-facebook"></i> Facebook</a>
+      <a class="dropdown-item"  href="http://www.reddit.com/submit?url={{ domain }}{{ collection.get_absolute_url }}&title={{ collection.name }}  Annotation on DocFish" rel="nofollow" target="_blank" title="Share on Reddit"><i class="fa fa-reddit"></i> Reddit</a>
     </div>
 </div>
 

@@ -39,6 +39,7 @@ from docfish.apps.main.permission import (
     get_permissions
 )
 
+from docfish.settings import DOMAIN_NAME
 from docfish.apps.main.utils import *
 from docfish.apps.main.views.labels import view_label
 
@@ -169,7 +170,8 @@ def view_collection(request,cid):
     collection = get_collection(cid)
     entity_count = collection.entity_set.count()
     context = {"collection":collection,
-               "entity_count":entity_count}
+               "entity_count":entity_count,
+               "domain":DOMAIN_NAME}
 
     # Get all permissions, context must have collection as key
     context = get_permissions(request,context)
@@ -183,7 +185,8 @@ def collection_explorer(request,cid):
         entity_count = collection.entity_set.count()
         context = {"collection":collection,
                    "entity_count":entity_count,
-                   "nosidebar":"iloveparsnips"}
+                   "nosidebar":"iloveparsnips",
+                   "domain":DOMAIN_NAME}
 
         # Get all permissions, context must have collection as key
         return render(request, 'collections/collection_explorer.html', context)
@@ -384,7 +387,8 @@ def collection_start(request,cid,status=None):
                "collection_status":status,
                "image_types":image_types,
                "text_types":text_types,
-               "nosidebar":"turkeybutt"}
+               "nosidebar":"turkeybutt",
+               "domain":DOMAIN_NAME}
 
     # Get all permissions, context must have collection as key
     context = get_permissions(request,context)

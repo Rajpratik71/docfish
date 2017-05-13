@@ -82,7 +82,7 @@ def view_label(request,cid,tid=None):
     
 
 @login_required
-def create_label(request,cid,lid=None,tid=None):
+def create_label(request,cid,lid=None):
     '''create_label will allow a user to create a new label to be associated with a collection. The user
     will be able to select from other collection labels
     :param cid: the collection id to associate the label with (not required, but no url accessible for it) 
@@ -94,7 +94,7 @@ def create_label(request,cid,lid=None,tid=None):
         if request.user == collection.owner:
 
             # If lid is defined, we are adding an already existing annotation label to collection
-            if lid != None:
+            if lid is not None:
                 try:
                     allowed_annotation = Annotation.objects.get(id=lid)
                     collection.allowed_annotations.add(allowed_annotation)
@@ -109,7 +109,7 @@ def create_label(request,cid,lid=None,tid=None):
             # The user wants a new one
             else:
                 name = request.POST.get('annotation_name', None)
-                if name != None:
+                if name is not None:
                     for key in request.POST.keys():
                         if re.search('annotation_label',key):
                             new_label = request.POST.get(key).upper()
@@ -126,7 +126,7 @@ def create_label(request,cid,lid=None,tid=None):
             messages.info(request, "You do not have permission to perform this action.")
             return HttpResponseRedirect(collection.get_absolute_url())
 
-    return redirect('view_label',cid=cid,tid=tid)
+    return redirect('view_label',cid=cid)
 
 
 @login_required

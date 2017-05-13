@@ -34,7 +34,7 @@ from docfish.apps.main.permission import (
 )
 
 from docfish.apps.main.utils import *
-
+from docfish.settings import DOMAIN_NAME
 from docfish.apps.users.utils import (
     get_user,
     get_team
@@ -107,6 +107,7 @@ def team_portal(request,tid,cid,status=None):
                "image_types":image_types,
                "text_types":text_types,
                "nosidebar":"turkeybutt",
+               "domain":DOMAIN_NAME,
                "team":team}
 
     # Get all permissions, context must have collection as key

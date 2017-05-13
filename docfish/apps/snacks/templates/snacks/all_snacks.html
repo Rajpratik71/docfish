@@ -27,29 +27,15 @@
        </form>
     </div>
     <div class="col-md-9">
-       {% if secret %}
-       <a href="{% url 'all_snacks' %}"><button style="margin-left:100px" class="btn btn-primary btn-sm">Active Snacks</button></a>
-       <span style='margin-left:50px'>shhhh... secret snacks! <i class="fa fa-question-circle" data-toggle="tooltip" title="You can enable snacks to add to your favorites, but they can be disabled by others at any time."></i></span>
-       {% else %}
-       <a href="{% url 'secret_snacks' %}" style="color:white">Hidden Snacks</a>
-       {% endif %}
        <nav aria-label="snack navigation"  style='float:right'>
            <ul class="pagination">
            {% if page == 1 %}
            {% else %}
-              {% if secret %}
-              <li class="page-item"><a class="page-link" href="{% url 'secret_snacks' %}/{{ page|add:"-1"}}">Previous</a></li>
-              {% else %}
               <li class="page-item"><a class="page-link" href="{% url 'all_snacks' %}/{{ page|add:"-1"}}">Previous</a></li>
-              {% endif %}
            {% endif %}
            {% if page == last_page %}
            {% else %}
-               {% if secret %}
-               <li class="page-item"><a class="page-link" href="{% url 'secret_snacks' %}/{{ page|add:1 }}">Next</a></li>
-               {% else %}
                <li class="page-item"><a class="page-link" href="{% url 'all_snacks' %}/{{ page|add:1 }}">Next</a></li>
-               {% endif %}
            {% endif %}
            </ul>
        </nav>
@@ -96,17 +82,13 @@
       </div>
       <div class="modal-body">
           <img width="100%" src="#" id='snack-image'>
-             {% if secret %}
-             <button id="enable-snack-button" type="button" class="btn btn-secondary">Yum! <i class="fa fa-plus"></i></button>
-             {% else %}
              <button id="remove-snack-button" type="button" class="btn btn-secondary">Yuck. <i class="fa fa-remove"></i></button>
-             {% endif %}
       </div>
       <div class="modal-footer">
         <a href="#" id="snack-link" target='_blank'>
             <button style='margin-left:20px' type="button" class="btn btn-secondary">Learn More <i class="fa fa-link"></i></button>
         </a>
-        <button status="{% if snack.id in usersnacks %}remove{% else %}add{% endif %}" id="update-snack-button" type="button" class="btn btn-secondary" {% if secret %}disabled{% endif %}>
+        <button status="{% if snack.id in usersnacks %}remove{% else %}add{% endif %}" id="update-snack-button" type="button" class="btn btn-secondary">
          {% if snack.id in usersnacks %}Remove from Snacks{% else %}Add to Snacks{% endif %}
         <i class="fa fa-check"></i></button>       
       </div>
@@ -180,21 +162,6 @@ $(document).ready(function() {
          });
     }
 
-    // Functions to add and remove snacks
-    {% if secret %}
-    function enableSnack() {
-        var snack_id = $("#update-snack-button").attr('snackid')
-        $.ajax({
-            url : "/snacks/enable/" + snack_id,
-            type : "POST",
-            success : function(json) {
-                 console.log(json);
-                 toast_message("This snack will be available in active searches.")
-                 $('#snack-modal').modal('hide');
-            }
-         });
-    }
-    {% else %}
     function disableSnack() {
         var snack_id = $("#update-snack-button").attr('snackid')
         $.ajax({
@@ -207,7 +174,6 @@ $(document).ready(function() {
             }
          });
     }
-    {% endif %}
 
     function removeSnack() {
         var snack_id = $("#update-snack-button").attr('snackid')
@@ -240,15 +206,9 @@ $(document).ready(function() {
         }
     })
 
-    {% if secret %}
-    $('#enable-snack-button').click(function(){
-           enableSnack();
-    })
-    {% else %}
     $('#remove-snack-button').click(function(){
            disableSnack();
     })
-    {% endif %}
 
     // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();

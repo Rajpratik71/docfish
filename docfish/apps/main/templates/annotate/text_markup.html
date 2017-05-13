@@ -186,7 +186,7 @@ $(function() {
             url : "{% url 'update_text_markup' cid=collection.id uid=text.id %}", // the endpoint
             type : "POST", // http method
             data : { markup: markup,
-                     text: text}
+                     text: text},
 
             success : function(json) {
                 console.log(json); // log the returned json to the console

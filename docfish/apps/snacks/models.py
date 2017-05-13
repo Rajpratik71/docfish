@@ -74,7 +74,7 @@ class Snack(models.Model):
     image = models.ImageField(upload_to=get_image_path,null=True,blank=True, 
                               help_text="saved snack image", verbose_name="Snack Image URL")
     
-    gils = models.PositiveIntegerField(blank=True,null=True,verbose_name="price of the snack.", default=1000)
+    gils = models.PositiveIntegerField(blank=True,null=True,verbose_name="price of the snack.", default=100)
     tags = TaggableManager()
 
     active = models.BooleanField(choices=ACTIVE_CHOICES, 
